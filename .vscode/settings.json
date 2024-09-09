@@ -10,4 +10,7 @@
         "/usr/local/include/openfhe/cereal",
         // "/usr/local/include/openfhe/binfhe", // (optional) only needed if working with circuits
     ],
+    "files.associations": {
+        "iostream": "cpp"
+    },
 }
