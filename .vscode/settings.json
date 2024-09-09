@@ -1,0 +1,13 @@
+{
+    // Ignore build directory, saves a lot of memory and CPU!
+    "files.watcherExclude": {
+        "**/build/**": true
+    },
+    // Include installed OpenFHE for library references
+    "C_Cpp.default.includePath": [
+        "/usr/local/include/openfhe/core",
+        "/usr/local/include/openfhe/pke",
+        "/usr/local/include/openfhe/cereal",
+        // "/usr/local/include/openfhe/binfhe", // (optional) only needed if working with circuits
+    ],
+}
