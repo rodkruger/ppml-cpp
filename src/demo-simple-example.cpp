@@ -7,6 +7,20 @@ using namespace lbcrypto;
 // Scale factor for fixed-point arithmetic
 const double SCALE_FACTOR = 1e3;
 
+// Parcialmente homomórficos ...
+//
+// RSA --> O mais duro (assimétrico)
+// AES --> Mais utilizado no mundo (simétrico) -->
+// BV
+// ...
+
+// Sistemas de criptografia completamente homomórfica
+//
+// 1. BFV
+// 2. BGV
+// 3. CKKS
+// 4. TFHE
+
 void e_addition()
 {
     // Step 1: Set up the BFV context
@@ -42,13 +56,19 @@ void e_addition()
     std::cout << "Plaintext 1: " << num1 << std::endl;
     std::cout << "Plaintext 2: " << num2 << std::endl;
 
+    // Client
     // Step 4: Encrypt the plaintexts
     auto ciphertext1 = cryptoContext->Encrypt(keys.publicKey, plaintext1);
     auto ciphertext2 = cryptoContext->Encrypt(keys.publicKey, plaintext2);
 
+    // keys.publicKey --> Chave pública
+    // keys.secretKey --> Criptografada da chave privada;
+
+    // Provider
     // Step 5: Perform homomorphic addition
     auto ciphertextSum = cryptoContext->EvalAdd(ciphertext1, ciphertext2);
 
+    // Client
     // Step 6: Decrypt the result
     Plaintext plaintextResult;
     cryptoContext->Decrypt(keys.secretKey, ciphertextSum, &plaintextResult);
