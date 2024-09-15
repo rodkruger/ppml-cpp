@@ -83,8 +83,8 @@ build Demo: CXX_EXECUTABLE_LINKER__Demo_Debug CMakeFiles/Demo.dir/src/demo-simpl
 
 build cmake_object_order_depends_target_KnnEncrypted: phony || .
 
-build CMakeFiles/KnnEncrypted.dir/src/knn-encrypted.cpp.o: CXX_COMPILER__KnnEncrypted_unscanned_Debug /home/rkruger/CLionProjects/ppml-cpp/src/knn-encrypted.cpp || cmake_object_order_depends_target_KnnEncrypted
-  DEP_FILE = CMakeFiles/KnnEncrypted.dir/src/knn-encrypted.cpp.o.d
+build CMakeFiles/KnnEncrypted.dir/src/HermesMl.cpp.o: CXX_COMPILER__KnnEncrypted_unscanned_Debug /home/rkruger/CLionProjects/ppml-cpp/src/HermesMl.cpp || cmake_object_order_depends_target_KnnEncrypted
+  DEP_FILE = CMakeFiles/KnnEncrypted.dir/src/HermesMl.cpp.o.d
   FLAGS = -Wall -Werror -O3  -DOPENFHE_VERSION=1.2.0  -Wno-unused-private-field -Wno-shift-op-parentheses -DMATHBACKEND=4 -fopenmp=libomp -g -std=gnu++17 -fcolor-diagnostics
   INCLUDES = -I/usr/local/include/openfhe -I/usr/local/include/openfhe/third-party/include -I/usr/local/include/openfhe/core -I/usr/local/include/openfhe/pke -I/usr/local/include/openfhe/binfhe
   OBJECT_DIR = CMakeFiles/KnnEncrypted.dir
@@ -98,7 +98,7 @@ build CMakeFiles/KnnEncrypted.dir/src/knn-encrypted.cpp.o: CXX_COMPILER__KnnEncr
 #############################################
 # Link the executable KnnEncrypted
 
-build KnnEncrypted: CXX_EXECUTABLE_LINKER__KnnEncrypted_Debug CMakeFiles/KnnEncrypted.dir/src/knn-encrypted.cpp.o | /usr/local/lib/libOPENFHEpke.so.1.2.0 /usr/local/lib/libOPENFHEbinfhe.so.1.2.0 /usr/local/lib/libOPENFHEcore.so.1.2.0
+build KnnEncrypted: CXX_EXECUTABLE_LINKER__KnnEncrypted_Debug CMakeFiles/KnnEncrypted.dir/src/HermesMl.cpp.o | /usr/local/lib/libOPENFHEpke.so.1.2.0 /usr/local/lib/libOPENFHEbinfhe.so.1.2.0 /usr/local/lib/libOPENFHEcore.so.1.2.0
   FLAGS = -Wall -Werror -O3  -DOPENFHE_VERSION=1.2.0  -Wno-unused-private-field -Wno-shift-op-parentheses -DMATHBACKEND=4 -fopenmp=libomp -g
   LINK_LIBRARIES = -Wl,-rpath,/usr/local/lib  /usr/local/lib/libOPENFHEpke.so.1.2.0  /usr/local/lib/libOPENFHEbinfhe.so.1.2.0  -fopenmp=libomp  /usr/local/lib/libOPENFHEcore.so.1.2.0  -fopenmp=libomp
   LINK_PATH = -L/usr/local/lib
