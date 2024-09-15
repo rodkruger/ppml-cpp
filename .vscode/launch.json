@@ -24,5 +24,26 @@
                 }
             ]
         },
+
+        {
+            "name": "run KnnEncrypted",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/KnnEncrypted",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "MIMode": "gdb",
+            "preLaunchTask": "buildCmake",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+
     ]
 }

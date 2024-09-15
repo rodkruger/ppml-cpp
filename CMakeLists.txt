@@ -59,3 +59,4 @@ endif()
 ### add_executable( test demo-simple-example.cpp )
 
 add_executable( Demo src/demo-simple-example.cpp )
+add_executable( KnnEncrypted src/knn-encrypted.cpp )

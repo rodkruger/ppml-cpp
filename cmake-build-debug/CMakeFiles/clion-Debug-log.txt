@@ -1,0 +1,10 @@
+/opt/clion-2024.2.1/bin/cmake/linux/x64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/opt/clion-2024.2.1/bin/ninja/linux/x64/ninja -G Ninja -S /home/rkruger/CLionProjects/ppml-cpp -B /home/rkruger/CLionProjects/ppml-cpp/cmake-build-debug
+-- FOUND PACKAGE OpenFHE
+-- OpenFHE Version: 1.2.0
+-- OpenFHE installed as shared libraries: ON
+-- OpenFHE include files location: /usr/local/include/openfhe
+-- OpenFHE lib files location: /usr/local/lib
+-- OpenFHE Native Backend size: 64
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/rkruger/CLionProjects/ppml-cpp/cmake-build-debug

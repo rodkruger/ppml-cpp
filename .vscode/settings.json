@@ -11,6 +11,8 @@
         // "/usr/local/include/openfhe/binfhe", // (optional) only needed if working with circuits
     ],
     "files.associations": {
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "ostream": "cpp",
+        "algorithm": "cpp"
     },
 }
