@@ -13,37 +13,44 @@ namespace HermesMl {
 
     class HEConfig {
     private:
-        int32_t modulus;
-        int32_t multiplicativeDepth;
+        int64_t modulus;
+        int64_t multiplicativeDepth;
         CryptoContext<DCRTPoly> cc;
         KeyPair<DCRTPoly> keys;
 
     public:
         HEConfig();
-        HEConfig(int32_t modulus, int32_t multiplicativeDepth);
-        std::vector<std::vector<Ciphertext<DCRTPoly>>> encrypt(const std::vector<std::vector<int32_t>>& data);
+
+        HEConfig(int64_t modulus, int64_t multiplicativeDepth);
+
+        CryptoContext<DCRTPoly> getCc() const;
+
+        KeyPair<DCRTPoly> getKeyPair() const;
+
+        std::vector<std::vector<Ciphertext<DCRTPoly>>> encrypt(const std::vector<std::vector<int64_t>>& data);
     };
 
 
     class KNeighboursClassifier {
     private:
-        int32_t k;
+        int64_t k;
+        HEConfig heConfig;
         std::vector<std::vector<Ciphertext<DCRTPoly>>> trainingData;
-        std::vector<int32_t> trainingLabels;
+        std::vector<int64_t> trainingLabels;
 
-        bigintdyn::ubint<unsigned long> manhattan(const std::vector<Ciphertext<DCRTPoly> >& point1,
-                                                  const std::vector<Ciphertext<DCRTPoly> >& point2);
+        Ciphertext<DCRTPoly> manhattan(const std::vector<Ciphertext<DCRTPoly> >& point1,
+                                       const std::vector<Ciphertext<DCRTPoly> >& point2);
 
     public:
-        explicit KNeighboursClassifier(int32_t k);
+        explicit KNeighboursClassifier(int64_t k, const HEConfig& heConfig);
 
-        bigintdyn::ubint<unsigned long> distance(const std::vector<Ciphertext<DCRTPoly> >& point1,
-                                                 const std::vector<Ciphertext<DCRTPoly> >& point2);
+        Ciphertext<DCRTPoly> distance(const std::vector<Ciphertext<DCRTPoly> >& point1,
+                                      const std::vector<Ciphertext<DCRTPoly> >& point2);
 
         void fit(const std::vector<std::vector<Ciphertext<DCRTPoly>>>& trainingData,
-                 const std::vector<int32_t>& trainingLabels);
+                 const std::vector<int64_t>& trainingLabels);
 
-        int32_t predict(const std::vector<std::vector<Ciphertext<DCRTPoly>>>& testingData);
+        int64_t predict(const std::vector<Ciphertext<DCRTPoly>>& testingData);
     };
 }
 

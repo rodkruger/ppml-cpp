@@ -9,9 +9,9 @@ using namespace lbcrypto;
 
 namespace HermesMl {
 
-    HEConfig::HEConfig() : modulus(65537), multiplicativeDepth(2) {}
+    HEConfig::HEConfig() : HEConfig(65537, 2) {}
 
-    HEConfig::HEConfig(int32_t modulus, int32_t multiplicativeDepth) {
+    HEConfig::HEConfig(int64_t modulus, int64_t multiplicativeDepth) {
         this->modulus = modulus;
         this->multiplicativeDepth = multiplicativeDepth;
 
@@ -69,17 +69,23 @@ namespace HermesMl {
         this->keys = this->cc->KeyGen();
         this->cc->EvalMultKeyGen(keys.secretKey);
         this->cc->EvalAtIndexKeyGen(keys.secretKey, {1, -1});
+        this->cc->EvalBootstrapKeyGen(keys.secretKey, this->modulus); // Generate bootstrapping keys
     }
 
-    std::vector<std::vector<Ciphertext<DCRTPoly> > > HEConfig::encrypt(const std::vector<std::vector<int32_t>>& data) {
-        auto encryptedData = std::vector<std::vector<Ciphertext<DCRTPoly> >>(data.size());
+    CryptoContext<DCRTPoly> HEConfig::getCc() const { return this->cc; }
+
+    KeyPair<DCRTPoly> HEConfig::getKeyPair() const { return this->keys; }
+
+    std::vector<std::vector<Ciphertext<DCRTPoly> > > HEConfig::encrypt(const std::vector<std::vector<int64_t>>& data) {
+        auto encryptedData = std::vector<std::vector<Ciphertext<DCRTPoly>>>();
 
         for (const auto &point : data) {
-            auto encryptedPoint = std::vector<Ciphertext<DCRTPoly>>(point.size());
+            auto encryptedPoint = std::vector<Ciphertext<DCRTPoly>>();
 
             for (const auto value : point) {
-                Plaintext plaintextPoint = this->cc->MakePackedPlaintext({value});
-                encryptedPoint.push_back(this->cc->Encrypt(this->keys.publicKey, plaintextPoint));
+                Plaintext plaintextValue = this->cc->MakePackedPlaintext({value});
+                Ciphertext<DCRTPoly> encryptedValue = this->cc->Encrypt(this->keys.publicKey, plaintextValue);
+                encryptedPoint.push_back(encryptedValue);
             }
 
             encryptedData.push_back(encryptedPoint);
@@ -88,11 +94,13 @@ namespace HermesMl {
         return encryptedData;
     }
 
-    KNeighboursClassifier::KNeighboursClassifier(int32_t k) : k(k) {}
+    KNeighboursClassifier::KNeighboursClassifier(int64_t k, const HEConfig& heConfig) : k(k), heConfig(heConfig) {}
 
-    bigintdyn::ubint<unsigned long> KNeighboursClassifier::manhattan(const std::vector<Ciphertext<DCRTPoly> >& point1,
+    Ciphertext<DCRTPoly> KNeighboursClassifier::manhattan(const std::vector<Ciphertext<DCRTPoly> >& point1,
                                                                      const std::vector<Ciphertext<DCRTPoly> >& point2) {
-        bigintdyn::ubint<unsigned long> distance = 0;
+
+        Plaintext plaintextZero = this->heConfig.getCc()->MakePackedPlaintext(std::vector<int64_t>{0});
+        Ciphertext<DCRTPoly> distance = this->heConfig.getCc()->Encrypt(this->heConfig.getKeyPair().publicKey, plaintextZero);
 
         for (size_t i = 0; i < point1.size(); ++i) {
             // Calculate the difference between the two coordinates
@@ -108,43 +116,51 @@ namespace HermesMl {
         return distance;
     }
 
-    bigintdyn::ubint<unsigned long> KNeighboursClassifier::distance(const std::vector<Ciphertext<DCRTPoly> >& point1,
+    Ciphertext<DCRTPoly> KNeighboursClassifier::distance(const std::vector<Ciphertext<DCRTPoly> >& point1,
                                                                     const std::vector<Ciphertext<DCRTPoly> >& point2) {
         return this->manhattan(point1, point2);
     }
 
     void KNeighboursClassifier::fit(const std::vector<std::vector<Ciphertext<DCRTPoly>>>& trainingData,
-                                    const std::vector<int>& trainingLabels) {
+             const std::vector<int64_t>& trainingLabels) {
         this->trainingData = trainingData;
         this->trainingLabels = trainingLabels;
     }
 
-    int32_t KNeighboursClassifier::predict(const std::vector<std::vector<Ciphertext<DCRTPoly>>>& testingData) {
+    int64_t KNeighboursClassifier::predict(const std::vector<Ciphertext<DCRTPoly>>& testingData) {
 
         // Step 1: Compute distances from the test point to all training points
-        size_t numTrainingPoints = testingData.size();
-        std::vector<bigintdyn::ubint<unsigned long>> distances;
+        size_t numTrainingPoints = trainingData.size();
+        std::vector<std::pair<Ciphertext<DCRTPoly>, int64_t>> distances;
 
         for (size_t i = 0; i < numTrainingPoints; ++i) {
-            auto distance = this->distance(this->trainingData[i], testingData[i]);
-            distances.push_back(distance);
+            auto distance = this->distance(this->trainingData[i], testingData);
+            distances.emplace_back(distance, this->trainingLabels[i]);
         }
 
-        // Step 2: Sort the distances
-        std::vector<size_t> indices(numTrainingPoints);
-        iota(indices.begin(), indices.end(), 0);
+        // Step 2: Sort the distances (may this sort needs to be implemented homomorphically!)
         sort(distances.begin(), distances.end());
 
-        // Step 3: Determine the majority label among the k-nearest neighbors
-        std::vector<int> label_count(2, 0); // Assuming binary classification (0 or 1)
+        // Step 3: Iterate over the k-nearest neighbors and count their labels
+        std::map<int64_t, int64_t> labelCount;
 
-        for (size_t i = 0; i < k; ++i) {
-            label_count[this->trainingLabels[indices[i]]]++; // Increment the count for the label of the ith nearest neighbor
+        for (int i = 0; i < k; ++i) {
+            int64_t label = distances[i].second;
+            labelCount[label]++;
         }
 
-        int predicted_label = (label_count[0] > label_count[1]) ? 0 : 1; // Majority vote
+        // Step 4: Find the label with the highest count (majority voting)
+        int64_t predictedLabel = -1;
+        int64_t maxCount = 0;
 
-        return predicted_label;
+        for (const auto& label : labelCount) {
+            if (label.second > maxCount) {
+                maxCount = label.second;
+                predictedLabel = label.first;
+            }
+        }
+
+        return predictedLabel;
     }
 }
 
@@ -152,18 +168,23 @@ int main() {
 
     HermesMl::HEConfig config = HermesMl::HEConfig();
 
-    std::vector<std::vector<int32_t>> trainingData = { {1, 2}, {3, 4}, {5, 6} };
-    std::vector<std::vector<int32_t>> testingData = { {2, 3} };
-    std::vector<int32_t> trainingLabels = { 0, 1, 0 };
+    std::vector<std::vector<int64_t>> trainingData = { {1, 2}, {3, 4}, {5, 6} };
+    std::vector<int64_t> trainingLabels = { 0, 1, 0 };
+
+    std::vector<std::vector<int64_t>> testingData = { {2, 3} };
 
     std::vector<std::vector<Ciphertext<DCRTPoly> > > encryptedTrainingData = config.encrypt(trainingData);
     std::vector<std::vector<Ciphertext<DCRTPoly> > > encryptedTestingData = config.encrypt(testingData);
 
-    HermesMl::KNeighboursClassifier model = HermesMl::KNeighboursClassifier(2);
+    HermesMl::KNeighboursClassifier model = HermesMl::KNeighboursClassifier(2, config );
     model.fit(encryptedTrainingData, trainingLabels);
-    model.predict(encryptedTestingData);
+    int64_t predictedLabel = model.predict(encryptedTestingData[0]);
 
+    std::cout << "Predicted label: " << predictedLabel << std::endl;
     std::cout << "Done!" << std::endl;
 
+    //TODO: put a larger dataset to test the algorithm
+    //TODO: check the need for bootstrapping
+    
     return 0;
 }
