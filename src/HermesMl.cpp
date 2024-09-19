@@ -1,9 +1,9 @@
+#include <iostream>
+#include <vector>
+
+#include "csv.h"
 #include "openfhe.h"
 #include "HermesMl.h"
-
-#include <vector>
-#include <iostream>
-#include <numeric>
 
 using namespace lbcrypto;
 
@@ -166,9 +166,51 @@ namespace HermesMl {
 
 int main() {
 
+    //-----------------------------------------------------------------------------------------------------------------
+    // Read wine database
+
+    std::vector<std::vector<double>> wineData;
+
+    io::CSVReader<14> in("../datasets/wine/wine.data");
+
+    int classLabel;
+    double alcohol, malicAcid, ash, alcalinityOfAsh, magnesium, totalPhenols, flavanoids,
+           nonflavonoidPhenols, proanthocyanins, colorIntensity, hue, odOfDilutedWines, proline;
+
+    while (in.read_row(classLabel, alcohol, malicAcid, ash, alcalinityOfAsh, magnesium,
+        totalPhenols, flavanoids, nonflavonoidPhenols, proanthocyanins, colorIntensity, hue,
+        odOfDilutedWines, proline)) {
+
+        std::vector<double> row = {alcohol, malicAcid, ash, alcalinityOfAsh, magnesium, totalPhenols,
+            flavanoids, nonflavonoidPhenols, proanthocyanins, colorIntensity, hue,
+            odOfDilutedWines, proline};
+
+        wineData.push_back(row);
+    }
+
+    //-----------------------------------------------------------------------------------------------------------------
+    // Split dataset in training and test. Holdout (70% training; 30% testing)
+
+    int64_t trainingLength = wineData.size() * 0.7;
+    int64_t testingLength = wineData.size() - trainingLength;
+
+    std::vector<std::vector<double>> trainingData = std::vector<std::vector<double>>();
+    std::vector<std::vector<double>> testingData = std::vector<std::vector<double>>();
+
+    trainingData.reserve(trainingLength);
+    testingData.reserve(testingLength);
+
+    std::copy(wineData.begin(), wineData.begin() + trainingLength, std::back_inserter(trainingData));
+    std::copy(wineData.begin() + trainingLength, wineData.end(), std::back_inserter(testingData));
+
+    std::cout << "Training length: " << trainingData.size() << std::endl;
+    std::cout << "Testing length: " << testingData.size() << std::endl;
+
+    return 0;
+
+    /**
     HermesMl::HEConfig config = HermesMl::HEConfig();
 
-    std::vector<std::vector<int64_t>> trainingData = { {1, 2}, {3, 4}, {5, 6} };
     std::vector<int64_t> trainingLabels = { 0, 1, 0 };
 
     std::vector<std::vector<int64_t>> testingData = { {2, 3} };
@@ -185,6 +227,7 @@ int main() {
 
     //TODO: put a larger dataset to test the algorithm
     //TODO: check the need for bootstrapping
-    
+
     return 0;
+    */
 }
