@@ -9,86 +9,145 @@ using namespace lbcrypto;
 
 namespace HermesMl {
 
-    HEConfig::HEConfig() : HEConfig(65537, 2) {}
+    HEConfig::HEConfig() : HEConfig(65537, 1, 59, 1024, 60) {}
 
-    HEConfig::HEConfig(int64_t modulus, int64_t multiplicativeDepth) {
-        this->modulus = modulus;
+    HEConfig::HEConfig(int64_t plaintextModulus, int64_t multiplicativeDepth, int64_t scaleModSize, int64_t batchSize, int64_t firstModSize) {
+        this->plaintextModulus = plaintextModulus;
         this->multiplicativeDepth = multiplicativeDepth;
+        this->scaleModSize = scaleModSize;
+        this->batchSize = batchSize;
+        this->firstModSize = firstModSize;
 
-        CCParams<CryptoContextBFVRNS> parameters;
+        CCParams<CryptoContextCKKSRNS> parameters;
 
         // - **Plaintext Modulus (p)**: Defines the range of plaintext values and ensures operations are performed
         // modulo p. A smaller p reduces noise but limits value range.
-        parameters.SetPlaintextModulus(this->modulus);
-
-        // - **Multiplicative Depth**: Specifies the maximum number of sequential homomorphic multiplications can be
-        // performed before the ciphertext becomes too noisy to decrypt. Higher depths allow more complex
-        // computations but require larger ciphertext moduli, increasing computational cost and memory usage.
-        parameters.SetMultiplicativeDepth(this->multiplicativeDepth);
+        // parameters.SetPlaintextModulus(this->plaintextModulus);
 
         /// - **Security Level**: Defines the desired level of cryptographic security (e.g., HEStd_128_classic).
         // This parameter determines the size of encryption parameters (such as key size and ciphertext modulus)
         // to ensure a given level of resistance to attacks. Higher security levels (e.g., 128, 192, 256 bits)
         // increase the computational cost but provide stronger encryption.
         parameters.SetSecurityLevel(HEStd_128_classic);
+        parameters.SetSecurityLevel(HEStd_NotSet);  // Not usable for production
+        parameters.SetRingDim(1 << 12); // Not usable for production
 
-        // - ** Max Relinearization Degree**: Specifies the maximum degree for relinearization in homomorphic
-        // operations. Relinearization is used to reduce the size and complexity of ciphertexts after multiplication.
-        // A higher degree allows for more complex multiplications but increases computational cost. This parameter
-        // helps manage the trade-off between ciphertext size and computational efficiency.
-        parameters.SetMaxRelinSkDeg(2);
+        // The scalingModSize parameter determines the bit-length of the scaling modulus in CKKS. It controls the
+        // precision of the encrypted floating-point numbers. A higher scalingModSize value improves precision but
+        // increases computational cost and ciphertext size. Setting an appropriate scalingModSize is important to
+        // balance precision and performance in homomorphic operations.
+        parameters.SetScalingModSize(this->scaleModSize);
+        parameters.SetScalingTechnique(FLEXIBLEAUTO);
 
-        // - ** Multiplication Technique **: Specifies the algorithm used for performing homomorphic multiplication.
-        // Options include BEHZ, HPS, and FLEXIBLE, each with trade-offs in terms of performance and noise growth.
-        // - BEHZ: Optimized for noise management and supports relinearization efficiently.
-        // - HPS: Focuses on minimizing computation time and memory usage.
-        // - FLEXIBLE: Balances noise growth and performance, adapting to various operation types.
-        parameters.SetMultiplicationTechnique(BEHZ);
+        // The secret key distribution for CKKS should either be SPARSE_TERNARY or UNIFORM_TERNARY. The SPARSE_TERNARY
+        // distribution was used in the original CKKS paper, but in this example, we use UNIFORM_TERNARY because this
+        // is included in the homomorphic encryption standard.
+        parameters.SetSecretKeyDist(UNIFORM_TERNARY);
 
-        // - ** Key Switch Technique **: Determines the method used for key switching, a process that transforms
-        // ciphertexts encrypted under one key to another key, typically after multiplication. Options include BV,
-        // GHS, and HYBRID, each with trade-offs in efficiency and memory usage.
-        // - BV: Brakerski-Vaikuntanathan method, reduces computational complexity but has higher noise growth.
-        // - GHS: Gentry-Halevi-Smart method, focuses on minimizing noise at the cost of performance.
-        // - HYBRID: Combines the advantages of BV and GHS for balanced performance and noise management.
-        parameters.SetKeySwitchTechnique(BV);
+        // SetFirstModSize: This function sets the size (in bits) of the first modulus in the modulus chain for
+        // DCRTPoly. The first modulus plays a critical role in controlling both precision and noise growth in
+        // homomorphic encryption schemes, like CKKS. A larger first modulus allows for higher precision and supports
+        // more homomorphic operations before noise becomes problematic, but it also increases computational complexity
+        // and the size of ciphertexts. Selecting an appropriate first modulus size is crucial for balancing
+        // performance with the desired level of precision and the number of operations the ciphertext can undergo
+        // before decryption fails due to noise growth.
+        parameters.SetFirstModSize(firstModSize);
 
-        // - ** Ring Dimension **: Specifies the dimension of the polynomial ring used in the encryption scheme,
-        // typically as a power of 2. This parameter directly affects the security, noise growth, and performance
-        // of homomorphic operations. A larger ring dimension provides higher security and allows more complex
-        // computations but increases computational cost and memory usage. The choice of ringDim must balance
-        // between security and performance.
-        parameters.SetRingDim(8192);
+        // - **Multiplicative Depth**: Specifies the maximum number of sequential homomorphic multiplications can be
+        // performed before the ciphertext becomes too noisy to decrypt. Higher depths allow more complex
+        // computations but require larger ciphertext moduli, increasing computational cost and memory usage.
+        std::vector<uint32_t> levelBudget = {4, 4};
+        uint32_t levelsAvailableAfterBootstrap = 10;
+        this->multiplicativeDepth = levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, parameters.GetSecretKeyDist());
+        parameters.SetMultiplicativeDepth(this->multiplicativeDepth);
 
         this->cc = GenCryptoContext(parameters);
+
+        // Enable Public Key Encryption (PKE) functionality in the crypto context. This allows the context to support
+        // basic encryption, decryption, and key generation operations.
         this->cc->Enable(PKE);
+
+        // Enable key switching functionality in the crypto context. Key switching allows ciphertexts encrypted under
+        // one key to be transformed into ciphertexts encrypted under another key. It's essential for advanced
+        // homomorphic operations like relinearization after multiplication or vector rotation.
         this->cc->Enable(KEYSWITCH);
+
+        // Enable Leveled Homomorphic Encryption (LEVELEDSHE) functionality. This enables the crypto context to
+        // support a fixed number of homomorphic operations (e.g., additions and multiplications) without requiring
+        // bootstrapping. It's useful when you know the maximum depth of computations required in advance, optimizing
+        // performance by avoiding the need for bootstrapping.
         this->cc->Enable(LEVELEDSHE);
+
+        // Enable Advanced Somewhat Homomorphic Encryption (ADVANCEDSHE) functionality in the crypto context.
+        // This allows for more advanced homomorphic operations, such as rotations and more complex multiplications.
+        // These operations typically require additional keys (e.g., rotation keys) and enable more sophisticated
+        // computations on encrypted data, like matrix-vector multiplications and convolutions.
+        this->cc->Enable(ADVANCEDSHE);
+
+        // Enable Fully Homomorphic Encryption (FHE) functionality in the crypto context. This allows advanced
+        // operations such as bootstrapping, which refreshes ciphertexts and reduces accumulated noise, enabling
+        // an unlimited number of operations on encrypted data. Bootstrapping is required for deep computations where
+        // the noise level in ciphertexts needs to be reset after multiple homomorphic operations.
+        this->cc->Enable(FHE);
+
+        // EvalBootstrapSetup: This function sets up the parameters required for bootstrapping in CKKS or similar FHE
+        // schemes. Bootstrapping is used to refresh ciphertexts by reducing accumulated noise, enabling further
+        // homomorphic operations without decryption. The setup involves configuring key parameters such as the number
+        // of levels, scaling factors, and the number of slots (data elements) to be supported during the bootstrap.
+        // Proper configuration is crucial to ensure that bootstrapping can handle the desired precision, data size,
+        // and the number of operations, while maintaining efficiency. Misconfiguration may lead to ineffective noise
+        // reduction or high computational costs during bootstrapping, so it should be carefully tuned based on the
+        // application’s needs.
+        this->cc->EvalBootstrapSetup(levelBudget);
 
         // Key generation
         this->keys = this->cc->KeyGen();
+
+        // EvalMultKeyGen generates the evaluation (relinearization) keys required for performing homomorphic
+        // ciphertext-ciphertext multiplication. After multiplying two ciphertexts, the resulting ciphertext has a
+        // higher degree, which increases computational complexity and noise. The generated evaluation keys allow
+        // relinearization, reducing the degree of the ciphertext back to its original form, ensuring efficient and
+        // manageable further homomorphic operations.
         this->cc->EvalMultKeyGen(keys.secretKey);
-        this->cc->EvalAtIndexKeyGen(keys.secretKey, {1, -1});
-        this->cc->EvalBootstrapKeyGen(keys.secretKey, this->modulus); // Generate bootstrapping keys
+
+        // Generate the evaluation (summation) keys needed for homomorphic sum operations. These keys allow for the
+        // efficient summation of elements in packed ciphertexts, enabling operations such as computing the sum of a
+        // vector of encrypted values. The summation keys are necessary for performing homomorphic summation across
+        // slots in SIMD (Single Instruction, Multiple Data) packed ciphertexts.
+        this->cc->EvalSumKeyGen(keys.secretKey);
+
+        // EvalAtIndexKeyGen generates evaluation keys for rotating the elements of an encrypted vector. The rotation
+        // indices specify by how many positions the vector should be shifted (positive for left rotation, negative
+        // for right rotation). These rotation keys enable homomorphic operations that require shifting data, such as
+        // convolutions or dot products, to be applied directly on the encrypted data.
+        // this->cc->EvalAtIndexKeyGen(keys.secretKey, {1, -1});
+
+        // EvalBootstrapKeyGen generates the bootstrapping keys required to perform the bootstrapping process, which
+        // refreshes a ciphertext by reducing its noise. This allows for continued homomorphic operations on the
+        // encrypted data without the ciphertext becoming too noisy to decrypt correctly. It is essential when
+        // performing many operations on encrypted data to maintain accuracy.
+        usint ringDim = this->cc->GetRingDimension();
+        usint numSlots = ringDim / 2;   // This is the maximum number of slots that can be used for full packing.
+        this->cc->EvalBootstrapKeyGen(keys.secretKey, numSlots);
     }
 
     CryptoContext<DCRTPoly> HEConfig::getCc() const { return this->cc; }
 
     KeyPair<DCRTPoly> HEConfig::getKeyPair() const { return this->keys; }
 
-    std::vector<std::vector<Ciphertext<DCRTPoly> > > HEConfig::encrypt(const std::vector<std::vector<int64_t>>& data) {
+    std::vector<std::vector<Ciphertext<DCRTPoly>>> HEConfig::encrypt(const std::vector<std::vector<double>>& data) {
         auto encryptedData = std::vector<std::vector<Ciphertext<DCRTPoly>>>();
 
-        for (const auto &point : data) {
-            auto encryptedPoint = std::vector<Ciphertext<DCRTPoly>>();
+        for (const auto &row : data) {
+            auto encryptedRow = std::vector<Ciphertext<DCRTPoly>>();
 
-            for (const auto value : point) {
-                Plaintext plaintextValue = this->cc->MakePackedPlaintext({value});
+            for (const auto point : row) {
+                Plaintext plaintextValue = this->cc->MakeCKKSPackedPlaintext(std::vector{point});
                 Ciphertext<DCRTPoly> encryptedValue = this->cc->Encrypt(this->keys.publicKey, plaintextValue);
-                encryptedPoint.push_back(encryptedValue);
+                encryptedRow.push_back(encryptedValue);
             }
 
-            encryptedData.push_back(encryptedPoint);
+            encryptedData.push_back(encryptedRow);
         }
 
         return encryptedData;
@@ -171,11 +230,11 @@ int main() {
 
     std::vector<std::vector<double>> wineData;
 
-    io::CSVReader<14> in("../datasets/wine/wine.data");
-
     int classLabel;
     double alcohol, malicAcid, ash, alcalinityOfAsh, magnesium, totalPhenols, flavanoids,
            nonflavonoidPhenols, proanthocyanins, colorIntensity, hue, odOfDilutedWines, proline;
+
+    io::CSVReader<14> in("../datasets/wine/wine.data");
 
     while (in.read_row(classLabel, alcohol, malicAcid, ash, alcalinityOfAsh, magnesium,
         totalPhenols, flavanoids, nonflavonoidPhenols, proanthocyanins, colorIntensity, hue,
@@ -189,7 +248,7 @@ int main() {
     }
 
     //-----------------------------------------------------------------------------------------------------------------
-    // Split dataset in training and test. Holdout (70% training; 30% testing)
+    // Split dataset in training and testing. Holdout (70% training; 30% testing)
 
     int64_t trainingLength = wineData.size() * 0.7;
     int64_t testingLength = wineData.size() - trainingLength;
@@ -206,11 +265,50 @@ int main() {
     std::cout << "Training length: " << trainingData.size() << std::endl;
     std::cout << "Testing length: " << testingData.size() << std::endl;
 
-    return 0;
+    //-----------------------------------------------------------------------------------------------------------------
 
-    /**
     HermesMl::HEConfig config = HermesMl::HEConfig();
 
+    auto encryptedTrainingData = config.encrypt(trainingData);
+    auto cc = config.getCc();
+    auto keyPair = config.getKeyPair();
+
+    double sum;
+
+    sum = 0.0;
+    for (const auto& row : trainingData) {
+        sum += row[0];
+        sum *= 1.05;
+    }
+
+    std::cout << "Sum of alcohol: " << sum << std::endl;
+
+    Ciphertext<DCRTPoly> sumCiphertext = encryptedTrainingData[0][0];
+
+    Plaintext plaintext = cc->MakeCKKSPackedPlaintext(std::vector{1.05});
+    Ciphertext<DCRTPoly> scalingFactor = cc->Encrypt(keyPair.publicKey, plaintext);
+
+    for (size_t i = 1; i < encryptedTrainingData.size(); ++i) {
+        sumCiphertext = cc->EvalAdd(sumCiphertext, encryptedTrainingData[i][0]);
+        sumCiphertext = cc->EvalBootstrap(sumCiphertext);
+        // std::cout << "Remaining levels: " << sumCiphertext->GetLevel() << std::endl;
+
+        sumCiphertext = cc->EvalMult(sumCiphertext, scalingFactor);
+        sumCiphertext = cc->EvalBootstrap(sumCiphertext);
+        // std::cout << "Remaining levels: " << sumCiphertext->GetLevel() << std::endl;
+    }
+
+    cc->Decrypt(keyPair.secretKey, sumCiphertext, &plaintext);
+    auto decryptedValues = plaintext->GetCKKSPackedValue();
+
+    std::cout << "Homomorphic sum of alcohol: " << decryptedValues[0].real() << std::endl;
+
+    return 0;
+
+    //TODO: put a larger dataset to test the algorithm
+    //TODO: check the need for bootstrapping
+
+    /**
     std::vector<int64_t> trainingLabels = { 0, 1, 0 };
 
     std::vector<std::vector<int64_t>> testingData = { {2, 3} };
@@ -224,9 +322,6 @@ int main() {
 
     std::cout << "Predicted label: " << predictedLabel << std::endl;
     std::cout << "Done!" << std::endl;
-
-    //TODO: put a larger dataset to test the algorithm
-    //TODO: check the need for bootstrapping
 
     return 0;
     */

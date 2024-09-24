@@ -13,21 +13,24 @@ namespace HermesMl {
 
     class HEConfig {
     private:
-        int64_t modulus;
+        int64_t plaintextModulus;
         int64_t multiplicativeDepth;
+        int64_t scaleModSize;
+        int64_t batchSize;
+        int64_t firstModSize;
         CryptoContext<DCRTPoly> cc;
         KeyPair<DCRTPoly> keys;
 
     public:
         HEConfig();
 
-        HEConfig(int64_t modulus, int64_t multiplicativeDepth);
+        HEConfig(int64_t modulus, int64_t multiplicativeDepth, int64_t scaleModSize, int64_t batchSize, int64_t firstModSize);
 
         CryptoContext<DCRTPoly> getCc() const;
 
         KeyPair<DCRTPoly> getKeyPair() const;
 
-        std::vector<std::vector<Ciphertext<DCRTPoly>>> encrypt(const std::vector<std::vector<int64_t>>& data);
+        std::vector<std::vector<Ciphertext<DCRTPoly>>> encrypt(const std::vector<std::vector<double>>& data);
     };
 
 
