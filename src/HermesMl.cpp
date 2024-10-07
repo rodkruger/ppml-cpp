@@ -9,49 +9,33 @@ using namespace lbcrypto;
 
 namespace HermesMl {
 
-    HEConfig::HEConfig() : HEConfig(65537, 1, 59, 1024, 60) {}
+    // 2622173311
+
+    // HEConfig::HEConfig() : HEConfig(65537, 1, 59, 1024, 60) {}
+
+    HEConfig::HEConfig() : HEConfig(2622173311, 20, 30, 8192, 60) {}
 
     HEConfig::HEConfig(int64_t plaintextModulus, int64_t multiplicativeDepth, int64_t scaleModSize, int64_t batchSize, int64_t firstModSize) {
-        this->plaintextModulus = plaintextModulus;
+        // this->plaintextModulus = plaintextModulus;       // Not used in CKKS
         this->multiplicativeDepth = multiplicativeDepth;
         this->scaleModSize = scaleModSize;
         this->batchSize = batchSize;
-        this->firstModSize = firstModSize;
+        // this->firstModSize = firstModSize;               // Not used in CKKS
 
         CCParams<CryptoContextCKKSRNS> parameters;
-
-        // - **Plaintext Modulus (p)**: Defines the range of plaintext values and ensures operations are performed
-        // modulo p. A smaller p reduces noise but limits value range.
-        // parameters.SetPlaintextModulus(this->plaintextModulus);
 
         /// - **Security Level**: Defines the desired level of cryptographic security (e.g., HEStd_128_classic).
         // This parameter determines the size of encryption parameters (such as key size and ciphertext modulus)
         // to ensure a given level of resistance to attacks. Higher security levels (e.g., 128, 192, 256 bits)
         // increase the computational cost but provide stronger encryption.
         parameters.SetSecurityLevel(HEStd_128_classic);
-        parameters.SetSecurityLevel(HEStd_NotSet);  // Not usable for production
-        parameters.SetRingDim(1 << 12); // Not usable for production
 
         // The scalingModSize parameter determines the bit-length of the scaling modulus in CKKS. It controls the
         // precision of the encrypted floating-point numbers. A higher scalingModSize value improves precision but
         // increases computational cost and ciphertext size. Setting an appropriate scalingModSize is important to
         // balance precision and performance in homomorphic operations.
         parameters.SetScalingModSize(this->scaleModSize);
-        parameters.SetScalingTechnique(FLEXIBLEAUTO);
-
-        // The secret key distribution for CKKS should either be SPARSE_TERNARY or UNIFORM_TERNARY. The SPARSE_TERNARY
-        // distribution was used in the original CKKS paper, but in this example, we use UNIFORM_TERNARY because this
-        // is included in the homomorphic encryption standard.
-        parameters.SetSecretKeyDist(UNIFORM_TERNARY);
-
-        // SetFirstModSize: This function sets the size (in bits) of the first modulus in the modulus chain for
-        // DCRTPoly. The first modulus plays a critical role in controlling both precision and noise growth in
-        // homomorphic encryption schemes, like CKKS. A larger first modulus allows for higher precision and supports
-        // more homomorphic operations before noise becomes problematic, but it also increases computational complexity
-        // and the size of ciphertexts. Selecting an appropriate first modulus size is crucial for balancing
-        // performance with the desired level of precision and the number of operations the ciphertext can undergo
-        // before decryption fails due to noise growth.
-        parameters.SetFirstModSize(firstModSize);
+        //parameters.SetScalingTechnique(FLEXIBLEAUTO);
 
         // - **Multiplicative Depth**: Specifies the maximum number of sequential homomorphic multiplications can be
         // performed before the ciphertext becomes too noisy to decrypt. Higher depths allow more complex
@@ -267,62 +251,52 @@ int main() {
 
     //-----------------------------------------------------------------------------------------------------------------
 
-    HermesMl::HEConfig config = HermesMl::HEConfig();
+    std::cout << "Calculations in plaintext" << std::endl;
 
-    auto encryptedTrainingData = config.encrypt(trainingData);
-    auto cc = config.getCc();
-    auto keyPair = config.getKeyPair();
+    // Executed in plaintext
+    std::vector<double> alcoholColumn = std::vector<double>();
+    std::vector<double> acidMalicColumn = std::vector<double>();
+    double sum = 0.0;
 
-    double sum;
-
-    sum = 0.0;
     for (const auto& row : trainingData) {
-        sum += row[0];
-        sum *= 1.05;
+        auto alcoholValue = row[0];
+        auto acidMalicValue = row[1];
+        auto value = alcoholValue * acidMalicValue;
+
+        sum += value;
+
+        alcoholColumn.push_back(alcoholValue);
+        acidMalicColumn.push_back(acidMalicValue);
     }
 
-    std::cout << "Sum of alcohol: " << sum << std::endl;
+    std::cout << "Result: " << sum << std::endl;
 
-    Ciphertext<DCRTPoly> sumCiphertext = encryptedTrainingData[0][0];
+    //-----------------------------------------------------------------------------------------------------------------
 
-    Plaintext plaintext = cc->MakeCKKSPackedPlaintext(std::vector{1.05});
-    Ciphertext<DCRTPoly> scalingFactor = cc->Encrypt(keyPair.publicKey, plaintext);
+    // Executed the sum in ciphered text, using batches
+    std::cout << "Calculations in ciphertext using CKKS" << std::endl;
 
-    for (size_t i = 1; i < encryptedTrainingData.size(); ++i) {
-        sumCiphertext = cc->EvalAdd(sumCiphertext, encryptedTrainingData[i][0]);
-        sumCiphertext = cc->EvalBootstrap(sumCiphertext);
-        // std::cout << "Remaining levels: " << sumCiphertext->GetLevel() << std::endl;
+    HermesMl::HEConfig config = HermesMl::HEConfig();
+    auto keyPair = config.getKeyPair();
+    auto cc = config.getCc();
 
-        sumCiphertext = cc->EvalMult(sumCiphertext, scalingFactor);
-        sumCiphertext = cc->EvalBootstrap(sumCiphertext);
-        // std::cout << "Remaining levels: " << sumCiphertext->GetLevel() << std::endl;
-    }
+    auto cipherAlcoholColumn = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(alcoholColumn));
+    auto cipherAcidMalicColumn = cc->Encrypt(keyPair.publicKey, cc->MakeCKKSPackedPlaintext(acidMalicColumn));
+    auto ciphertextProduct = cc->EvalMult(cipherAlcoholColumn, cipherAcidMalicColumn);
+    auto ciphertextSum = cc->EvalSum(ciphertextProduct, alcoholColumn.size());
 
-    cc->Decrypt(keyPair.secretKey, sumCiphertext, &plaintext);
-    auto decryptedValues = plaintext->GetCKKSPackedValue();
+    // Step 7: Apply bootstrapping to refresh the ciphertext (reduce noise)
+    // ciphertextSum = cc->EvalBootstrap(ciphertextSum);
 
-    std::cout << "Homomorphic sum of alcohol: " << decryptedValues[0].real() << std::endl;
+    // Step 8: Decrypt the result and display the output
+    Plaintext result;
+    cc->Decrypt(keyPair.secretKey, ciphertextSum, &result);
+    result->SetLength(1);  // Since we expect a single summed value
 
-    return 0;
+    // Display the result (the sum of all values in the first column)
+    std::cout << "Result: " << result << std::endl;
 
-    //TODO: put a larger dataset to test the algorithm
-    //TODO: check the need for bootstrapping
+    // Take care! Multiplicative depth and boostrapping is about nested calculations!
 
-    /**
-    std::vector<int64_t> trainingLabels = { 0, 1, 0 };
-
-    std::vector<std::vector<int64_t>> testingData = { {2, 3} };
-
-    std::vector<std::vector<Ciphertext<DCRTPoly> > > encryptedTrainingData = config.encrypt(trainingData);
-    std::vector<std::vector<Ciphertext<DCRTPoly> > > encryptedTestingData = config.encrypt(testingData);
-
-    HermesMl::KNeighboursClassifier model = HermesMl::KNeighboursClassifier(2, config );
-    model.fit(encryptedTrainingData, trainingLabels);
-    int64_t predictedLabel = model.predict(encryptedTestingData[0]);
-
-    std::cout << "Predicted label: " << predictedLabel << std::endl;
-    std::cout << "Done!" << std::endl;
-
-    return 0;
-    */
+    //-----------------------------------------------------------------------------------------------------------------
 }
