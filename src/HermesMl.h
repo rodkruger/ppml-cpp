@@ -12,16 +12,16 @@ using namespace lbcrypto;
 namespace HermesMl {
 
     class HEConfig {
-    private:
+    public:
         int64_t plaintextModulus;
         int64_t multiplicativeDepth;
         int64_t scaleModSize;
         int64_t batchSize;
         int64_t firstModSize;
+        usint numSlots;
         CryptoContext<DCRTPoly> cc;
         KeyPair<DCRTPoly> keys;
 
-    public:
         HEConfig();
 
         HEConfig(int64_t modulus, int64_t multiplicativeDepth, int64_t scaleModSize, int64_t batchSize, int64_t firstModSize);
@@ -30,7 +30,9 @@ namespace HermesMl {
 
         KeyPair<DCRTPoly> getKeyPair() const;
 
-        std::vector<std::vector<Ciphertext<DCRTPoly>>> encrypt(const std::vector<std::vector<double>>& data);
+        std::vector<Ciphertext<DCRTPoly>> encrypt(const std::vector<std::vector<double>>& data);
+
+        void normalize(std::vector<std::vector<double>>& data);
     };
 
 
@@ -38,22 +40,28 @@ namespace HermesMl {
     private:
         int64_t k;
         HEConfig heConfig;
-        std::vector<std::vector<Ciphertext<DCRTPoly>>> trainingData;
+        CryptoContext<DCRTPoly> cc;
+        PublicKey<DCRTPoly> publicKey;
+        Ciphertext<DCRTPoly> cipheredOne;
+
+        std::vector<Ciphertext<DCRTPoly>> trainingData;
         std::vector<int64_t> trainingLabels;
 
-        Ciphertext<DCRTPoly> manhattan(const std::vector<Ciphertext<DCRTPoly> >& point1,
-                                       const std::vector<Ciphertext<DCRTPoly> >& point2);
+        Ciphertext<DCRTPoly> approximateSqrt(Ciphertext<DCRTPoly> input);
+
+        Ciphertext<DCRTPoly> distance(const Ciphertext<DCRTPoly>& point1,
+                                      const Ciphertext<DCRTPoly>& point2);
 
     public:
         explicit KNeighboursClassifier(int64_t k, const HEConfig& heConfig);
 
-        Ciphertext<DCRTPoly> distance(const std::vector<Ciphertext<DCRTPoly> >& point1,
-                                      const std::vector<Ciphertext<DCRTPoly> >& point2);
+        Ciphertext<DCRTPoly> manhattan(const Ciphertext<DCRTPoly>& point1,
+                                       const Ciphertext<DCRTPoly>& point2);
 
-        void fit(const std::vector<std::vector<Ciphertext<DCRTPoly>>>& trainingData,
+        void fit(const std::vector<Ciphertext<DCRTPoly>>& encryptedTrainingData,
                  const std::vector<int64_t>& trainingLabels);
 
-        int64_t predict(const std::vector<Ciphertext<DCRTPoly>>& testingData);
+        int64_t predict(const Ciphertext<DCRTPoly>& encryptedTestingData);
     };
 }
 
