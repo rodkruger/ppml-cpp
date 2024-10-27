@@ -63,6 +63,25 @@ namespace hermesml {
         int32_t Predict(const Ciphertext<DCRTPoly>& dataPoint) override;
     };
 
+    class LogisticRegressionEncrypted : EncryptedObject, MlModel {
+    private:
+        HEContext ctx;
+        Calculus calculus;
+        CryptoContext<DCRTPoly> cc;
+        std::vector<Ciphertext<DCRTPoly>> trainingData;
+        std::vector<int32_t> trainingLabels;
+
+        Ciphertext<DCRTPoly> sigmoid(const Ciphertext<DCRTPoly>& z);
+
+    public:
+        explicit LogisticRegressionEncrypted(const HEContext &ctx);
+
+        void Fit(const std::vector<Ciphertext<DCRTPoly>>& trainingData,
+                 const std::vector<int32_t>& trainingLabels) override;
+
+        int32_t Predict(const Ciphertext<DCRTPoly>& dataPoint) override;
+    };
+
 }
 
 #endif //MODEL_H
