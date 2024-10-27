@@ -64,16 +64,16 @@ namespace hermesml {
         // increases computational cost and ciphertext size. Setting an appropriate scalingModSize is important to
         // balance precision and performance in homomorphic operations.
         parameters.SetScalingModSize(59);
-        parameters.SetScalingTechnique(FLEXIBLEAUTO);
-        //parameters.SetFirstModSize(firstMod);
 
         // - **Multiplicative Depth**: Specifies the maximum number of sequential homomorphic multiplications can be
         // performed before the ciphertext becomes too noisy to decrypt. Higher depths allow more complex
         // computations but require larger ciphertext moduli, increasing computational cost and memory usage.
-        std::vector<uint32_t> levelBudget = {4, 4};
-        uint32_t levelsAvailableAfterBootstrap = 10;
-        auto multiplicativeDepth = levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, parameters.GetSecretKeyDist());
+        // std::vector<uint32_t> levelBudget = {4, 4};
+        // uint32_t levelsAvailableAfterBootstrap = 10;
+        // auto multiplicativeDepth = levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, parameters.GetSecretKeyDist());
+        auto multiplicativeDepth = 10;
         parameters.SetMultiplicativeDepth(multiplicativeDepth);
+        parameters.SetBatchSize(16);
 
         auto cc = GenCryptoContext(parameters);
 
@@ -102,7 +102,7 @@ namespace hermesml {
         // operations such as bootstrapping, which refreshes ciphertexts and reduces accumulated noise, enabling
         // an unlimited number of operations on encrypted data. Bootstrapping is required for deep computations where
         // the noise level in ciphertexts needs to be reset after multiple homomorphic operations.
-        cc->Enable(FHE);
+        // cc->Enable(FHE);
 
         // EvalBootstrapSetup: This function sets up the parameters required for bootstrapping in CKKS or similar FHE
         // schemes. Bootstrapping is used to refresh ciphertexts by reducing accumulated noise, enabling further
@@ -112,7 +112,7 @@ namespace hermesml {
         // and the number of operations, while maintaining efficiency. Misconfiguration may lead to ineffective noise
         // reduction or high computational costs during bootstrapping, so it should be carefully tuned based on the
         // application’s needs.
-        cc->EvalBootstrapSetup(levelBudget);
+        // cc->EvalBootstrapSetup(levelBudget);
 
         // Key generation
         auto keys = cc->KeyGen();
@@ -128,22 +128,23 @@ namespace hermesml {
         // efficient summation of elements in packed ciphertexts, enabling operations such as computing the sum of a
         // vector of encrypted values. The summation keys are necessary for performing homomorphic summation across
         // slots in SIMD (Single Instruction, Multiple Data) packed ciphertexts.
-        cc->EvalSumKeyGen(keys.secretKey);
+        // cc->EvalSumKeyGen(keys.secretKey);
 
         // EvalBootstrapKeyGen generates the bootstrapping keys required to perform the bootstrapping process, which
         // refreshes a ciphertext by reducing its noise. This allows for continued homomorphic operations on the
         // encrypted data without the ciphertext becoming too noisy to decrypt correctly. It is essential when
         // performing many operations on encrypted data to maintain accuracy.
-        auto numSlots = cc->GetRingDimension() / 2;     // This is the maximum number of slots that can be used for full packing.
-        cc->EvalBootstrapKeyGen(keys.secretKey, numSlots);
+        // auto numSlots = cc->GetRingDimension() / 2;     // This is the maximum number of slots that can be used for full packing.
+        // cc->EvalBootstrapKeyGen(keys.secretKey, numSlots);
 
         // Build Context
         auto ctx = HEContext();
 
         ctx.SetCc(cc);
         ctx.SetMultiplicativeDepth(multiplicativeDepth);
-        ctx.SetNumSlots(numSlots);
+        // ctx.SetNumSlots(numSlots);
         ctx.SetPublicKey(keys.publicKey);
+        ctx.SetPrivateKey(keys.secretKey);
 
         return ctx;
     }

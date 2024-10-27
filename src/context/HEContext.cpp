@@ -22,6 +22,14 @@ namespace hermesml {
         this->publicKey = publicKey;
     }
 
+    PrivateKey<DCRTPoly> HEContext::GetPrivateKey() {
+        return this->privateKey;
+    }
+
+    void HEContext::SetPrivateKey(const PrivateKey<DCRTPoly>& privateKey) {
+        this->privateKey = privateKey;
+    }
+
     uint32_t HEContext::GetMultiplicativeDepth() const {
         return this->multiplicativeDepth;
     }

@@ -15,6 +15,9 @@ namespace hermesml {
         PublicKey<DCRTPoly> GetPublicKey();
         void SetPublicKey(const PublicKey<DCRTPoly>& publicKey);
 
+        PrivateKey<DCRTPoly> GetPrivateKey();
+        void SetPrivateKey(const PrivateKey<DCRTPoly>& privateKey);
+
         uint32_t GetMultiplicativeDepth() const;
         void SetMultiplicativeDepth(uint32_t multiplicativeDepth);
 
@@ -24,6 +27,7 @@ namespace hermesml {
     private:
         CryptoContext<DCRTPoly> cc;
         PublicKey<DCRTPoly> publicKey;
+        PrivateKey<DCRTPoly> privateKey;
         uint32_t multiplicativeDepth = 0;
         uint32_t numSlots = 0;
 
