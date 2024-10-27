@@ -1,4 +1,0 @@
-/home/rkruger/CLionProjects/ppml-cpp/cmake-build-debug/CMakeFiles/Demo.dir
-/home/rkruger/CLionProjects/ppml-cpp/cmake-build-debug/CMakeFiles/KnnEncrypted.dir
-/home/rkruger/CLionProjects/ppml-cpp/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/rkruger/CLionProjects/ppml-cpp/cmake-build-debug/CMakeFiles/rebuild_cache.dir
