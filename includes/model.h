@@ -11,7 +11,17 @@
 
 namespace hermesml {
 
-    class BgvKnnEncrypted : EncryptedObject {
+    class MlModel {
+    public:
+        virtual void Fit(const std::vector<Ciphertext<DCRTPoly>>& trainingData,
+                 const std::vector<int32_t>& trainingLabels);
+
+        virtual int32_t Predict(const Ciphertext<DCRTPoly>& dataPoint);
+
+        virtual ~MlModel();
+     };
+
+    class BgvKnnEncrypted : EncryptedObject, MlModel {
     private:
         HEContext ctx;
         CalculusQuant calculus;
@@ -24,19 +34,15 @@ namespace hermesml {
                                       const Ciphertext<DCRTPoly>& point2);
 
     public:
-
-        BgvKnnEncrypted(int32_t k, HEContext &ctx);
-
-        void Init();
+        BgvKnnEncrypted(int32_t k, const HEContext &ctx);
 
         void Fit(const std::vector<Ciphertext<DCRTPoly>>& trainingData,
-                 const std::vector<int32_t>& trainingLabels);
+                 const std::vector<int32_t>& trainingLabels) override;
 
-        int32_t Predict(const Ciphertext<DCRTPoly>& dataPoint);
-
+        int32_t Predict(const Ciphertext<DCRTPoly>& dataPoint) override;
     };
 
-    class CkksKnnEncrypted : EncryptedObject {
+    class CkksKnnEncrypted : EncryptedObject, MlModel {
     private:
         HEContext ctx;
         Calculus calculus;
@@ -45,29 +51,17 @@ namespace hermesml {
         std::vector<Ciphertext<DCRTPoly>> trainingData;
         std::vector<int32_t> trainingLabels;
 
-        Ciphertext<DCRTPoly> Euclidean(const Ciphertext<DCRTPoly>& point1,
-                                       const Ciphertext<DCRTPoly>& point2);
-
         Ciphertext<DCRTPoly> Distance(const Ciphertext<DCRTPoly>& point1,
                                       const Ciphertext<DCRTPoly>& point2);
 
     public:
-
-        CkksKnnEncrypted(int32_t k, HEContext &ctx);
-
-        void Init();
+        CkksKnnEncrypted(int32_t k, const HEContext &ctx);
 
         void Fit(const std::vector<Ciphertext<DCRTPoly>>& trainingData,
-                 const std::vector<int32_t>& trainingLabels);
+                 const std::vector<int32_t>& trainingLabels) override;
 
-        int32_t Predict(const Ciphertext<DCRTPoly>& dataPoint);
-
+        int32_t Predict(const Ciphertext<DCRTPoly>& dataPoint) override;
     };
-
-    /*
-    HEConfig::HEConfig() : HEConfig(2622173311, 20, 30, 8192, 60) {}
-    HEConfig::HEConfig(int64_t plaintextModulus, int64_t multiplicativeDepth, int64_t scaleModSize, int64_t batchSize, int64_t firstModSize) {}
-    */
 
 }
 

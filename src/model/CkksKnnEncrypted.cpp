@@ -4,7 +4,7 @@ using namespace lbcrypto;
 
 namespace hermesml {
 
-    CkksKnnEncrypted::CkksKnnEncrypted(int32_t k, HEContext& ctx) : EncryptedObject(ctx), calculus(Calculus(ctx)) {
+    CkksKnnEncrypted::CkksKnnEncrypted(const int32_t k, const HEContext& ctx) : EncryptedObject(ctx), calculus(Calculus(ctx)) {
         this->k = k;
         this->ctx = ctx;
     }

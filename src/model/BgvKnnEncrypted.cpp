@@ -8,12 +8,10 @@ using namespace lbcrypto;
 
 namespace hermesml {
 
-    BgvKnnEncrypted::BgvKnnEncrypted(int32_t k, HEContext& ctx) : EncryptedObject(ctx), calculus(CalculusQuant(ctx)) {
+    BgvKnnEncrypted::BgvKnnEncrypted(const int32_t k, const HEContext& ctx) : EncryptedObject(ctx), calculus(CalculusQuant(ctx)) {
         this->k = k;
         this->ctx = ctx;
     }
-
-    void BgvKnnEncrypted::Init() {}
 
     Ciphertext<DCRTPoly> BgvKnnEncrypted::Distance(const Ciphertext<DCRTPoly>& point1,
                                                    const Ciphertext<DCRTPoly>& point2) {
