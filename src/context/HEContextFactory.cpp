@@ -8,7 +8,7 @@ namespace hermesml {
 
     HEContext HEContextFactory::bgvHeContext() {
 
-        auto multiplicativeDepth = 6;
+        auto multiplicativeDepth = 10; // 10-20
 
         auto parameters = CCParams<CryptoContextBGVRNS>();
         parameters.SetSecurityLevel(HEStd_128_classic);

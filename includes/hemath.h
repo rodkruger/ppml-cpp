@@ -19,11 +19,17 @@ namespace hermesml {
     private:
         Ciphertext<DCRTPoly> encryptedZero;
         Ciphertext<DCRTPoly> encryptedOne;
+        Ciphertext<DCRTPoly> encrypted05;
+        Ciphertext<DCRTPoly> encrypted125;
+        Ciphertext<DCRTPoly> encrypted0625;
 
     public:
-        explicit Constants(const HEContext &ctx);
-        Ciphertext<DCRTPoly> Zero();
-        Ciphertext<DCRTPoly> One();
+        explicit Constants(const HEContext &ctx, int32_t n_features);
+        [[nodiscard]] Ciphertext<DCRTPoly> Zero() const;
+        [[nodiscard]] Ciphertext<DCRTPoly> One() const;
+        [[nodiscard]] Ciphertext<DCRTPoly> C05() const;
+        [[nodiscard]] Ciphertext<DCRTPoly> C125() const;
+        [[nodiscard]] Ciphertext<DCRTPoly> C0625() const;
     };
 
     class Calculus : EncryptedObject {

@@ -19,22 +19,23 @@ namespace hermesml {
     }
 
     void BgvKnnEncrypted::Fit(const std::vector<Ciphertext<DCRTPoly>>& trainingData,
-                              const std::vector<int32_t>& trainingLabels) {
+                              const std::vector<Ciphertext<DCRTPoly>>& trainingLabels) {
         this->trainingData = trainingData;
         this->trainingLabels = trainingLabels;
     }
 
-    int32_t BgvKnnEncrypted::Predict(const Ciphertext<DCRTPoly>& dataPoint) {
+    Ciphertext<DCRTPoly> BgvKnnEncrypted::Predict(const Ciphertext<DCRTPoly>& dataPoint) {
         // Compute distances from the test point to all training points
         const size_t numTrainingPoints = trainingData.size();
         std::vector<std::pair<Ciphertext<DCRTPoly>, int64_t>> distances;
 
         for (size_t i = 0; i < numTrainingPoints; i++) {
             auto distance = this->Distance(this->trainingData[i], dataPoint);
-            distances.emplace_back(distance, this->trainingLabels[i]);
+            // TODO: review encrypted labels
+            // distances.emplace_back(distance, this->trainingLabels[i]);
         }
 
-        return -1;
+        return nullptr;
     }
 
 }

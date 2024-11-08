@@ -2,7 +2,7 @@
 
 namespace hermesml {
 
-    std::vector<std::vector<int64_t> > Quantizer::Quantize(std::vector<std::vector<double> > &data) {
+    std::vector<std::vector<int64_t> > Quantizer::Quantize(std::vector<std::vector<double> >& data) {
 
         auto outputData = std::vector<std::vector<int64_t> >();
         outputData.reserve(data.size());

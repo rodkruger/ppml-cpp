@@ -15,12 +15,12 @@ namespace hermesml {
     }
 
     void CkksKnnEncrypted::Fit(const std::vector<Ciphertext<DCRTPoly>>& trainingData,
-                               const std::vector<int32_t>& trainingLabels) {
+                               const std::vector<Ciphertext<DCRTPoly>>& trainingLabels) {
         this->trainingData = trainingData;
         this->trainingLabels = trainingLabels;
     }
 
-    int32_t CkksKnnEncrypted::Predict(const Ciphertext<DCRTPoly>& testingPoint) {
+    Ciphertext<DCRTPoly> CkksKnnEncrypted::Predict(const Ciphertext<DCRTPoly>& testingPoint) {
 
         // Compute distances from the test point to all training points
         size_t numTrainingPoints = trainingData.size();
@@ -28,10 +28,11 @@ namespace hermesml {
 
         for (size_t i = 0; i < numTrainingPoints; i++) {
             auto distance = this->Distance(this->trainingData[i], testingPoint);
-            distances.emplace_back(distance, this->trainingLabels[i]);
+            // TODO: review encrypted labels
+            // distances.emplace_back(distance, this->trainingLabels[i]);
         }
 
-        return -1;
+        return nullptr;
 
         /**
         // Sort the distances

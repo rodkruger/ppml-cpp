@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "csv.h"
+// #include "csv.h"
 #include "model.h"
 #include "client.h"
 
@@ -8,6 +8,7 @@ using namespace hermesml;
 
 int main() {
 
+    /**
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed;
 
@@ -23,7 +24,7 @@ int main() {
     auto wineData = std::vector<std::vector<double>>();
     auto wineLabels = std::vector<int64_t>();
 
-    int classLabel;
+    int classLabel = 0;
     double alcohol, malicAcid, ash, alcalinityOfAsh, magnesium, totalPhenols, flavanoids,
            nonflavonoidPhenols, proanthocyanins, colorIntensity, hue, odOfDilutedWines, proline;
 
@@ -127,7 +128,8 @@ int main() {
     auto clf = CkksKnnEncrypted(5, ckksCtx);
 
     std::cout << "# Train model " << std::endl;
-    clf.Fit(encryptedTrainingData, trainingLabels);
+    // review encrypted label
+    // clf.Fit(encryptedTrainingData, trainingLabels);
 
     std::cout << "# Test model ... " << std::flush;
     clf.Predict(encryptedTestingData[0]);
@@ -136,6 +138,6 @@ int main() {
     elapsed = end - start;
 
     std::cout << "Elapsed time: " << elapsed.count() << " ms" << std::endl;
-
+    */
     return 0;
 }

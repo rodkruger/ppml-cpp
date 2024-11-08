@@ -4,6 +4,18 @@ namespace hermesml {
 
     Client::Client(const HEContext& ctx) : EncryptedObject(ctx) {}
 
+    std::vector<Ciphertext<DCRTPoly>> Client::Encrypt(const std::vector<int64_t>& data) const {
+        auto encryptedData = std::vector<Ciphertext<DCRTPoly>>();
+
+        for (const auto &row : data) {
+            const auto packedValue = this->GetCc()->MakePackedPlaintext({row});
+            const auto encryptedRow = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), packedValue);
+            encryptedData.push_back(encryptedRow);
+        }
+
+        return encryptedData;
+    }
+
     std::vector<Ciphertext<DCRTPoly>> Client::Encrypt(const std::vector<std::vector<int64_t>>& data) const {
         auto encryptedData = std::vector<Ciphertext<DCRTPoly>>();
 
