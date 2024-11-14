@@ -34,37 +34,50 @@ namespace hermesml
         }
 
         constexpr int64_t lr = 0.001 * QUANTIZE_SCALE_FACTOR;
-        const auto plainLr = this->GetCc()->MakePackedPlaintext({lr});
-        const auto encryptedLr = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), plainLr);
+        const auto encryptedLr = this->Encrypt(std::vector<int64_t>(n_features, lr));
 
         const auto reciprocal = static_cast<int64_t>(std::round(1.0 / x.size() * QUANTIZE_SCALE_FACTOR));
-        const auto plainReciprocal = this->GetCc()->MakePackedPlaintext({reciprocal});
-        const auto encryptedReciprocal = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), plainReciprocal);
+        const auto encryptedReciprocal = this->Encrypt(std::vector<int64_t>(n_features, reciprocal));
 
         // Initialize weights to zero
         const auto weights = std::vector<int64_t>(this->n_features, 0);
-        const auto plainWeights = this->GetCc()->MakePackedPlaintext(weights);
-        this->encryptedWeights = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), plainWeights);
+        this->encryptedWeights = this->Encrypt(weights);
+
+        const auto bias = std::vector<int64_t>(this->n_features, 0);
+        this->encryptedBias = this->Encrypt(bias);
 
         for (int32_t epoch = 0; epoch < epochs; epoch++)
         {
             // Perform prediction on all samples at once using SIMD
-            std::vector<Ciphertext<DCRTPoly>> y_predictions = PredictAll(x);
+            // std::vector<Ciphertext<DCRTPoly>> y_predictions = PredictAll(x);
 
             // Initialize the gradient
             auto gradient = this->constants.Zero();
 
             // Compute encrypted gradients using plain 'y' values
-            for (size_t i = 0; i < y_predictions.size(); i++)
+            for (size_t i = 0; i < x.size(); i++)
             {
-                auto encryptedError = this->GetCc()->EvalSub(y_predictions[i], y[i]);
+                // Compute linear combination
                 const auto& packedFeatureValues = x[i];
-                auto featureGradient = this->GetCc()->EvalMult(packedFeatureValues, encryptedError);
-                auto sumFeatureGradient = this->GetCc()->EvalSum(featureGradient, this->GetCtx().GetNumSlots());
-                sumFeatureGradient = this->GetCc()->EvalMult(sumFeatureGradient, encryptedLr);
-                sumFeatureGradient = this->GetCc()->EvalMult(sumFeatureGradient, encryptedReciprocal);
+                auto z = this->GetCc()->EvalMult(packedFeatureValues, this->encryptedWeights);
+                z= this->GetCc()->EvalSum(z, this->GetCtx().GetNumSlots());
+                z = this->GetCc()->EvalAdd(z, this->encryptedBias);
 
-                this->encryptedWeights = this->GetCc()->EvalSub(this->encryptedWeights, sumFeatureGradient);
+                // Compute sigmoid
+                const auto encryptedSigmoid = this->sigmoid(z);
+
+                // Compute error
+                auto encryptedError = this->GetCc()->EvalSub(encryptedSigmoid, y[i]);
+
+                // Update weights - Wrong calculation using BGV schema
+                auto newWeights = this->GetCc()->EvalMult(encryptedLr, encryptedError);
+                this->Snoop(newWeights, this->n_features);
+                this->Snoop(packedFeatureValues, this->n_features);
+                newWeights = this->GetCc()->EvalMult(newWeights, packedFeatureValues);
+                this->Snoop(newWeights, this->n_features);
+                break;
+
+                this->encryptedWeights = this->GetCc()->EvalSub(this->encryptedWeights, newWeights);
             }
         }
     }

@@ -7,7 +7,7 @@ using namespace hermesml;
 
 //---------------------------------------------------------------------------------------------------------------------
 
-void read_wine_dataset(std::vector<std::vector<double>>& features, std::vector<int64_t>& labels)
+void read_wine_dataset(std::vector<std::vector<double>>& features, std::vector<double>& labels)
 {
     const std::string filename = "../datasets/wine/wine.data";
 
@@ -53,22 +53,34 @@ void read_wine_dataset(std::vector<std::vector<double>>& features, std::vector<i
 
 //---------------------------------------------------------------------------------------------------------------------
 
-std::vector<std::vector<int64_t>> quantize_data(std::vector<std::vector<double>>& features)
+std::vector<std::vector<int64_t>> quantize_features(std::vector<std::vector<double>>& features)
 {
-    MinMaxScaler().Scale(features);
+    // MinMaxScaler().Scale(features);
     return Quantizer().Quantize(features);
+}
+
+std::vector<std::vector<int64_t>> quantize_labels(std::vector<double>& labels, int32_t n_features)
+{
+    auto transf_labels = std::vector<std::vector<double>>();
+
+    for (const auto label : labels)
+    {
+        transf_labels.emplace_back(n_features, label);
+    }
+
+    return Quantizer().Quantize(transf_labels);
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 
-void split_train_and_test(std::vector<std::vector<int64_t>>& quantized_data,
-                          std::vector<int64_t>& labels,
+void split_train_and_test(std::vector<std::vector<int64_t>>& quant_features,
+                          std::vector<std::vector<int64_t>>& quant_labels,
                           std::vector<std::vector<int64_t>>& training_data,
                           std::vector<std::vector<int64_t>>& testing_data,
-                          std::vector<int64_t>& training_labels,
-                          std::vector<int64_t>& testing_labels)
+                          std::vector<std::vector<int64_t>>& training_labels,
+                          std::vector<std::vector<int64_t>>& testing_labels)
 {
-    const auto dataset_length = static_cast<int64_t>(quantized_data.size());
+    const auto dataset_length = static_cast<int64_t>(quant_features.size());
     const auto training_length = static_cast<int64_t>(std::round(dataset_length) * 0.7);
     const auto testing_length = dataset_length - training_length;
 
@@ -77,10 +89,10 @@ void split_train_and_test(std::vector<std::vector<int64_t>>& quantized_data,
     testing_data.reserve(training_length);
     testing_labels.reserve(testing_length);
 
-    std::copy(quantized_data.begin(), quantized_data.begin() + training_length, std::back_inserter(training_data));
-    std::copy(labels.begin(), labels.begin() + training_length, std::back_inserter(training_labels));
-    std::copy(quantized_data.begin() + training_length, quantized_data.end(), std::back_inserter(testing_data));
-    std::copy(labels.begin() + training_length, labels.end(), std::back_inserter(testing_labels));
+    std::copy(quant_features.begin(), quant_features.begin() + training_length, std::back_inserter(training_data));
+    std::copy(quant_labels.begin(), quant_labels.begin() + training_length, std::back_inserter(training_labels));
+    std::copy(quant_features.begin() + training_length, quant_features.end(), std::back_inserter(testing_data));
+    std::copy(quant_labels.begin() + training_length, quant_labels.end(), std::back_inserter(testing_labels));
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -88,7 +100,7 @@ void split_train_and_test(std::vector<std::vector<int64_t>>& quantized_data,
 int main()
 {
     std::vector<std::vector<double>> features;
-    std::vector<int64_t> labels;
+    std::vector<double> labels;
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed;
 
@@ -97,17 +109,18 @@ int main()
     // Step 01 - read and normalize data
     std::cout << "# Read dataset " << std::endl;
     read_wine_dataset(features, labels);
-    auto quantized_data = quantize_data(features);
+    auto quant_features = quantize_features(features);
+    auto quant_labels = quantize_labels(labels, features.size());
 
     // Step 02 - split dataset in training and testing. Holdout (70% training; 30% testing)
     std::cout << "# Split dataset (70% training; 30% testing)" << std::endl;
 
     auto training_data = std::vector<std::vector<int64_t>>();
     auto testing_data = std::vector<std::vector<int64_t>>();
-    auto training_labels = std::vector<int64_t>();
-    auto testing_labels = std::vector<int64_t>();
+    auto training_labels = std::vector<std::vector<int64_t>>();
+    auto testing_labels = std::vector<std::vector<int64_t>>();
 
-    split_train_and_test(quantized_data, labels, training_data, testing_data, training_labels, testing_labels);
+    split_train_and_test(quant_features, quant_labels, training_data, testing_data, training_labels, testing_labels);
 
     std::cout << "      Total samples: " << (training_data.size() + testing_data.size()) << std::endl;
     std::cout << "      Training length: " << training_data.size() << std::endl;
@@ -180,6 +193,8 @@ int main()
 
     std::cout << "Elapsed time: " << elapsed.count() << " ms" << std::endl;
 
+    return EXIT_SUCCESS;
+
     std::cout << "# Test model ... " << std::flush;
 
     start = std::chrono::high_resolution_clock::now();
@@ -201,6 +216,4 @@ int main()
     // Multiplicative Depth: 20 (minimum value)
     // Encryption Time: 60 seconds
     // Training Time: 950 seconds
-
-    return EXIT_SUCCESS;
 }

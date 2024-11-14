@@ -37,14 +37,13 @@ namespace hermesml {
         // auto numSlots = cc->GetRingDimension() / 2;
         // cc->EvalBootstrapKeyGen(keys.secretKey, numSlots);
 
-
         // Build Context
         auto ctx = HEContext();
-
         ctx.SetCc(cc);
         ctx.SetMultiplicativeDepth(multiplicativeDepth);
         ctx.SetNumSlots(cc->GetRingDimension());
         ctx.SetPublicKey(keys.publicKey);
+        ctx.SetPrivateKey(keys.secretKey);
 
         return ctx;
     }

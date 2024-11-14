@@ -139,6 +139,7 @@ namespace hermesml {
         int32_t n_features;
         int32_t epochs;
         Ciphertext<DCRTPoly> encryptedWeights;
+        Ciphertext<DCRTPoly> encryptedBias;
 
         /**
          * sigmoid(x) = 1 / (1 + e^(-x))
