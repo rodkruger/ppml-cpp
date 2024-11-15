@@ -1,53 +1,46 @@
-
 #include "hemath.h"
 
 namespace hermesml
 {
-    Constants::Constants(const HEContext& ctx, const int32_t n_features) : EncryptedObject(ctx)
+    Constants::Constants(HEContext ctx, int32_t n_features) : EncryptedObject(ctx)
     {
-        Plaintext plaintext = this->GetCc()->MakePackedPlaintext(std::vector<int64_t>(n_features, 0));
+        Plaintext plaintext = this->GetCc()->MakeCKKSPackedPlaintext(std::vector<double>(n_features, 0));
         this->encryptedZero = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), plaintext);
 
-        plaintext = this->GetCc()->MakePackedPlaintext(std::vector<int64_t>(n_features, 1));
+        plaintext = this->GetCc()->MakeCKKSPackedPlaintext(std::vector<double>(n_features, 1));
         this->encryptedOne = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), plaintext);
 
-        plaintext = this->GetCc()->MakePackedPlaintext({
-            std::vector(n_features, static_cast<int64_t>(std::round(0.5 * QUANTIZE_SCALE_FACTOR)))
-        });
+        plaintext = this->GetCc()->MakeCKKSPackedPlaintext(std::vector<double>(n_features, 0.5));
         this->encrypted05 = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), plaintext);
 
-        plaintext = this->GetCc()->MakePackedPlaintext({
-            std::vector(n_features, static_cast<int64_t>(std::round(0.125 * QUANTIZE_SCALE_FACTOR)))
-        });
+        plaintext = this->GetCc()->MakeCKKSPackedPlaintext(std::vector<double>(n_features, 0.125));
         this->encrypted125 = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), plaintext);
 
-        plaintext = this->GetCc()->MakePackedPlaintext({
-            std::vector(n_features, static_cast<int64_t>(std::round(0.0625 * QUANTIZE_SCALE_FACTOR)))
-        });
+        plaintext = this->GetCc()->MakeCKKSPackedPlaintext(std::vector<double>(n_features, 0.0625));
         this->encrypted0625 = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), plaintext);
     }
 
-    Ciphertext<DCRTPoly> Constants::Zero() const
+    Ciphertext<DCRTPoly> Constants::Zero()
     {
         return this->encryptedZero;
     }
 
-    Ciphertext<DCRTPoly> Constants::One() const
+    Ciphertext<DCRTPoly> Constants::One()
     {
         return this->encryptedOne;
     }
 
-    Ciphertext<DCRTPoly> Constants::C05() const
+    Ciphertext<DCRTPoly> Constants::C05()
     {
         return this->encrypted05;
     }
 
-    Ciphertext<DCRTPoly> Constants::C125() const
+    Ciphertext<DCRTPoly> Constants::C125()
     {
         return this->encrypted125;
     }
 
-    Ciphertext<DCRTPoly> Constants::C0625() const
+    Ciphertext<DCRTPoly> Constants::C0625()
     {
         return this->encrypted0625;
     }

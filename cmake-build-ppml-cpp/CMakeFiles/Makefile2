@@ -63,7 +63,8 @@ CMAKE_BINARY_DIR = /home/rkruger/github.com/rodkruger/ppml-cpp/cmake-build-ppml-
 # Directory level rules for the build root directory
 
 # The main recursive "all" target.
-all: CMakeFiles/LogisticRegression.dir/all
+all: CMakeFiles/BgvLogisticRegression.dir/all
+all: CMakeFiles/CkksLogisticRegression.dir/all
 .PHONY : all
 
 # The main recursive "preinstall" target.
@@ -71,34 +72,61 @@ preinstall:
 .PHONY : preinstall
 
 # The main recursive "clean" target.
-clean: CMakeFiles/LogisticRegression.dir/clean
+clean: CMakeFiles/BgvLogisticRegression.dir/clean
+clean: CMakeFiles/CkksLogisticRegression.dir/clean
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/LogisticRegression.dir
+# Target rules for target CMakeFiles/BgvLogisticRegression.dir
 
 # All Build rule for target.
-CMakeFiles/LogisticRegression.dir/all:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/depend
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/rkruger/github.com/rodkruger/ppml-cpp/cmake-build-ppml-cpp/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11 "Built target LogisticRegression"
-.PHONY : CMakeFiles/LogisticRegression.dir/all
+CMakeFiles/BgvLogisticRegression.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/rkruger/github.com/rodkruger/ppml-cpp/cmake-build-ppml-cpp/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11 "Built target BgvLogisticRegression"
+.PHONY : CMakeFiles/BgvLogisticRegression.dir/all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/LogisticRegression.dir/rule: cmake_check_build_system
+CMakeFiles/BgvLogisticRegression.dir/rule: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/rkruger/github.com/rodkruger/ppml-cpp/cmake-build-ppml-cpp/CMakeFiles 11
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/LogisticRegression.dir/all
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/BgvLogisticRegression.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/rkruger/github.com/rodkruger/ppml-cpp/cmake-build-ppml-cpp/CMakeFiles 0
-.PHONY : CMakeFiles/LogisticRegression.dir/rule
+.PHONY : CMakeFiles/BgvLogisticRegression.dir/rule
 
 # Convenience name for target.
-LogisticRegression: CMakeFiles/LogisticRegression.dir/rule
-.PHONY : LogisticRegression
+BgvLogisticRegression: CMakeFiles/BgvLogisticRegression.dir/rule
+.PHONY : BgvLogisticRegression
 
 # clean rule for target.
-CMakeFiles/LogisticRegression.dir/clean:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/clean
-.PHONY : CMakeFiles/LogisticRegression.dir/clean
+CMakeFiles/BgvLogisticRegression.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/clean
+.PHONY : CMakeFiles/BgvLogisticRegression.dir/clean
+
+#=============================================================================
+# Target rules for target CMakeFiles/CkksLogisticRegression.dir
+
+# All Build rule for target.
+CMakeFiles/CkksLogisticRegression.dir/all:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/depend
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/rkruger/github.com/rodkruger/ppml-cpp/cmake-build-ppml-cpp/CMakeFiles --progress-num=12,13,14,15,16,17,18,19,20,21,22 "Built target CkksLogisticRegression"
+.PHONY : CMakeFiles/CkksLogisticRegression.dir/all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/CkksLogisticRegression.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/rkruger/github.com/rodkruger/ppml-cpp/cmake-build-ppml-cpp/CMakeFiles 11
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/CkksLogisticRegression.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/rkruger/github.com/rodkruger/ppml-cpp/cmake-build-ppml-cpp/CMakeFiles 0
+.PHONY : CMakeFiles/CkksLogisticRegression.dir/rule
+
+# Convenience name for target.
+CkksLogisticRegression: CMakeFiles/CkksLogisticRegression.dir/rule
+.PHONY : CkksLogisticRegression
+
+# clean rule for target.
+CMakeFiles/CkksLogisticRegression.dir/clean:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/clean
+.PHONY : CMakeFiles/CkksLogisticRegression.dir/clean
 
 #=============================================================================
 # Special targets to cleanup operation of make.

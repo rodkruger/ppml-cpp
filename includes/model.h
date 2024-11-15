@@ -9,19 +9,21 @@
 #include "core.h"
 #include "hemath.h"
 
-namespace hermesml {
-
-    class MlModel {
+namespace hermesml
+{
+    class MlModel
+    {
     public:
-        virtual void Fit(const std::vector<Ciphertext<DCRTPoly>>& trainingData,
-                 const std::vector<Ciphertext<DCRTPoly>>& trainingLabels) = 0;
+        virtual void Fit(std::vector<Ciphertext<DCRTPoly>> trainingData,
+                         std::vector<Ciphertext<DCRTPoly>> trainingLabels) = 0;
 
-        virtual Ciphertext<DCRTPoly> Predict(const Ciphertext<DCRTPoly>& dataPoint) = 0;
+        virtual Ciphertext<DCRTPoly> Predict(Ciphertext<DCRTPoly> dataPoint) = 0;
 
         virtual ~MlModel() = default;
-     };
+    };
 
-    class BgvKnnEncrypted : EncryptedObject, MlModel {
+    class BgvKnnEncrypted : EncryptedObject, MlModel
+    {
     private:
         HEContext ctx;
         CalculusQuant calculus;
@@ -30,19 +32,20 @@ namespace hermesml {
         std::vector<Ciphertext<DCRTPoly>> trainingData;
         std::vector<Ciphertext<DCRTPoly>> trainingLabels;
 
-        Ciphertext<DCRTPoly> Distance(const Ciphertext<DCRTPoly>& point1,
-                                      const Ciphertext<DCRTPoly>& point2);
+        Ciphertext<DCRTPoly> Distance(Ciphertext<DCRTPoly> point1,
+                                      Ciphertext<DCRTPoly> point2);
 
     public:
-        BgvKnnEncrypted(int32_t k, const HEContext &ctx);
+        BgvKnnEncrypted(int32_t k, HEContext ctx);
 
-        void Fit(const std::vector<Ciphertext<DCRTPoly>>& trainingData,
-                 const std::vector<Ciphertext<DCRTPoly>>& trainingLabels) override;
+        void Fit(std::vector<Ciphertext<DCRTPoly>> trainingData,
+                 std::vector<Ciphertext<DCRTPoly>> trainingLabels) override;
 
-        Ciphertext<DCRTPoly> Predict(const Ciphertext<DCRTPoly>& dataPoint) override;
+        Ciphertext<DCRTPoly> Predict(Ciphertext<DCRTPoly> dataPoint) override;
     };
 
-    class CkksKnnEncrypted : EncryptedObject, MlModel {
+    class CkksKnnEncrypted : EncryptedObject, MlModel
+    {
     private:
         HEContext ctx;
         Calculus calculus;
@@ -51,16 +54,16 @@ namespace hermesml {
         std::vector<Ciphertext<DCRTPoly>> trainingData;
         std::vector<Ciphertext<DCRTPoly>> trainingLabels;
 
-        Ciphertext<DCRTPoly> Distance(const Ciphertext<DCRTPoly>& point1,
-                                      const Ciphertext<DCRTPoly>& point2);
+        Ciphertext<DCRTPoly> Distance(Ciphertext<DCRTPoly> point1,
+                                      Ciphertext<DCRTPoly> point2);
 
     public:
-        CkksKnnEncrypted(int32_t k, const HEContext &ctx);
+        CkksKnnEncrypted(int32_t k, HEContext ctx);
 
-        void Fit(const std::vector<Ciphertext<DCRTPoly>>& trainingData,
-                 const std::vector<Ciphertext<DCRTPoly>>& trainingLabels) override;
+        void Fit(std::vector<Ciphertext<DCRTPoly>> trainingData,
+                 std::vector<Ciphertext<DCRTPoly>> trainingLabels) override;
 
-        Ciphertext<DCRTPoly> Predict(const Ciphertext<DCRTPoly>& dataPoint) override;
+        Ciphertext<DCRTPoly> Predict(Ciphertext<DCRTPoly> dataPoint) override;
     };
 
     /**
@@ -131,7 +134,8 @@ namespace hermesml {
      * - Can be less effective with highly imbalanced datasets.
      * - Struggles with complex relationships or high-dimensional data without feature engineering or transformation.
      */
-    class LogisticRegressionEncrypted : public EncryptedObject, public MlModel {
+    class LogisticRegressionEncrypted : public EncryptedObject, public MlModel
+    {
     private:
         Calculus calculus;
         Constants constants;
@@ -157,19 +161,19 @@ namespace hermesml {
         *   a linear combination of input features and weights, also known as the logit (logistic function input)
          * @return
          */
-        Ciphertext<DCRTPoly> sigmoid(const Ciphertext<DCRTPoly>& x) const;
+        Ciphertext<DCRTPoly> sigmoid(Ciphertext<DCRTPoly> x);
 
     public:
-        explicit LogisticRegressionEncrypted(const HEContext &ctx, int32_t n_features, int32_t epochs);
+        explicit LogisticRegressionEncrypted(HEContext ctx, int32_t n_features, int32_t epochs);
+        Ciphertext<DCRTPoly> GetLearningRate();
 
-        void Fit(const std::vector<Ciphertext<DCRTPoly>>& x,
-                 const std::vector<Ciphertext<DCRTPoly>>& y) override;
+        void Fit(std::vector<Ciphertext<DCRTPoly>> x,
+                 std::vector<Ciphertext<DCRTPoly>> y) override;
 
-        Ciphertext<DCRTPoly> Predict(const Ciphertext<DCRTPoly>& x) override;
+        Ciphertext<DCRTPoly> Predict(Ciphertext<DCRTPoly> x) override;
 
-        std::vector<Ciphertext<DCRTPoly>> PredictAll(const std::vector<Ciphertext<DCRTPoly>>& x);
+        std::vector<Ciphertext<DCRTPoly>> PredictAll(std::vector<Ciphertext<DCRTPoly>> x);
     };
-
 }
 
 #endif //MODEL_H

@@ -117,24 +117,37 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named LogisticRegression
+# Target rules for targets named BgvLogisticRegression
 
 # Build rule for target.
-LogisticRegression: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 LogisticRegression
-.PHONY : LogisticRegression
+BgvLogisticRegression: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 BgvLogisticRegression
+.PHONY : BgvLogisticRegression
 
 # fast build rule for target.
-LogisticRegression/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/build
-.PHONY : LogisticRegression/fast
+BgvLogisticRegression/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/build
+.PHONY : BgvLogisticRegression/fast
+
+#=============================================================================
+# Target rules for targets named CkksLogisticRegression
+
+# Build rule for target.
+CkksLogisticRegression: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CkksLogisticRegression
+.PHONY : CkksLogisticRegression
+
+# fast build rule for target.
+CkksLogisticRegression/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/build
+.PHONY : CkksLogisticRegression/fast
 
 src/BgvLogisticRegression.o: src/BgvLogisticRegression.cpp.o
 .PHONY : src/BgvLogisticRegression.o
 
 # target to build an object file
 src/BgvLogisticRegression.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/BgvLogisticRegression.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/BgvLogisticRegression.cpp.o
 .PHONY : src/BgvLogisticRegression.cpp.o
 
 src/BgvLogisticRegression.i: src/BgvLogisticRegression.cpp.i
@@ -142,7 +155,7 @@ src/BgvLogisticRegression.i: src/BgvLogisticRegression.cpp.i
 
 # target to preprocess a source file
 src/BgvLogisticRegression.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/BgvLogisticRegression.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/BgvLogisticRegression.cpp.i
 .PHONY : src/BgvLogisticRegression.cpp.i
 
 src/BgvLogisticRegression.s: src/BgvLogisticRegression.cpp.s
@@ -150,15 +163,40 @@ src/BgvLogisticRegression.s: src/BgvLogisticRegression.cpp.s
 
 # target to generate assembly for a file
 src/BgvLogisticRegression.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/BgvLogisticRegression.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/BgvLogisticRegression.cpp.s
 .PHONY : src/BgvLogisticRegression.cpp.s
+
+src/CkksLogisticRegression.o: src/CkksLogisticRegression.cpp.o
+.PHONY : src/CkksLogisticRegression.o
+
+# target to build an object file
+src/CkksLogisticRegression.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/CkksLogisticRegression.cpp.o
+.PHONY : src/CkksLogisticRegression.cpp.o
+
+src/CkksLogisticRegression.i: src/CkksLogisticRegression.cpp.i
+.PHONY : src/CkksLogisticRegression.i
+
+# target to preprocess a source file
+src/CkksLogisticRegression.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/CkksLogisticRegression.cpp.i
+.PHONY : src/CkksLogisticRegression.cpp.i
+
+src/CkksLogisticRegression.s: src/CkksLogisticRegression.cpp.s
+.PHONY : src/CkksLogisticRegression.s
+
+# target to generate assembly for a file
+src/CkksLogisticRegression.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/CkksLogisticRegression.cpp.s
+.PHONY : src/CkksLogisticRegression.cpp.s
 
 src/client/Client.o: src/client/Client.cpp.o
 .PHONY : src/client/Client.o
 
 # target to build an object file
 src/client/Client.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/client/Client.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/client/Client.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/client/Client.cpp.o
 .PHONY : src/client/Client.cpp.o
 
 src/client/Client.i: src/client/Client.cpp.i
@@ -166,7 +204,8 @@ src/client/Client.i: src/client/Client.cpp.i
 
 # target to preprocess a source file
 src/client/Client.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/client/Client.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/client/Client.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/client/Client.cpp.i
 .PHONY : src/client/Client.cpp.i
 
 src/client/Client.s: src/client/Client.cpp.s
@@ -174,7 +213,8 @@ src/client/Client.s: src/client/Client.cpp.s
 
 # target to generate assembly for a file
 src/client/Client.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/client/Client.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/client/Client.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/client/Client.cpp.s
 .PHONY : src/client/Client.cpp.s
 
 src/context/HEContext.o: src/context/HEContext.cpp.o
@@ -182,7 +222,8 @@ src/context/HEContext.o: src/context/HEContext.cpp.o
 
 # target to build an object file
 src/context/HEContext.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/context/HEContext.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/context/HEContext.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/context/HEContext.cpp.o
 .PHONY : src/context/HEContext.cpp.o
 
 src/context/HEContext.i: src/context/HEContext.cpp.i
@@ -190,7 +231,8 @@ src/context/HEContext.i: src/context/HEContext.cpp.i
 
 # target to preprocess a source file
 src/context/HEContext.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/context/HEContext.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/context/HEContext.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/context/HEContext.cpp.i
 .PHONY : src/context/HEContext.cpp.i
 
 src/context/HEContext.s: src/context/HEContext.cpp.s
@@ -198,7 +240,8 @@ src/context/HEContext.s: src/context/HEContext.cpp.s
 
 # target to generate assembly for a file
 src/context/HEContext.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/context/HEContext.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/context/HEContext.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/context/HEContext.cpp.s
 .PHONY : src/context/HEContext.cpp.s
 
 src/context/HEContextFactory.o: src/context/HEContextFactory.cpp.o
@@ -206,7 +249,8 @@ src/context/HEContextFactory.o: src/context/HEContextFactory.cpp.o
 
 # target to build an object file
 src/context/HEContextFactory.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/context/HEContextFactory.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/context/HEContextFactory.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/context/HEContextFactory.cpp.o
 .PHONY : src/context/HEContextFactory.cpp.o
 
 src/context/HEContextFactory.i: src/context/HEContextFactory.cpp.i
@@ -214,7 +258,8 @@ src/context/HEContextFactory.i: src/context/HEContextFactory.cpp.i
 
 # target to preprocess a source file
 src/context/HEContextFactory.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/context/HEContextFactory.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/context/HEContextFactory.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/context/HEContextFactory.cpp.i
 .PHONY : src/context/HEContextFactory.cpp.i
 
 src/context/HEContextFactory.s: src/context/HEContextFactory.cpp.s
@@ -222,7 +267,8 @@ src/context/HEContextFactory.s: src/context/HEContextFactory.cpp.s
 
 # target to generate assembly for a file
 src/context/HEContextFactory.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/context/HEContextFactory.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/context/HEContextFactory.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/context/HEContextFactory.cpp.s
 .PHONY : src/context/HEContextFactory.cpp.s
 
 src/core/EncryptedObject.o: src/core/EncryptedObject.cpp.o
@@ -230,7 +276,8 @@ src/core/EncryptedObject.o: src/core/EncryptedObject.cpp.o
 
 # target to build an object file
 src/core/EncryptedObject.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/core/EncryptedObject.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/core/EncryptedObject.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/core/EncryptedObject.cpp.o
 .PHONY : src/core/EncryptedObject.cpp.o
 
 src/core/EncryptedObject.i: src/core/EncryptedObject.cpp.i
@@ -238,7 +285,8 @@ src/core/EncryptedObject.i: src/core/EncryptedObject.cpp.i
 
 # target to preprocess a source file
 src/core/EncryptedObject.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/core/EncryptedObject.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/core/EncryptedObject.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/core/EncryptedObject.cpp.i
 .PHONY : src/core/EncryptedObject.cpp.i
 
 src/core/EncryptedObject.s: src/core/EncryptedObject.cpp.s
@@ -246,7 +294,8 @@ src/core/EncryptedObject.s: src/core/EncryptedObject.cpp.s
 
 # target to generate assembly for a file
 src/core/EncryptedObject.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/core/EncryptedObject.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/core/EncryptedObject.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/core/EncryptedObject.cpp.s
 .PHONY : src/core/EncryptedObject.cpp.s
 
 src/core/MinMaxScaler.o: src/core/MinMaxScaler.cpp.o
@@ -254,7 +303,8 @@ src/core/MinMaxScaler.o: src/core/MinMaxScaler.cpp.o
 
 # target to build an object file
 src/core/MinMaxScaler.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/core/MinMaxScaler.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/core/MinMaxScaler.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/core/MinMaxScaler.cpp.o
 .PHONY : src/core/MinMaxScaler.cpp.o
 
 src/core/MinMaxScaler.i: src/core/MinMaxScaler.cpp.i
@@ -262,7 +312,8 @@ src/core/MinMaxScaler.i: src/core/MinMaxScaler.cpp.i
 
 # target to preprocess a source file
 src/core/MinMaxScaler.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/core/MinMaxScaler.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/core/MinMaxScaler.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/core/MinMaxScaler.cpp.i
 .PHONY : src/core/MinMaxScaler.cpp.i
 
 src/core/MinMaxScaler.s: src/core/MinMaxScaler.cpp.s
@@ -270,7 +321,8 @@ src/core/MinMaxScaler.s: src/core/MinMaxScaler.cpp.s
 
 # target to generate assembly for a file
 src/core/MinMaxScaler.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/core/MinMaxScaler.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/core/MinMaxScaler.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/core/MinMaxScaler.cpp.s
 .PHONY : src/core/MinMaxScaler.cpp.s
 
 src/core/Quantizer.o: src/core/Quantizer.cpp.o
@@ -278,7 +330,8 @@ src/core/Quantizer.o: src/core/Quantizer.cpp.o
 
 # target to build an object file
 src/core/Quantizer.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/core/Quantizer.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/core/Quantizer.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/core/Quantizer.cpp.o
 .PHONY : src/core/Quantizer.cpp.o
 
 src/core/Quantizer.i: src/core/Quantizer.cpp.i
@@ -286,7 +339,8 @@ src/core/Quantizer.i: src/core/Quantizer.cpp.i
 
 # target to preprocess a source file
 src/core/Quantizer.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/core/Quantizer.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/core/Quantizer.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/core/Quantizer.cpp.i
 .PHONY : src/core/Quantizer.cpp.i
 
 src/core/Quantizer.s: src/core/Quantizer.cpp.s
@@ -294,7 +348,8 @@ src/core/Quantizer.s: src/core/Quantizer.cpp.s
 
 # target to generate assembly for a file
 src/core/Quantizer.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/core/Quantizer.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/core/Quantizer.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/core/Quantizer.cpp.s
 .PHONY : src/core/Quantizer.cpp.s
 
 src/math/Calculus.o: src/math/Calculus.cpp.o
@@ -302,7 +357,8 @@ src/math/Calculus.o: src/math/Calculus.cpp.o
 
 # target to build an object file
 src/math/Calculus.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/math/Calculus.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/math/Calculus.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/math/Calculus.cpp.o
 .PHONY : src/math/Calculus.cpp.o
 
 src/math/Calculus.i: src/math/Calculus.cpp.i
@@ -310,7 +366,8 @@ src/math/Calculus.i: src/math/Calculus.cpp.i
 
 # target to preprocess a source file
 src/math/Calculus.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/math/Calculus.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/math/Calculus.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/math/Calculus.cpp.i
 .PHONY : src/math/Calculus.cpp.i
 
 src/math/Calculus.s: src/math/Calculus.cpp.s
@@ -318,7 +375,8 @@ src/math/Calculus.s: src/math/Calculus.cpp.s
 
 # target to generate assembly for a file
 src/math/Calculus.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/math/Calculus.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/math/Calculus.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/math/Calculus.cpp.s
 .PHONY : src/math/Calculus.cpp.s
 
 src/math/Constants.o: src/math/Constants.cpp.o
@@ -326,7 +384,8 @@ src/math/Constants.o: src/math/Constants.cpp.o
 
 # target to build an object file
 src/math/Constants.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/math/Constants.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/math/Constants.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/math/Constants.cpp.o
 .PHONY : src/math/Constants.cpp.o
 
 src/math/Constants.i: src/math/Constants.cpp.i
@@ -334,7 +393,8 @@ src/math/Constants.i: src/math/Constants.cpp.i
 
 # target to preprocess a source file
 src/math/Constants.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/math/Constants.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/math/Constants.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/math/Constants.cpp.i
 .PHONY : src/math/Constants.cpp.i
 
 src/math/Constants.s: src/math/Constants.cpp.s
@@ -342,7 +402,8 @@ src/math/Constants.s: src/math/Constants.cpp.s
 
 # target to generate assembly for a file
 src/math/Constants.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/math/Constants.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/math/Constants.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/math/Constants.cpp.s
 .PHONY : src/math/Constants.cpp.s
 
 src/model/LogisticRegressionEncrypted.o: src/model/LogisticRegressionEncrypted.cpp.o
@@ -350,7 +411,8 @@ src/model/LogisticRegressionEncrypted.o: src/model/LogisticRegressionEncrypted.c
 
 # target to build an object file
 src/model/LogisticRegressionEncrypted.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/model/LogisticRegressionEncrypted.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/model/LogisticRegressionEncrypted.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/model/LogisticRegressionEncrypted.cpp.o
 .PHONY : src/model/LogisticRegressionEncrypted.cpp.o
 
 src/model/LogisticRegressionEncrypted.i: src/model/LogisticRegressionEncrypted.cpp.i
@@ -358,7 +420,8 @@ src/model/LogisticRegressionEncrypted.i: src/model/LogisticRegressionEncrypted.c
 
 # target to preprocess a source file
 src/model/LogisticRegressionEncrypted.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/model/LogisticRegressionEncrypted.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/model/LogisticRegressionEncrypted.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/model/LogisticRegressionEncrypted.cpp.i
 .PHONY : src/model/LogisticRegressionEncrypted.cpp.i
 
 src/model/LogisticRegressionEncrypted.s: src/model/LogisticRegressionEncrypted.cpp.s
@@ -366,7 +429,8 @@ src/model/LogisticRegressionEncrypted.s: src/model/LogisticRegressionEncrypted.c
 
 # target to generate assembly for a file
 src/model/LogisticRegressionEncrypted.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/LogisticRegression.dir/build.make CMakeFiles/LogisticRegression.dir/src/model/LogisticRegressionEncrypted.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/BgvLogisticRegression.dir/build.make CMakeFiles/BgvLogisticRegression.dir/src/model/LogisticRegressionEncrypted.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/CkksLogisticRegression.dir/build.make CMakeFiles/CkksLogisticRegression.dir/src/model/LogisticRegressionEncrypted.cpp.s
 .PHONY : src/model/LogisticRegressionEncrypted.cpp.s
 
 # Help Target
@@ -377,10 +441,14 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... LogisticRegression"
+	@echo "... BgvLogisticRegression"
+	@echo "... CkksLogisticRegression"
 	@echo "... src/BgvLogisticRegression.o"
 	@echo "... src/BgvLogisticRegression.i"
 	@echo "... src/BgvLogisticRegression.s"
+	@echo "... src/CkksLogisticRegression.o"
+	@echo "... src/CkksLogisticRegression.i"
+	@echo "... src/CkksLogisticRegression.s"
 	@echo "... src/client/Client.o"
 	@echo "... src/client/Client.i"
 	@echo "... src/client/Client.s"

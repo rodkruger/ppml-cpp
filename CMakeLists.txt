@@ -74,38 +74,25 @@ endif()
 #         src/context/HEContext.cpp
 #         src/core/MinMaxScaler.cpp
 #         src/core/Quantizer.cpp )
-# add_executable( BgvKnn
-#         src/BgvKnn.cpp
-#         includes/model.h
-#         includes/hemath.h
-#         includes/core.h
-#         includes/client.h
-#         src/math/CalculusQuant.cpp
-#         src/core/EncryptedObject.cpp
-#         src/math/Constants.cpp
-#         src/client/Client.cpp
-#         src/model/BgvKnnEncrypted.cpp
-#         src/context/HEContextFactory.cpp
-#         src/context/HEContext.cpp
-#         src/core/MinMaxScaler.cpp
-#         src/core/Quantizer.cpp)
-# add_executable( CkksKnns
-#         src/CkksKnn.cpp
-#         includes/model.h
-#         includes/hemath.h
-#         includes/core.h
-#         includes/client.h
-#         src/math/Calculus.cpp
-#         src/core/EncryptedObject.cpp
-#         src/math/Constants.cpp
-#         src/client/Client.cpp
-#         src/model/CkksKnnEncrypted.cpp
-#         src/context/HEContextFactory.cpp
-#         src/context/HEContext.cpp
-#         src/core/MinMaxScaler.cpp
-#         src/core/Quantizer.cpp)
-add_executable( LogisticRegression
+add_executable( BgvLogisticRegression
         src/BgvLogisticRegression.cpp
+        includes/client.h
+        includes/context.h
+        includes/core.h
+        includes/csv.hpp
+        includes/hemath.h
+        includes/model.h
+        src/math/Calculus.cpp
+        src/core/EncryptedObject.cpp
+        src/math/Constants.cpp
+        src/client/Client.cpp
+        src/context/HEContextFactory.cpp
+        src/context/HEContext.cpp
+        src/core/MinMaxScaler.cpp
+        src/core/Quantizer.cpp
+        src/model/LogisticRegressionEncrypted.cpp)
+add_executable( CkksLogisticRegression
+        src/CkksLogisticRegression.cpp
         includes/client.h
         includes/context.h
         includes/core.h

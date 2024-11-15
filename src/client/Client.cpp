@@ -1,43 +1,64 @@
 #include "client.h"
 
-namespace hermesml {
+namespace hermesml
+{
+    Client::Client(HEContext ctx) : EncryptedObject(ctx)
+    {
+    }
 
-    Client::Client(const HEContext& ctx) : EncryptedObject(ctx) {}
-
-    std::vector<Ciphertext<DCRTPoly>> Client::Encrypt(const std::vector<int64_t>& data) const {
+    std::vector<Ciphertext<DCRTPoly>> Client::Encrypt(std::vector<int64_t> data)
+    {
         auto encryptedData = std::vector<Ciphertext<DCRTPoly>>();
 
-        for (const auto &row : data) {
-            const auto packedValue = this->GetCc()->MakePackedPlaintext({row});
-            const auto encryptedRow = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), packedValue);
+        for (auto row : data)
+        {
+            auto packedValue = this->GetCc()->MakePackedPlaintext({row});
+            auto encryptedRow = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), packedValue);
             encryptedData.push_back(encryptedRow);
         }
 
         return encryptedData;
     }
 
-    std::vector<Ciphertext<DCRTPoly>> Client::Encrypt(const std::vector<std::vector<int64_t>>& data) const {
+    std::vector<Ciphertext<DCRTPoly>> Client::Encrypt(std::vector<std::vector<int64_t>> data)
+    {
         auto encryptedData = std::vector<Ciphertext<DCRTPoly>>();
 
-        for (const auto &row : data) {
-            const auto packedValue = this->GetCc()->MakePackedPlaintext(row);
-            const auto encryptedRow = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), packedValue);
+        for (auto row : data)
+        {
+            auto packedValue = this->GetCc()->MakePackedPlaintext(row);
+            auto encryptedRow = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), packedValue);
             encryptedData.push_back(encryptedRow);
         }
 
         return encryptedData;
     }
 
-    std::vector<Ciphertext<DCRTPoly>> Client::Encrypt(const std::vector<std::vector<double>>& data) const {
+    std::vector<Ciphertext<DCRTPoly>> Client::EncryptCKKS(std::vector<std::vector<double>> data)
+    {
         auto encryptedData = std::vector<Ciphertext<DCRTPoly>>();
 
-        for (const auto &row : data) {
-            const auto packedValue = this->GetCc()->MakeCKKSPackedPlaintext(row);
-            const auto encryptedRow = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), packedValue);
+        for (auto row : data)
+        {
+            auto packedValue = this->GetCc()->MakeCKKSPackedPlaintext(row);
+            auto encryptedRow = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), packedValue);
             encryptedData.push_back(encryptedRow);
         }
 
         return encryptedData;
     }
 
+    std::vector<Ciphertext<DCRTPoly>> Client::EncryptCKKS(std::vector<double> data)
+    {
+        auto encryptedData = std::vector<Ciphertext<DCRTPoly>>();
+
+        for (auto row : data)
+        {
+            auto packedValue = this->GetCc()->MakeCKKSPackedPlaintext(std::vector(1, row));
+            auto encryptedRow = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), packedValue);
+            encryptedData.push_back(encryptedRow);
+        }
+
+        return encryptedData;
+    }
 }

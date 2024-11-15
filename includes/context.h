@@ -5,23 +5,24 @@
 
 using namespace lbcrypto;
 
-namespace hermesml {
-
-    class HEContext {
+namespace hermesml
+{
+    class HEContext
+    {
     public:
         CryptoContext<DCRTPoly> GetCc();
-        void SetCc(const CryptoContext<DCRTPoly>& cc);
+        void SetCc(CryptoContext<DCRTPoly> cc);
 
         PublicKey<DCRTPoly> GetPublicKey();
-        void SetPublicKey(const PublicKey<DCRTPoly>& publicKey);
+        void SetPublicKey(PublicKey<DCRTPoly> publicKey);
 
         PrivateKey<DCRTPoly> GetPrivateKey();
-        void SetPrivateKey(const PrivateKey<DCRTPoly>& privateKey);
+        void SetPrivateKey(PrivateKey<DCRTPoly> privateKey);
 
-        uint32_t GetMultiplicativeDepth() const;
+        uint32_t GetMultiplicativeDepth();
         void SetMultiplicativeDepth(uint32_t multiplicativeDepth);
 
-        uint32_t GetNumSlots() const;
+        uint32_t GetNumSlots();
         void SetNumSlots(uint32_t numSlots);
 
     private:
@@ -30,10 +31,10 @@ namespace hermesml {
         PrivateKey<DCRTPoly> privateKey;
         uint32_t multiplicativeDepth = 0;
         uint32_t numSlots = 0;
-
     };
 
-    class HEContextFactory {
+    class HEContextFactory
+    {
     public:
         HEContext bgvHeContext();
         HEContext ckksHeContext();

@@ -1,95 +1,112 @@
 #include "model.h"
 
+void Monitor( Ciphertext<DCRTPoly> packedFeatureValues,
+                     Ciphertext<DCRTPoly> encryptedWeights,
+                     Ciphertext<DCRTPoly> z,
+                     Ciphertext<DCRTPoly> encryptedBias,
+                     Ciphertext<DCRTPoly> encryptedSigmoid,
+                     Ciphertext<DCRTPoly> encryptedError,
+                     Ciphertext<DCRTPoly> encryptedLr,
+                     Ciphertext<DCRTPoly> newWeights,
+                     int32_t point)
+{
+    /*
+    std::cout << point << " - packedFeatureValues: " << packedFeatureValues->GetLevel() << "; ";
+    std::cout << "encryptedWeights: " << encryptedWeights->GetLevel() << "; ";
+    std::cout << "z: " << z->GetLevel() << "; ";
+    std::cout << "encryptedBias: " << encryptedBias->GetLevel() << "; ";
+    std::cout << "encryptedSigmoid: " << encryptedSigmoid->GetLevel() << "; ";
+    std::cout << "encryptedError: " << encryptedError->GetLevel() << "; ";
+    std::cout << "encryptedLr: " << encryptedLr->GetLevel() << "; ";
+    std::cout << "newWeights: " << newWeights->GetLevel() << std::endl;
+    */
+}
+
 namespace hermesml
 {
-    LogisticRegressionEncrypted::LogisticRegressionEncrypted(const HEContext& ctx,
-                                                             const int32_t n_features,
-                                                             const int32_t epochs):
+    LogisticRegressionEncrypted::LogisticRegressionEncrypted( HEContext ctx,
+                                                              int32_t n_features,
+                                                              int32_t epochs):
         EncryptedObject(ctx), calculus(Calculus(ctx)), constants(Constants(ctx, n_features))
     {
         this->n_features = n_features;
         this->epochs = epochs;
     }
 
-    Ciphertext<DCRTPoly> LogisticRegressionEncrypted::sigmoid(const Ciphertext<DCRTPoly>& x) const
+    Ciphertext<DCRTPoly> LogisticRegressionEncrypted::GetLearningRate()
+    {
+         double lr = 0.001 * this->GetScalingFactor();
+        return this->EncryptCKKS(std::vector(n_features, lr));
+    }
+
+    Ciphertext<DCRTPoly> LogisticRegressionEncrypted::sigmoid(Ciphertext<DCRTPoly> x)
     {
         //                                                    ( term 1  )   (   term 2   )
         // Approximate sigmoid using cubic polynomial: 0.5  +  0.125 * x  -  0.0625 * x^3
-        const auto x_squared = this->GetCc()->EvalMult(x, x);
-        const auto x_cubed = this->GetCc()->EvalMult(x_squared, x);
+         auto x_squared = this->EvalMult(x, x);
+         auto x_cubed = this->EvalMult(x_squared, x);
 
-        const auto term1 = this->GetCc()->EvalMult(x, this->constants.C125());
-        const auto term2 = this->GetCc()->EvalMult(x_cubed, this->constants.C0625());
+         auto term1 = this->EvalMult(x, this->constants.C125());
+         auto term2 = this->EvalMult(x_cubed, this->constants.C0625());
 
-        return this->GetCc()->EvalAdd(this->constants.C05(), this->GetCc()->EvalSub(term1, term2));
+        return this->EvalAdd(this->constants.C05(), this->EvalSub(term1, term2));
     }
 
-    void LogisticRegressionEncrypted::Fit(const std::vector<Ciphertext<DCRTPoly>>& x,
-                                          const std::vector<Ciphertext<DCRTPoly>>& y)
+    void LogisticRegressionEncrypted::Fit( std::vector<Ciphertext<DCRTPoly>> x,
+                                           std::vector<Ciphertext<DCRTPoly>> y)
     {
-        if (!this->GetCc())
-        {
-            std::cerr << "Error: Cryptographic context `this->GetCc()` is not initialized." << std::endl;
-            return;
-        }
-
-        constexpr int64_t lr = 0.001 * QUANTIZE_SCALE_FACTOR;
-        const auto encryptedLr = this->Encrypt(std::vector<int64_t>(n_features, lr));
-
-        const auto reciprocal = static_cast<int64_t>(std::round(1.0 / x.size() * QUANTIZE_SCALE_FACTOR));
-        const auto encryptedReciprocal = this->Encrypt(std::vector<int64_t>(n_features, reciprocal));
+         auto encryptedLr = this->GetLearningRate();
 
         // Initialize weights to zero
-        const auto weights = std::vector<int64_t>(this->n_features, 0);
-        this->encryptedWeights = this->Encrypt(weights);
+         auto weights = std::vector<double>(this->n_features, 0);
+        this->encryptedWeights = this->EncryptCKKS(weights);
 
-        const auto bias = std::vector<int64_t>(this->n_features, 0);
-        this->encryptedBias = this->Encrypt(bias);
+         auto bias = std::vector<double>(this->n_features, 0);
+        this->encryptedBias = this->EncryptCKKS(bias);
+
+        Ciphertext<DCRTPoly> packedFeatureValues = this->constants.Zero();
+        Ciphertext<DCRTPoly> z = this->constants.Zero();
+        Ciphertext<DCRTPoly> encryptedSigmoid = this->constants.Zero();
+        Ciphertext<DCRTPoly> encryptedError = this->constants.Zero();
+        Ciphertext<DCRTPoly> newWeights = this->constants.Zero();
 
         for (int32_t epoch = 0; epoch < epochs; epoch++)
         {
-            // Perform prediction on all samples at once using SIMD
-            // std::vector<Ciphertext<DCRTPoly>> y_predictions = PredictAll(x);
-
-            // Initialize the gradient
-            auto gradient = this->constants.Zero();
-
             // Compute encrypted gradients using plain 'y' values
             for (size_t i = 0; i < x.size(); i++)
             {
                 // Compute linear combination
-                const auto& packedFeatureValues = x[i];
-                auto z = this->GetCc()->EvalMult(packedFeatureValues, this->encryptedWeights);
-                z= this->GetCc()->EvalSum(z, this->GetCtx().GetNumSlots());
-                z = this->GetCc()->EvalAdd(z, this->encryptedBias);
+                packedFeatureValues = x[i];                                                     Monitor(packedFeatureValues, this->encryptedWeights, z, this->encryptedBias, encryptedSigmoid, encryptedError, encryptedLr, newWeights, 1);
+                z = this->EvalMult(packedFeatureValues, this->encryptedWeights);                Monitor(packedFeatureValues, this->encryptedWeights, z, this->encryptedBias, encryptedSigmoid, encryptedError, encryptedLr, newWeights, 2);
+                z = this->EvalSum(z);                                                           Monitor(packedFeatureValues, this->encryptedWeights, z, this->encryptedBias, encryptedSigmoid, encryptedError, encryptedLr, newWeights, 3);
+                z = this->EvalAdd(z, this->encryptedBias);                                      Monitor(packedFeatureValues, this->encryptedWeights, z, this->encryptedBias, encryptedSigmoid, encryptedError, encryptedLr, newWeights, 4);
 
                 // Compute sigmoid
-                const auto encryptedSigmoid = this->sigmoid(z);
+                encryptedSigmoid = this->sigmoid(z);                                            Monitor(packedFeatureValues, this->encryptedWeights, z, this->encryptedBias, encryptedSigmoid, encryptedError, encryptedLr, newWeights, 5);
 
                 // Compute error
-                auto encryptedError = this->GetCc()->EvalSub(encryptedSigmoid, y[i]);
+                encryptedError = this->EvalSub(encryptedSigmoid, y[i]);                         Monitor(packedFeatureValues, this->encryptedWeights, z, this->encryptedBias, encryptedSigmoid, encryptedError, encryptedLr, newWeights, 6);
 
                 // Update weights - Wrong calculation using BGV schema
-                auto newWeights = this->GetCc()->EvalMult(encryptedLr, encryptedError);
-                this->Snoop(newWeights, this->n_features);
-                this->Snoop(packedFeatureValues, this->n_features);
-                newWeights = this->GetCc()->EvalMult(newWeights, packedFeatureValues);
-                this->Snoop(newWeights, this->n_features);
-                break;
-
-                this->encryptedWeights = this->GetCc()->EvalSub(this->encryptedWeights, newWeights);
+                newWeights = this->EvalMult(encryptedLr, encryptedError);                       Monitor(packedFeatureValues, this->encryptedWeights, z, this->encryptedBias, encryptedSigmoid, encryptedError, encryptedLr, newWeights, 7);
+                newWeights = this->EvalMult(newWeights, packedFeatureValues);                   Monitor(packedFeatureValues, this->encryptedWeights, z, this->encryptedBias, encryptedSigmoid, encryptedError, encryptedLr, newWeights, 8);
+                this->encryptedWeights = this->EvalSub(this->encryptedWeights, newWeights);     Monitor(packedFeatureValues, this->encryptedWeights, z, this->encryptedBias, encryptedSigmoid, encryptedError, encryptedLr, newWeights, 9);
+                // this->Snoop(this->encryptedWeights, this->n_features);
             }
+            break;
         }
     }
 
-    Ciphertext<DCRTPoly> LogisticRegressionEncrypted::Predict(const Ciphertext<DCRTPoly>& x)
+    Ciphertext<DCRTPoly> LogisticRegressionEncrypted::Predict(Ciphertext<DCRTPoly> x)
     {
-        const auto linear_combination = this->GetCc()->EvalMult(this->encryptedWeights, x);
-        return this->sigmoid(linear_combination);
+        auto z = this->EvalMult(x, this->encryptedWeights);
+        z = this->EvalSum(z);
+        z = this->EvalAdd(z, this->encryptedBias);
+        return this->sigmoid(z);
     }
 
     std::vector<Ciphertext<DCRTPoly>> LogisticRegressionEncrypted::PredictAll(
-        const std::vector<Ciphertext<DCRTPoly>>& x)
+         std::vector<Ciphertext<DCRTPoly>> x)
     {
         std::vector<Ciphertext<DCRTPoly>> predictions(x.size());
 

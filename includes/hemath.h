@@ -13,9 +13,10 @@
 
 using namespace lbcrypto;
 
-namespace hermesml {
-
-    class Constants : EncryptedObject {
+namespace hermesml
+{
+    class Constants : EncryptedObject
+    {
     private:
         Ciphertext<DCRTPoly> encryptedZero;
         Ciphertext<DCRTPoly> encryptedOne;
@@ -24,37 +25,37 @@ namespace hermesml {
         Ciphertext<DCRTPoly> encrypted0625;
 
     public:
-        explicit Constants(const HEContext &ctx, int32_t n_features);
-        [[nodiscard]] Ciphertext<DCRTPoly> Zero() const;
-        [[nodiscard]] Ciphertext<DCRTPoly> One() const;
-        [[nodiscard]] Ciphertext<DCRTPoly> C05() const;
-        [[nodiscard]] Ciphertext<DCRTPoly> C125() const;
-        [[nodiscard]] Ciphertext<DCRTPoly> C0625() const;
+        explicit Constants(HEContext ctx, int32_t n_features);
+        [[nodiscard]] Ciphertext<DCRTPoly> Zero();
+        [[nodiscard]] Ciphertext<DCRTPoly> One();
+        [[nodiscard]] Ciphertext<DCRTPoly> C05();
+        [[nodiscard]] Ciphertext<DCRTPoly> C125();
+        [[nodiscard]] Ciphertext<DCRTPoly> C0625();
     };
 
-    class Calculus : EncryptedObject {
+    class Calculus : EncryptedObject
+    {
     private:
-        Constants constants;
+        Constants ants;
 
     public:
-        explicit Calculus(const HEContext &ctx);
-        Ciphertext<DCRTPoly> TaylorSqrt(const Ciphertext<DCRTPoly>& x);
-        Ciphertext<DCRTPoly> Euclidean(const Ciphertext<DCRTPoly>& point1,
-                                       const Ciphertext<DCRTPoly>& point2);
+        explicit Calculus(HEContext ctx);
+        Ciphertext<DCRTPoly> TaylorSqrt(Ciphertext<DCRTPoly> x);
+        Ciphertext<DCRTPoly> Euclidean(Ciphertext<DCRTPoly> point1,
+                                       Ciphertext<DCRTPoly> point2);
     };
 
-    class CalculusQuant : EncryptedObject {
+    class CalculusQuant : EncryptedObject
+    {
     private:
-        Constants constants;
+        Constants ants;
 
     public:
-        explicit CalculusQuant(const HEContext &ctx);
-        Ciphertext<DCRTPoly> TaylorSqrt(const Ciphertext<DCRTPoly>& x);
-        Ciphertext<DCRTPoly> Euclidean(const Ciphertext<DCRTPoly>& point1,
-                                       const Ciphertext<DCRTPoly>& point2);
+        explicit CalculusQuant(HEContext ctx);
+        Ciphertext<DCRTPoly> TaylorSqrt(Ciphertext<DCRTPoly> x);
+        Ciphertext<DCRTPoly> Euclidean(Ciphertext<DCRTPoly> point1,
+                                       Ciphertext<DCRTPoly> point2);
     };
-
-
 }
 
 #endif //HEMATH_H
