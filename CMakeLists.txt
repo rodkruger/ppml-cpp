@@ -41,6 +41,7 @@ include_directories( ${OpenFHE_INCLUDE}/core )
 include_directories( ${OpenFHE_INCLUDE}/pke )
 include_directories( ${OpenFHE_INCLUDE}/binfhe )
 ### add directories for other OpenFHE modules as needed for your project
+include_directories(includes)
 
 link_directories( ${OpenFHE_LIBDIR} )
 link_directories( ${OPENMP_LIBRARIES} )
@@ -58,4 +59,52 @@ endif()
 ### EXAMPLE:
 ### add_executable( test demo-simple-example.cpp )
 
-add_executable( Demo src/demo-simple-example.cpp )
+# add_executable( Demo src/demo-simple-example.cpp )
+# add_executable( Draft src/Draft.cpp
+#         includes/model.h
+#         includes/hemath.h
+#         includes/core.h
+#         includes/client.h
+#         src/math/CalculusQuant.cpp
+#         src/core/EncryptedObject.cpp
+#         src/math/Constants.cpp
+#         src/client/Client.cpp
+#         src/model/BgvKnnEncrypted.cpp
+#         src/context/HEContextFactory.cpp
+#         src/context/HEContext.cpp
+#         src/core/MinMaxScaler.cpp
+#         src/core/Quantizer.cpp )
+add_executable( BgvLogisticRegression
+        src/BgvLogisticRegression.cpp
+        includes/client.h
+        includes/context.h
+        includes/core.h
+        includes/csv.hpp
+        includes/hemath.h
+        includes/model.h
+        src/math/Calculus.cpp
+        src/core/EncryptedObject.cpp
+        src/math/Constants.cpp
+        src/client/Client.cpp
+        src/context/HEContextFactory.cpp
+        src/context/HEContext.cpp
+        src/core/MinMaxScaler.cpp
+        src/core/Quantizer.cpp
+        src/model/LogisticRegressionEncrypted.cpp)
+add_executable( CkksLogisticRegression
+        src/CkksLogisticRegression.cpp
+        includes/client.h
+        includes/context.h
+        includes/core.h
+        includes/csv.hpp
+        includes/hemath.h
+        includes/model.h
+        src/math/Calculus.cpp
+        src/core/EncryptedObject.cpp
+        src/math/Constants.cpp
+        src/client/Client.cpp
+        src/context/HEContextFactory.cpp
+        src/context/HEContext.cpp
+        src/core/MinMaxScaler.cpp
+        src/core/Quantizer.cpp
+        src/model/LogisticRegressionEncrypted.cpp)

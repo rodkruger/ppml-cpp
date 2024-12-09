@@ -1,0 +1,10 @@
+/opt/clion-2024.2.3/bin/cmake/linux/x64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "Unix Makefiles" -S /home/rkruger/github.com/rodkruger/ppml-cpp -B /home/rkruger/github.com/rodkruger/ppml-cpp/cmake-build-ppml-cpp
+-- FOUND PACKAGE OpenFHE
+-- OpenFHE Version: 1.2.1
+-- OpenFHE installed as shared libraries: ON
+-- OpenFHE include files location: /usr/local/include/openfhe
+-- OpenFHE lib files location: /usr/local/lib
+-- OpenFHE Native Backend size: 64
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/rkruger/github.com/rodkruger/ppml-cpp/cmake-build-ppml-cpp
