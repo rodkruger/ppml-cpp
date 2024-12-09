@@ -4,23 +4,23 @@ using namespace lbcrypto;
 
 namespace hermesml {
 
-    CkksKnnEncrypted::CkksKnnEncrypted(int32_t k, HEContext& ctx) : EncryptedObject(ctx), calculus(Calculus(ctx)) {
+    CkksKnnEncrypted::CkksKnnEncrypted( int32_t k,  HEContext ctx) : EncryptedObject(ctx), calculus(Calculus(ctx)) {
         this->k = k;
         this->ctx = ctx;
     }
 
-    Ciphertext<DCRTPoly> CkksKnnEncrypted::Distance(const Ciphertext<DCRTPoly>& point1,
-                                                    const Ciphertext<DCRTPoly>& point2) {
+    Ciphertext<DCRTPoly> CkksKnnEncrypted::Distance( Ciphertext<DCRTPoly> point1,
+                                                     Ciphertext<DCRTPoly> point2) {
         return this->calculus.Euclidean(point1, point2);
     }
 
-    void CkksKnnEncrypted::Fit(const std::vector<Ciphertext<DCRTPoly>>& trainingData,
-                               const std::vector<int32_t>& trainingLabels) {
+    void CkksKnnEncrypted::Fit( std::vector<Ciphertext<DCRTPoly>> trainingData,
+                                std::vector<Ciphertext<DCRTPoly>> trainingLabels) {
         this->trainingData = trainingData;
         this->trainingLabels = trainingLabels;
     }
 
-    int32_t CkksKnnEncrypted::Predict(const Ciphertext<DCRTPoly>& testingPoint) {
+    Ciphertext<DCRTPoly> CkksKnnEncrypted::Predict( Ciphertext<DCRTPoly> testingPoint) {
 
         // Compute distances from the test point to all training points
         size_t numTrainingPoints = trainingData.size();
@@ -28,10 +28,11 @@ namespace hermesml {
 
         for (size_t i = 0; i < numTrainingPoints; i++) {
             auto distance = this->Distance(this->trainingData[i], testingPoint);
-            distances.emplace_back(distance, this->trainingLabels[i]);
+            // TODO: review encrypted labels
+            // distances.emplace_back(distance, this->trainingLabels[i]);
         }
 
-        return -1;
+        return nullptr;
 
         /**
         // Sort the distances
@@ -50,7 +51,7 @@ namespace hermesml {
         int64_t predictedLabel = -1;
         int64_t maxCount = 0;
 
-        for (const auto& label : labelCount) {
+        for ( auto label : labelCount) {
             if (label.second > maxCount) {
                 maxCount = label.second;
                 predictedLabel = label.first;

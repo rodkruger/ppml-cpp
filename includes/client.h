@@ -10,9 +10,11 @@ namespace hermesml {
 
     class Client : EncryptedObject {
     public:
-        explicit Client(const HEContext& ctx);
-        std::vector<Ciphertext<DCRTPoly>> Encrypt(const std::vector<std::vector<int64_t>>& data) const;
-        std::vector<Ciphertext<DCRTPoly>> Encrypt(const std::vector<std::vector<double>>& data) const;
+        explicit Client(HEContext ctx);
+        std::vector<Ciphertext<DCRTPoly>> Encrypt(std::vector<int64_t> data) ;
+        std::vector<Ciphertext<DCRTPoly>> Encrypt(std::vector<std::vector<int64_t>> data) ;
+        std::vector<Ciphertext<DCRTPoly>> EncryptCKKS(std::vector<std::vector<double>> data) ;
+        std::vector<Ciphertext<DCRTPoly>> EncryptCKKS(std::vector<double> data) ;
     };
 
 }

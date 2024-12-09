@@ -7,7 +7,7 @@
 using namespace hermesml;
 
 int main() {
-
+    /**
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed;
     auto scaler = MinMaxScaler();
@@ -132,7 +132,8 @@ int main() {
     auto clf = BgvKnnEncrypted(5, bgvCtx);
 
     std::cout << "# Train model " << std::endl;
-    clf.Fit(encryptedTrainingData, trainingLabels);
+    // TODO: review encrypted labels
+    // clf.Fit(encryptedTrainingData, trainingLabels);
 
     std::cout << "# Test model ... " << std::flush;
     clf.Predict(encryptedTestingData[0]);
@@ -141,6 +142,6 @@ int main() {
     elapsed = end - start;
 
     std::cout << "Elapsed time: " << elapsed.count() << " ms" << std::endl;
-
+    */
     return 0;
 }
