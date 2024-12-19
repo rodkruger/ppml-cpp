@@ -31,13 +31,13 @@ namespace hermesml
         return this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), packed);
     }
 
-    std::vector<double> EncryptedObject::UnpackValues(Plaintext plaintext, int32_t n_features)
+    std::vector<double> EncryptedObject::UnpackValues(Plaintext plaintext, uint16_t n_features)
     {
         auto packed = plaintext->GetCKKSPackedValue();
         auto n = n_features <= packed.size() ? n_features : packed.size();
         auto unpacked = std::vector<double>();
 
-        for (int i = 0; i < n; ++i)
+        for (uint64_t i = 0; i < n; ++i)
         {
             unpacked.push_back(packed[i].real());
         }
@@ -85,7 +85,7 @@ namespace hermesml
         return ciphertext;
     }
 
-    void EncryptedObject::Snoop(Ciphertext<DCRTPoly> ciphertext, int32_t n_features)
+    void EncryptedObject::Snoop(Ciphertext<DCRTPoly> ciphertext, uint16_t n_features)
     {
         Plaintext plaintext;
         this->GetCc()->Decrypt(this->GetCtx().GetPrivateKey(), ciphertext, &plaintext);

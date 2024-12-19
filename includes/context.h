@@ -20,17 +20,21 @@ namespace hermesml
         void SetPrivateKey(PrivateKey<DCRTPoly> privateKey);
 
         uint32_t GetMultiplicativeDepth();
-        void SetMultiplicativeDepth(uint32_t multiplicativeDepth);
+        void SetMultiplicativeDepth(uint16_t multiplicativeDepth);
 
         uint32_t GetNumSlots();
-        void SetNumSlots(uint32_t numSlots);
+        void SetNumSlots(uint16_t numSlots);
+
+        uint32_t GetLevelsAfterBootstrapping();
+        void SetLevelsAfterBootstrapping(uint16_t numSlots);
 
     private:
         CryptoContext<DCRTPoly> cc;
         PublicKey<DCRTPoly> publicKey;
         PrivateKey<DCRTPoly> privateKey;
-        uint32_t multiplicativeDepth = 0;
-        uint32_t numSlots = 0;
+        uint16_t multiplicativeDepth = 0;
+        uint16_t numSlots = 0;
+        uint16_t levelsAfterBootstrapping = 0;
     };
 
     class HEContextFactory

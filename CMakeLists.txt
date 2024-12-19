@@ -53,6 +53,12 @@ else()
     link_libraries( ${OpenFHE_SHARED_LIBRARIES} )
 endif()
 
+### Additional libraries
+# TFHE
+include_directories(/usr/local/include)
+include_directories(/usr/local/lib)
+link_directories(/usr/local/lib)
+
 ### ADD YOUR EXECUTABLE(s) HERE
 ### add_executable( EXECUTABLE-NAME SOURCES )
 ###
@@ -60,51 +66,52 @@ endif()
 ### add_executable( test demo-simple-example.cpp )
 
 # add_executable( Demo src/demo-simple-example.cpp )
-# add_executable( Draft src/Draft.cpp
-#         includes/model.h
-#         includes/hemath.h
-#         includes/core.h
-#         includes/client.h
-#         src/math/CalculusQuant.cpp
-#         src/core/EncryptedObject.cpp
-#         src/math/Constants.cpp
-#         src/client/Client.cpp
-#         src/model/BgvKnnEncrypted.cpp
-#         src/context/HEContextFactory.cpp
-#         src/context/HEContext.cpp
-#         src/core/MinMaxScaler.cpp
-#         src/core/Quantizer.cpp )
-add_executable( BgvLogisticRegression
-        src/BgvLogisticRegression.cpp
-        includes/client.h
-        includes/context.h
-        includes/core.h
-        includes/csv.hpp
-        includes/hemath.h
-        includes/model.h
-        src/math/Calculus.cpp
-        src/core/EncryptedObject.cpp
-        src/math/Constants.cpp
-        src/client/Client.cpp
+
+add_executable( CkksBootstrapping
+        src/examples/CkksBootstrapping.cpp
         src/context/HEContextFactory.cpp
-        src/context/HEContext.cpp
-        src/core/MinMaxScaler.cpp
-        src/core/Quantizer.cpp
-        src/model/LogisticRegressionEncrypted.cpp)
-add_executable( CkksLogisticRegression
-        src/CkksLogisticRegression.cpp
-        includes/client.h
-        includes/context.h
-        includes/core.h
-        includes/csv.hpp
-        includes/hemath.h
-        includes/model.h
-        src/math/Calculus.cpp
-        src/core/EncryptedObject.cpp
-        src/math/Constants.cpp
-        src/client/Client.cpp
-        src/context/HEContextFactory.cpp
-        src/context/HEContext.cpp
-        src/core/MinMaxScaler.cpp
-        src/core/Quantizer.cpp
-        src/model/LogisticRegressionEncrypted.cpp)
+        src/context/HEContext.cpp)
+
+#add_executable( Draft src/Draft.cpp
+#        src/core/EncryptedObject.cpp
+#        src/math/Constants.cpp
+#        src/client/Client.cpp
+#        src/context/HEContextFactory.cpp
+#        src/context/HEContext.cpp)
+#target_link_libraries(Draft PRIVATE tfhe-spqlios-fma)
+
+#add_executable( BgvLogisticRegression
+#        src/BgvLogisticRegression.cpp
+#        includes/client.h
+#        includes/context.h
+#        includes/core.h
+#        includes/csv.hpp
+#        includes/hemath.h
+#        includes/model.h
+#        src/math/Calculus.cpp
+#        src/core/EncryptedObject.cpp
+#        src/math/Constants.cpp
+#        src/client/Client.cpp
+#        src/context/HEContextFactory.cpp
+#        src/context/HEContext.cpp
+#        src/core/MinMaxScaler.cpp
+#        src/core/Quantizer.cpp
+#        src/model/LogisticRegressionEncrypted.cpp)
+
+#add_executable( CkksLogisticRegression
+#        src/CkksLogisticRegression.cpp
+#        includes/client.h
+#        includes/context.h
+#        includes/core.h
+#        includes/csv.hpp
+#        includes/hemath.h
+#        includes/model.h
+#        src/math/Calculus.cpp
+#        src/core/EncryptedObject.cpp
+#        src/math/Constants.cpp
+#        src/client/Client.cpp
+#        src/context/HEContextFactory.cpp
+#        src/context/HEContext.cpp
+#        src/core/MinMaxScaler.cpp
+#        src/core/Quantizer.cpp
+#        src/model/LogisticRegressionEncrypted.cpp)

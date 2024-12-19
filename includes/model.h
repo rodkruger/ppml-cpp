@@ -9,28 +9,25 @@
 #include "core.h"
 #include "hemath.h"
 
-namespace hermesml
-{
-    class MlModel
-    {
+namespace hermesml {
+    class MlModel {
     public:
-        virtual void Fit(std::vector<Ciphertext<DCRTPoly>> trainingData,
-                         std::vector<Ciphertext<DCRTPoly>> trainingLabels) = 0;
+        virtual void Fit(std::vector<Ciphertext<DCRTPoly> > trainingData,
+                         std::vector<Ciphertext<DCRTPoly> > trainingLabels) = 0;
 
         virtual Ciphertext<DCRTPoly> Predict(Ciphertext<DCRTPoly> dataPoint) = 0;
 
         virtual ~MlModel() = default;
     };
 
-    class BgvKnnEncrypted : EncryptedObject, MlModel
-    {
+    class BgvKnnEncrypted : EncryptedObject, MlModel {
     private:
         HEContext ctx;
         CalculusQuant calculus;
         CryptoContext<DCRTPoly> cc;
         int32_t k;
-        std::vector<Ciphertext<DCRTPoly>> trainingData;
-        std::vector<Ciphertext<DCRTPoly>> trainingLabels;
+        std::vector<Ciphertext<DCRTPoly> > trainingData;
+        std::vector<Ciphertext<DCRTPoly> > trainingLabels;
 
         Ciphertext<DCRTPoly> Distance(Ciphertext<DCRTPoly> point1,
                                       Ciphertext<DCRTPoly> point2);
@@ -38,21 +35,20 @@ namespace hermesml
     public:
         BgvKnnEncrypted(int32_t k, HEContext ctx);
 
-        void Fit(std::vector<Ciphertext<DCRTPoly>> trainingData,
-                 std::vector<Ciphertext<DCRTPoly>> trainingLabels) override;
+        void Fit(std::vector<Ciphertext<DCRTPoly> > trainingData,
+                 std::vector<Ciphertext<DCRTPoly> > trainingLabels) override;
 
         Ciphertext<DCRTPoly> Predict(Ciphertext<DCRTPoly> dataPoint) override;
     };
 
-    class CkksKnnEncrypted : EncryptedObject, MlModel
-    {
+    class CkksKnnEncrypted : EncryptedObject, MlModel {
     private:
         HEContext ctx;
         Calculus calculus;
         CryptoContext<DCRTPoly> cc;
         int32_t k;
-        std::vector<Ciphertext<DCRTPoly>> trainingData;
-        std::vector<Ciphertext<DCRTPoly>> trainingLabels;
+        std::vector<Ciphertext<DCRTPoly> > trainingData;
+        std::vector<Ciphertext<DCRTPoly> > trainingLabels;
 
         Ciphertext<DCRTPoly> Distance(Ciphertext<DCRTPoly> point1,
                                       Ciphertext<DCRTPoly> point2);
@@ -60,8 +56,8 @@ namespace hermesml
     public:
         CkksKnnEncrypted(int32_t k, HEContext ctx);
 
-        void Fit(std::vector<Ciphertext<DCRTPoly>> trainingData,
-                 std::vector<Ciphertext<DCRTPoly>> trainingLabels) override;
+        void Fit(std::vector<Ciphertext<DCRTPoly> > trainingData,
+                 std::vector<Ciphertext<DCRTPoly> > trainingLabels) override;
 
         Ciphertext<DCRTPoly> Predict(Ciphertext<DCRTPoly> dataPoint) override;
     };
@@ -134,8 +130,7 @@ namespace hermesml
      * - Can be less effective with highly imbalanced datasets.
      * - Struggles with complex relationships or high-dimensional data without feature engineering or transformation.
      */
-    class LogisticRegressionEncrypted : public EncryptedObject, public MlModel
-    {
+    class LogisticRegressionEncrypted : public EncryptedObject, public MlModel {
     private:
         Calculus calculus;
         Constants constants;
@@ -165,14 +160,38 @@ namespace hermesml
 
     public:
         explicit LogisticRegressionEncrypted(HEContext ctx, int32_t n_features, int32_t epochs);
+
         Ciphertext<DCRTPoly> GetLearningRate();
 
-        void Fit(std::vector<Ciphertext<DCRTPoly>> x,
-                 std::vector<Ciphertext<DCRTPoly>> y) override;
+        void Fit(std::vector<Ciphertext<DCRTPoly> > x,
+                 std::vector<Ciphertext<DCRTPoly> > y) override;
 
         Ciphertext<DCRTPoly> Predict(Ciphertext<DCRTPoly> x) override;
 
-        std::vector<Ciphertext<DCRTPoly>> PredictAll(std::vector<Ciphertext<DCRTPoly>> x);
+        std::vector<Ciphertext<DCRTPoly> > PredictAll(std::vector<Ciphertext<DCRTPoly> > x);
+    };
+
+    class CkksPerceptron : public EncryptedObject, public MlModel {
+    private:
+        Calculus calculus;
+        Constants constants;
+
+        int16_t n_features;
+        int16_t epochs;
+        Ciphertext<DCRTPoly> eWeights;
+        Ciphertext<DCRTPoly> eBias;
+
+    public:
+        explicit CkksPerceptron(HEContext ctx, int16_t n_features, int16_t epochs);
+
+        Ciphertext<DCRTPoly> GetLearningRate();
+
+        void Fit(std::vector<Ciphertext<DCRTPoly> > x,
+                 std::vector<Ciphertext<DCRTPoly> > y) override;
+
+        Ciphertext<DCRTPoly> Predict(Ciphertext<DCRTPoly> x) override;
+
+        std::vector<Ciphertext<DCRTPoly> > PredictAll(std::vector<Ciphertext<DCRTPoly> > x);
     };
 }
 

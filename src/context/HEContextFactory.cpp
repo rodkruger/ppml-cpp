@@ -52,7 +52,7 @@ namespace hermesml
     {
         // 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59
 
-        std::vector<uint32_t> levelBudget = {3, 3};
+        std::vector<uint32_t> levelBudget = {2, 2};
         std::vector<uint32_t> bsgsDim = {0, 0};
         int32_t numSlots = 16;
         auto parameters = CCParams<CryptoContextCKKSRNS>();
@@ -67,9 +67,8 @@ namespace hermesml
         parameters.SetBatchSize(numSlots);
         parameters.SetSecretKeyDist(UNIFORM_TERNARY);
 
-        // uint32_t levelsAvailableAfterBootstrap = 10;
-        // auto depth = levelsAvailableAfterBootstrap + FHECKKSRNS::GetBootstrapDepth(levelBudget, parameters.GetSecretKeyDist());
         auto depth = 30;
+        auto levelsAfterBootstrap = depth - FHECKKSRNS::GetBootstrapDepth(levelBudget, parameters.GetSecretKeyDist());
         parameters.SetMultiplicativeDepth(depth);
 
         auto cc = GenCryptoContext(parameters);
@@ -92,6 +91,7 @@ namespace hermesml
         auto ctx = HEContext();
         ctx.SetCc(cc);
         ctx.SetMultiplicativeDepth(depth);
+        ctx.SetLevelsAfterBootstrapping(levelsAfterBootstrap);
         ctx.SetNumSlots(numSlots);
         ctx.SetPublicKey(keys.publicKey);
         ctx.SetPrivateKey(keys.secretKey);

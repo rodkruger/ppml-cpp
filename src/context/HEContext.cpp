@@ -41,7 +41,7 @@ namespace hermesml
         return this->multiplicativeDepth;
     }
 
-    void HEContext::SetMultiplicativeDepth(uint32_t multiplicativeDepth)
+    void HEContext::SetMultiplicativeDepth(uint16_t multiplicativeDepth)
     {
         this->multiplicativeDepth = multiplicativeDepth;
     }
@@ -51,8 +51,18 @@ namespace hermesml
         return this->numSlots;
     }
 
-    void HEContext::SetNumSlots(uint32_t numSlots)
+    void HEContext::SetNumSlots(uint16_t numSlots)
     {
         this->numSlots = numSlots;
+    }
+
+    uint32_t HEContext::GetLevelsAfterBootstrapping()
+    {
+        return this->levelsAfterBootstrapping;
+    }
+
+    void HEContext::SetLevelsAfterBootstrapping(uint16_t levelsAfterBootstrapping)
+    {
+        this->levelsAfterBootstrapping = levelsAfterBootstrapping;
     }
 }

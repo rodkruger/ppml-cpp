@@ -23,7 +23,7 @@ namespace hermesml {
         CryptoContext<DCRTPoly> GetCc();
         Ciphertext<DCRTPoly> Encrypt(std::vector<int64_t> plaintext);
         Ciphertext<DCRTPoly> EncryptCKKS(std::vector<double> plaintext);
-        std::vector<double> UnpackValues(Plaintext plaintext, int32_t n_features);
+        std::vector<double> UnpackValues(Plaintext plaintext, uint16_t n_features);
         Ciphertext<DCRTPoly> EvalAdd(Ciphertext<DCRTPoly> ciphertext1,
                                      Ciphertext<DCRTPoly> ciphertext2);
         Ciphertext<DCRTPoly> EvalSum(Ciphertext<DCRTPoly> ciphertext1);
@@ -31,7 +31,7 @@ namespace hermesml {
                                      Ciphertext<DCRTPoly> ciphertext2);
         Ciphertext<DCRTPoly> EvalMult(Ciphertext<DCRTPoly> ciphertext1, Ciphertext<DCRTPoly> ciphertext2);
         Ciphertext<DCRTPoly> EvalBootstrap(Ciphertext<DCRTPoly> ciphertext);
-        void Snoop(Ciphertext<DCRTPoly> ciphertext, int32_t n_features);
+        void Snoop(Ciphertext<DCRTPoly> ciphertext, uint16_t n_features);
         int16_t GetScalingFactor();
     };
 

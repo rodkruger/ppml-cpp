@@ -48,7 +48,7 @@ namespace hermesml
     class CalculusQuant : EncryptedObject
     {
     private:
-        Constants ants;
+        Constants constants;
 
     public:
         explicit CalculusQuant(HEContext ctx);
