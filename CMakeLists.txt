@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.5.1)
+cmake_minimum_required(VERSION 3.5.1)
 
 ### To use gcc/g++ on a Macintosh, you must set the Compilers
 ### here, not inside the project
@@ -18,7 +18,7 @@ cmake_minimum_required (VERSION 3.5.1)
 
 project(demo CXX)
 set(CMAKE_CXX_STANDARD 17)
-option( BUILD_STATIC "Set to ON to include static versions of the library" OFF)
+option(BUILD_STATIC "Set to ON to include static versions of the library" OFF)
 
 find_package(OpenFHE CONFIG REQUIRED)
 if (OpenFHE_FOUND)
@@ -28,30 +28,30 @@ if (OpenFHE_FOUND)
     message(STATUS "OpenFHE include files location: ${OpenFHE_INCLUDE}")
     message(STATUS "OpenFHE lib files location: ${OpenFHE_LIBDIR}")
     message(STATUS "OpenFHE Native Backend size: ${OpenFHE_NATIVE_SIZE}")
-else()
+else ()
     message(FATAL_ERROR "PACKAGE OpenFHE NOT FOUND")
 endif ()
 
-set( CMAKE_CXX_FLAGS ${OpenFHE_CXX_FLAGS} )
+set(CMAKE_CXX_FLAGS ${OpenFHE_CXX_FLAGS})
 
-include_directories( ${OPENMP_INCLUDES} )
-include_directories( ${OpenFHE_INCLUDE} )
-include_directories( ${OpenFHE_INCLUDE}/third-party/include )
-include_directories( ${OpenFHE_INCLUDE}/core )
-include_directories( ${OpenFHE_INCLUDE}/pke )
-include_directories( ${OpenFHE_INCLUDE}/binfhe )
+include_directories(${OPENMP_INCLUDES})
+include_directories(${OpenFHE_INCLUDE})
+include_directories(${OpenFHE_INCLUDE}/third-party/include)
+include_directories(${OpenFHE_INCLUDE}/core)
+include_directories(${OpenFHE_INCLUDE}/pke)
+include_directories(${OpenFHE_INCLUDE}/binfhe)
 ### add directories for other OpenFHE modules as needed for your project
 include_directories(includes)
 
-link_directories( ${OpenFHE_LIBDIR} )
-link_directories( ${OPENMP_LIBRARIES} )
-if(BUILD_STATIC)
-    set( CMAKE_EXE_LINKER_FLAGS "${OpenFHE_EXE_LINKER_FLAGS} -static")
-    link_libraries( ${OpenFHE_STATIC_LIBRARIES} )
-else()
-    set( CMAKE_EXE_LINKER_FLAGS ${OpenFHE_EXE_LINKER_FLAGS} )
-    link_libraries( ${OpenFHE_SHARED_LIBRARIES} )
-endif()
+link_directories(${OpenFHE_LIBDIR})
+link_directories(${OPENMP_LIBRARIES})
+if (BUILD_STATIC)
+    set(CMAKE_EXE_LINKER_FLAGS "${OpenFHE_EXE_LINKER_FLAGS} -static")
+    link_libraries(${OpenFHE_STATIC_LIBRARIES})
+else ()
+    set(CMAKE_EXE_LINKER_FLAGS ${OpenFHE_EXE_LINKER_FLAGS})
+    link_libraries(${OpenFHE_SHARED_LIBRARIES})
+endif ()
 
 ### Additional libraries
 # TFHE
@@ -67,10 +67,29 @@ link_directories(/usr/local/lib)
 
 # add_executable( Demo src/demo-simple-example.cpp )
 
-add_executable( CkksBootstrapping
+add_executable(CkksBootstrapping
         src/examples/CkksBootstrapping.cpp
         src/context/HEContextFactory.cpp
         src/context/HEContext.cpp)
+
+add_executable(CkksPerceptron
+        src/examples/CkksPerceptron.cpp
+        includes/client.h
+        includes/context.h
+        includes/core.h
+        includes/csv.hpp
+        includes/hemath.h
+        includes/model.h
+        src/client/Client.cpp
+        src/context/HEContextFactory.cpp
+        src/context/HEContext.cpp
+        src/core/BootstrapableCiphertext.cpp
+        src/core/EncryptedObject.cpp
+        src/core/MinMaxScaler.cpp
+        src/core/Quantizer.cpp
+        src/hemath/Calculus.cpp
+        src/hemath/Constants.cpp
+        src/model/CkksPerceptron.cpp)
 
 #add_executable( Draft src/Draft.cpp
 #        src/core/EncryptedObject.cpp

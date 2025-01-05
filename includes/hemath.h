@@ -13,48 +13,53 @@
 
 using namespace lbcrypto;
 
-namespace hermesml
-{
-    class Constants : EncryptedObject
-    {
+namespace hermesml {
+    class Constants : EncryptedObject {
     private:
-        Ciphertext<DCRTPoly> encryptedZero;
-        Ciphertext<DCRTPoly> encryptedOne;
-        Ciphertext<DCRTPoly> encrypted05;
-        Ciphertext<DCRTPoly> encrypted125;
-        Ciphertext<DCRTPoly> encrypted0625;
+        BootstrapableCiphertext encryptedZero;
+        BootstrapableCiphertext encryptedOne;
+        BootstrapableCiphertext encrypted05;
+        BootstrapableCiphertext encrypted125;
+        BootstrapableCiphertext encrypted0625;
 
     public:
-        explicit Constants(HEContext ctx, int32_t n_features);
-        [[nodiscard]] Ciphertext<DCRTPoly> Zero();
-        [[nodiscard]] Ciphertext<DCRTPoly> One();
-        [[nodiscard]] Ciphertext<DCRTPoly> C05();
-        [[nodiscard]] Ciphertext<DCRTPoly> C125();
-        [[nodiscard]] Ciphertext<DCRTPoly> C0625();
+        explicit Constants(const HEContext &ctx, int32_t n_features);
+
+        BootstrapableCiphertext Zero() const;
+
+        BootstrapableCiphertext One() const;
+
+        BootstrapableCiphertext C05() const;
+
+        BootstrapableCiphertext C125() const;
+
+        BootstrapableCiphertext C0625() const;
     };
 
-    class Calculus : EncryptedObject
-    {
+    class Calculus : EncryptedObject {
     private:
         Constants ants;
 
     public:
-        explicit Calculus(HEContext ctx);
-        Ciphertext<DCRTPoly> TaylorSqrt(Ciphertext<DCRTPoly> x);
-        Ciphertext<DCRTPoly> Euclidean(Ciphertext<DCRTPoly> point1,
-                                       Ciphertext<DCRTPoly> point2);
+        explicit Calculus(const HEContext &ctx);
+
+        [[nodiscard]] BootstrapableCiphertext TaylorSqrt(const BootstrapableCiphertext &x) const;
+
+        // [[nodiscard]] BootstrapableCiphertext Euclidean(const BootstrapableCiphertext &point1,
+        //                                                 const BootstrapableCiphertext &point2) const;
     };
 
-    class CalculusQuant : EncryptedObject
-    {
+    class CalculusQuant : EncryptedObject {
     private:
         Constants constants;
 
     public:
-        explicit CalculusQuant(HEContext ctx);
-        Ciphertext<DCRTPoly> TaylorSqrt(Ciphertext<DCRTPoly> x);
-        Ciphertext<DCRTPoly> Euclidean(Ciphertext<DCRTPoly> point1,
-                                       Ciphertext<DCRTPoly> point2);
+        explicit CalculusQuant(const HEContext &ctx);
+
+        [[nodiscard]] BootstrapableCiphertext TaylorSqrt(const BootstrapableCiphertext &x) const;
+
+        // [[nodiscard]] BootstrapableCiphertext Euclidean(const BootstrapableCiphertext &point1,
+        //                                                 const BootstrapableCiphertext &point2) const;
     };
 }
 

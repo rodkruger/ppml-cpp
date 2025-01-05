@@ -1,119 +1,109 @@
 #include "model.h"
 
-void Monitor( Ciphertext<DCRTPoly> packedFeatureValues,
-                     Ciphertext<DCRTPoly> encryptedWeights,
-                     Ciphertext<DCRTPoly> z,
-                     Ciphertext<DCRTPoly> encryptedBias,
-                     Ciphertext<DCRTPoly> encryptedSigmoid,
-                     Ciphertext<DCRTPoly> encryptedError,
-                     Ciphertext<DCRTPoly> encryptedLr,
-                     Ciphertext<DCRTPoly> newWeights,
-                     int32_t point)
-{
-    /*
-    std::cout << point << " - packedFeatureValues: " << packedFeatureValues->GetLevel() << "; ";
-    std::cout << "encryptedWeights: " << encryptedWeights->GetLevel() << "; ";
-    std::cout << "z: " << z->GetLevel() << "; ";
-    std::cout << "encryptedBias: " << encryptedBias->GetLevel() << "; ";
-    std::cout << "encryptedSigmoid: " << encryptedSigmoid->GetLevel() << "; ";
-    std::cout << "encryptedError: " << encryptedError->GetLevel() << "; ";
-    std::cout << "encryptedLr: " << encryptedLr->GetLevel() << "; ";
-    std::cout << "newWeights: " << newWeights->GetLevel() << std::endl;
-    */
+void Monitor(const hermesml::BootstrapableCiphertext &packedFeatureValues,
+             const hermesml::BootstrapableCiphertext &encryptedWeights,
+             const hermesml::BootstrapableCiphertext &z,
+             const hermesml::BootstrapableCiphertext &encryptedBias,
+             const hermesml::BootstrapableCiphertext &encryptedSigmoid,
+             const hermesml::BootstrapableCiphertext &encryptedError,
+             const hermesml::BootstrapableCiphertext &encryptedLr,
+             const hermesml::BootstrapableCiphertext &newWeights,
+             const int32_t point) {
+    std::cout << point << " - packedFeatureValues: " << packedFeatureValues.GetCiphertext()->GetLevel() << "; ";
+    std::cout << "encryptedWeights: " << encryptedWeights.GetCiphertext()->GetLevel() << "; ";
+    std::cout << "z: " << z.GetCiphertext()->GetLevel() << "; ";
+    std::cout << "encryptedBias: " << encryptedBias.GetCiphertext()->GetLevel() << "; ";
+    std::cout << "encryptedSigmoid: " << encryptedSigmoid.GetCiphertext()->GetLevel() << "; ";
+    std::cout << "encryptedError: " << encryptedError.GetCiphertext()->GetLevel() << "; ";
+    std::cout << "encryptedLr: " << encryptedLr.GetCiphertext()->GetLevel() << "; ";
+    std::cout << "newWeights: " << newWeights.GetCiphertext()->GetLevel() << std::endl;
 }
 
-namespace hermesml
-{
-    CkksPerceptron::CkksPerceptron( HEContext ctx,
-                                                              int16_t n_features,
-                                                              int16_t epochs):
-        EncryptedObject(ctx), calculus(Calculus(ctx)), constants(Constants(ctx, n_features))
-    {
+namespace hermesml {
+    CkksPerceptron::CkksPerceptron(const HEContext &ctx,
+                                   const int16_t n_features,
+                                   const int16_t epochs): EncryptedObject(ctx), calculus(Calculus(ctx)),
+                                                          constants(Constants(ctx, n_features)),
+                                                          eWeights(this->constants.Zero()),
+                                                          eBias(this->constants.Zero()) {
         this->n_features = n_features;
         this->epochs = epochs;
     }
 
-    Ciphertext<DCRTPoly> CkksPerceptron::GetLearningRate()
-    {
-        double lr = 0.001 * this->GetScalingFactor();
+    BootstrapableCiphertext CkksPerceptron::GetLearningRate() const {
+        const double lr = 0.001 * GetScalingFactor();
         return this->EncryptCKKS(std::vector(n_features, lr));
     }
 
-    /*
-    Ciphertext<DCRTPoly> LogisticRegressionEncrypted::sigmoid(Ciphertext<DCRTPoly> x)
-    {
+    BootstrapableCiphertext CkksPerceptron::sigmoid(const BootstrapableCiphertext &x) const {
         //                                                    ( term 1  )   (   term 2   )
         // Approximate sigmoid using cubic polynomial: 0.5  +  0.125 * x  -  0.0625 * x^3
-         auto x_squared = this->EvalMult(x, x);
-         auto x_cubed = this->EvalMult(x_squared, x);
+        const auto x_squared = this->EvalMult(x, x);
+        const auto x_cubed = this->EvalMult(x_squared, x);
 
-         auto term1 = this->EvalMult(x, this->constants.C125());
-         auto term2 = this->EvalMult(x_cubed, this->constants.C0625());
+        const auto term1 = this->EvalMult(x, this->constants.C125());
+        const auto term2 = this->EvalMult(x_cubed, this->constants.C0625());
 
         return this->EvalAdd(this->constants.C05(), this->EvalSub(term1, term2));
     }
-     */
 
-    void CkksPerceptron::Fit( std::vector<Ciphertext<DCRTPoly>> x,
-                                           std::vector<Ciphertext<DCRTPoly>> y)
-    {
-         auto encryptedLr = this->GetLearningRate();
+    void CkksPerceptron::Fit(const std::vector<BootstrapableCiphertext> &x,
+                             const std::vector<BootstrapableCiphertext> &y) {
+        /*
+        Monitor(packedFeatureValues, this->eWeights, z, this->eBias, encryptedSigmoid, encryptedError,
+                encryptedLr, newWeights, 1);
+        */
+
+        const auto encryptedLr = this->GetLearningRate();
 
         // Initialize weights to zero
-         auto weights = std::vector<double>(this->n_features, 0);
+        const auto weights = std::vector<double>(this->n_features, 0);
         this->eWeights = this->EncryptCKKS(weights);
 
-         auto bias = std::vector<double>(this->n_features, 0);
+        const auto bias = std::vector<double>(this->n_features, 0);
         this->eBias = this->EncryptCKKS(bias);
 
-        Ciphertext<DCRTPoly> packedFeatureValues = this->constants.Zero();
-        Ciphertext<DCRTPoly> z = this->constants.Zero();
-        Ciphertext<DCRTPoly> encryptedSigmoid = this->constants.Zero();
-        Ciphertext<DCRTPoly> encryptedError = this->constants.Zero();
-        Ciphertext<DCRTPoly> newWeights = this->constants.Zero();
+        auto packedFeatureValues = this->constants.Zero();
+        auto z = this->constants.Zero();
+        const auto encryptedSigmoid = this->constants.Zero();
+        auto encryptedError = this->constants.Zero();
+        auto newWeights = this->constants.Zero();
 
-        for (int32_t epoch = 0; epoch < epochs; epoch++)
-        {
+        for (int32_t epoch = 0; epoch < epochs; epoch++) {
             // Compute encrypted gradients using plain 'y' values
-            for (size_t i = 0; i < x.size(); i++)
-            {
+            for (size_t i = 0; i < x.size(); i++) {
                 // Compute linear combination
-                packedFeatureValues = x[i];                                        Monitor(packedFeatureValues, this->eWeights, z, this->eBias, encryptedSigmoid, encryptedError, encryptedLr, newWeights, 1);
-                z = this->EvalMult(packedFeatureValues, this->eWeights);           Monitor(packedFeatureValues, this->eWeights, z, this->eBias, encryptedSigmoid, encryptedError, encryptedLr, newWeights, 2);
-                z = this->EvalSum(z);                                              Monitor(packedFeatureValues, this->eWeights, z, this->eBias, encryptedSigmoid, encryptedError, encryptedLr, newWeights, 3);
-                z = this->EvalAdd(z, this->eBias);                                 Monitor(packedFeatureValues, this->eWeights, z, this->eBias, encryptedSigmoid, encryptedError, encryptedLr, newWeights, 4);
+                packedFeatureValues = x[i];
+                z = this->EvalMult(packedFeatureValues, this->eWeights);
+                z = this->EvalSum(z);
+                z = this->EvalAdd(z, this->eBias);
 
                 // Compute sigmoid
-                encryptedSigmoid = this->sigmoid(z);                               Monitor(packedFeatureValues, this->eWeights, z, this->eBias, encryptedSigmoid, encryptedError, encryptedLr, newWeights, 5);
+                // encryptedSigmoid = this->sigmoid(z);
 
                 // Compute error
-                encryptedError = this->EvalSub(encryptedSigmoid, y[i]);            Monitor(packedFeatureValues, this->eWeights, z, this->eBias, encryptedSigmoid, encryptedError, encryptedLr, newWeights, 6);
+                encryptedError = this->EvalSub(encryptedSigmoid, y[i]);
 
                 // Update weights - Wrong calculation using BGV schema
-                newWeights = this->EvalMult(encryptedLr, encryptedError);          Monitor(packedFeatureValues, this->eWeights, z, this->eBias, encryptedSigmoid, encryptedError, encryptedLr, newWeights, 7);
-                newWeights = this->EvalMult(newWeights, packedFeatureValues);      Monitor(packedFeatureValues, this->eWeights, z, this->eBias, encryptedSigmoid, encryptedError, encryptedLr, newWeights, 8);
-                this->eWeights = this->EvalSub(this->eWeights, newWeights);        Monitor(packedFeatureValues, this->eWeights, z, this->eBias, encryptedSigmoid, encryptedError, encryptedLr, newWeights, 9);
+                newWeights = this->EvalMult(encryptedLr, encryptedError);
+                newWeights = this->EvalMult(newWeights, packedFeatureValues);
+                this->eWeights = this->EvalSub(this->eWeights, newWeights);
                 // this->Snoop(this->encryptedWeights, this->n_features);
             }
-            break;
         }
     }
 
-    Ciphertext<DCRTPoly> CkksPerceptron::Predict(Ciphertext<DCRTPoly> x)
-    {
+    BootstrapableCiphertext CkksPerceptron::Predict(const BootstrapableCiphertext &x) {
         auto z = this->EvalMult(x, this->eWeights);
         z = this->EvalSum(z);
         z = this->EvalAdd(z, this->eBias);
         return this->sigmoid(z);
     }
 
-    std::vector<Ciphertext<DCRTPoly>> CkksPerceptron::PredictAll(
-         std::vector<Ciphertext<DCRTPoly>> x)
-    {
-        std::vector<Ciphertext<DCRTPoly>> predictions(x.size());
+    std::vector<BootstrapableCiphertext> CkksPerceptron::PredictAll(const std::vector<BootstrapableCiphertext> &x) {
+        std::vector<BootstrapableCiphertext> predictions(x.size());
 
-        for (size_t i = 0; i < x.size(); ++i)
-        {
+        for (size_t i = 0; i < x.size(); ++i) {
             predictions[i] = this->Predict(x[i]);
         }
 

@@ -4,22 +4,21 @@
 using namespace hermesml;
 
 int main(int argc, const char *argv[]) {
-
-    auto heContext = HEContextFactory().ckksHeContext();
-    auto cc = heContext.GetCc();
-    auto publicKey = heContext.GetPublicKey();
-    auto privateKey = heContext.GetPrivateKey();
+    const auto heContext = HEContextFactory::ckksHeContext();
+    const auto cc = heContext.GetCc();
+    const auto publicKey = heContext.GetPublicKey();
+    const auto privateKey = heContext.GetPrivateKey();
 
     std::cout << "Multiplicative depth: " << heContext.GetMultiplicativeDepth() << std::endl;
     std::cout << "Levels after bootstrapping: " << heContext.GetLevelsAfterBootstrapping() << std::endl;
 
-    auto plaintext1 = cc->MakeCKKSPackedPlaintext(std::vector<double>{1});
-    auto plaintext2 = cc->MakeCKKSPackedPlaintext(std::vector<double>{1});
+    const auto plaintext1 = cc->MakeCKKSPackedPlaintext(std::vector<double>{1});
+    const auto plaintext2 = cc->MakeCKKSPackedPlaintext(std::vector<double>{1});
 
-    auto etext1 = cc->Encrypt(publicKey, plaintext1);
-    auto etext2 = cc->Encrypt(publicKey, plaintext2);
+    const auto etext1 = cc->Encrypt(publicKey, plaintext1);
+    const auto etext2 = cc->Encrypt(publicKey, plaintext2);
 
-    int32_t levelsLeft;
+    uint16_t levelsLeft;
     Ciphertext<DCRTPoly> eresult;
     Plaintext dresult;
 
@@ -68,5 +67,4 @@ int main(int argc, const char *argv[]) {
     std::cout << std::endl << "    >>> Result: " << dresult->GetCKKSPackedValue()[0] << std::endl;
 
     return 0;
-
 }

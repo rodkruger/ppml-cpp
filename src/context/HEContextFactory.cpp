@@ -4,10 +4,8 @@
 
 #include "context.h"
 
-namespace hermesml
-{
-    HEContext HEContextFactory::bgvHeContext()
-    {
+namespace hermesml {
+    HEContext HEContextFactory::bgvHeContext() {
         auto multiplicativeDepth = 10; // 10-20
 
         auto parameters = CCParams<CryptoContextBGVRNS>();
@@ -48,12 +46,11 @@ namespace hermesml
         return ctx;
     }
 
-    HEContext HEContextFactory::ckksHeContext()
-    {
+    HEContext HEContextFactory::ckksHeContext() {
         // 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59
 
-        std::vector<uint32_t> levelBudget = {2, 2};
-        std::vector<uint32_t> bsgsDim = {0, 0};
+        const std::vector<uint32_t> levelBudget = {2, 2};
+        const std::vector<uint32_t> bsgsDim = {0, 0};
         int32_t numSlots = 16;
         auto parameters = CCParams<CryptoContextCKKSRNS>();
 

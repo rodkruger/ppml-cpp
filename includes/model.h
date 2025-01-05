@@ -12,10 +12,10 @@
 namespace hermesml {
     class MlModel {
     public:
-        virtual void Fit(std::vector<Ciphertext<DCRTPoly> > trainingData,
-                         std::vector<Ciphertext<DCRTPoly> > trainingLabels) = 0;
+        virtual void Fit(const std::vector<BootstrapableCiphertext> &x,
+                         const std::vector<BootstrapableCiphertext> &y) = 0;
 
-        virtual Ciphertext<DCRTPoly> Predict(Ciphertext<DCRTPoly> dataPoint) = 0;
+        virtual BootstrapableCiphertext Predict(const BootstrapableCiphertext &point) = 0;
 
         virtual ~MlModel() = default;
     };
@@ -26,19 +26,19 @@ namespace hermesml {
         CalculusQuant calculus;
         CryptoContext<DCRTPoly> cc;
         int32_t k;
-        std::vector<Ciphertext<DCRTPoly> > trainingData;
-        std::vector<Ciphertext<DCRTPoly> > trainingLabels;
+        std::vector<BootstrapableCiphertext> trainingData;
+        std::vector<BootstrapableCiphertext> trainingLabels;
 
-        Ciphertext<DCRTPoly> Distance(Ciphertext<DCRTPoly> point1,
-                                      Ciphertext<DCRTPoly> point2);
+        BootstrapableCiphertext Distance(const BootstrapableCiphertext &point1,
+                                         const BootstrapableCiphertext &point2);
 
     public:
-        BgvKnnEncrypted(int32_t k, HEContext ctx);
+        BgvKnnEncrypted(int32_t k, const HEContext &ctx);
 
-        void Fit(std::vector<Ciphertext<DCRTPoly> > trainingData,
-                 std::vector<Ciphertext<DCRTPoly> > trainingLabels) override;
+        void Fit(const std::vector<BootstrapableCiphertext> &trainingData,
+                 const std::vector<BootstrapableCiphertext> &trainingLabels) override;
 
-        Ciphertext<DCRTPoly> Predict(Ciphertext<DCRTPoly> dataPoint) override;
+        BootstrapableCiphertext Predict(const BootstrapableCiphertext &dataPoint) override;
     };
 
     class CkksKnnEncrypted : EncryptedObject, MlModel {
@@ -50,16 +50,16 @@ namespace hermesml {
         std::vector<Ciphertext<DCRTPoly> > trainingData;
         std::vector<Ciphertext<DCRTPoly> > trainingLabels;
 
-        Ciphertext<DCRTPoly> Distance(Ciphertext<DCRTPoly> point1,
-                                      Ciphertext<DCRTPoly> point2);
+        Ciphertext<DCRTPoly> Distance(const Ciphertext<DCRTPoly> &point1,
+                                      const Ciphertext<DCRTPoly> &point2);
 
     public:
-        CkksKnnEncrypted(int32_t k, HEContext ctx);
+        CkksKnnEncrypted(int32_t k, const HEContext &ctx);
 
-        void Fit(std::vector<Ciphertext<DCRTPoly> > trainingData,
-                 std::vector<Ciphertext<DCRTPoly> > trainingLabels) override;
+        void Fit(const std::vector<BootstrapableCiphertext> &trainingData,
+                 const std::vector<BootstrapableCiphertext> &trainingLabels) override;
 
-        Ciphertext<DCRTPoly> Predict(Ciphertext<DCRTPoly> dataPoint) override;
+        BootstrapableCiphertext Predict(const BootstrapableCiphertext &dataPoint) override;
     };
 
     /**
@@ -156,19 +156,19 @@ namespace hermesml {
         *   a linear combination of input features and weights, also known as the logit (logistic function input)
          * @return
          */
-        Ciphertext<DCRTPoly> sigmoid(Ciphertext<DCRTPoly> x);
+        BootstrapableCiphertext sigmoid(const BootstrapableCiphertext &x);
 
     public:
-        explicit LogisticRegressionEncrypted(HEContext ctx, int32_t n_features, int32_t epochs);
+        explicit LogisticRegressionEncrypted(const HEContext &ctx, int32_t n_features, int32_t epochs);
 
-        Ciphertext<DCRTPoly> GetLearningRate();
+        BootstrapableCiphertext GetLearningRate();
 
-        void Fit(std::vector<Ciphertext<DCRTPoly> > x,
-                 std::vector<Ciphertext<DCRTPoly> > y) override;
+        void Fit(const std::vector<BootstrapableCiphertext> &x,
+                 const std::vector<BootstrapableCiphertext> &y) override;
 
-        Ciphertext<DCRTPoly> Predict(Ciphertext<DCRTPoly> x) override;
+        BootstrapableCiphertext Predict(const BootstrapableCiphertext &x) override;
 
-        std::vector<Ciphertext<DCRTPoly> > PredictAll(std::vector<Ciphertext<DCRTPoly> > x);
+        std::vector<BootstrapableCiphertext> PredictAll(const std::vector<BootstrapableCiphertext> &x);
     };
 
     class CkksPerceptron : public EncryptedObject, public MlModel {
@@ -178,20 +178,22 @@ namespace hermesml {
 
         int16_t n_features;
         int16_t epochs;
-        Ciphertext<DCRTPoly> eWeights;
-        Ciphertext<DCRTPoly> eBias;
+        BootstrapableCiphertext eWeights;
+        BootstrapableCiphertext eBias;
+
+        BootstrapableCiphertext sigmoid(const BootstrapableCiphertext &x) const;
 
     public:
-        explicit CkksPerceptron(HEContext ctx, int16_t n_features, int16_t epochs);
+        explicit CkksPerceptron(const HEContext &ctx, int16_t n_features, int16_t epochs);
 
-        Ciphertext<DCRTPoly> GetLearningRate();
+        BootstrapableCiphertext GetLearningRate() const;
 
-        void Fit(std::vector<Ciphertext<DCRTPoly> > x,
-                 std::vector<Ciphertext<DCRTPoly> > y) override;
+        void Fit(const std::vector<BootstrapableCiphertext> &x,
+                 const std::vector<BootstrapableCiphertext> &y) override;
 
-        Ciphertext<DCRTPoly> Predict(Ciphertext<DCRTPoly> x) override;
+        BootstrapableCiphertext Predict(const BootstrapableCiphertext &x) override;
 
-        std::vector<Ciphertext<DCRTPoly> > PredictAll(std::vector<Ciphertext<DCRTPoly> > x);
+        std::vector<BootstrapableCiphertext> PredictAll(const std::vector<BootstrapableCiphertext> &x);
     };
 }
 

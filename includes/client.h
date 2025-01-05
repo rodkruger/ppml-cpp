@@ -7,16 +7,19 @@
 #include "core.h"
 
 namespace hermesml {
-
     class Client : EncryptedObject {
     public:
-        explicit Client(HEContext ctx);
-        std::vector<Ciphertext<DCRTPoly>> Encrypt(std::vector<int64_t> data) ;
-        std::vector<Ciphertext<DCRTPoly>> Encrypt(std::vector<std::vector<int64_t>> data) ;
-        std::vector<Ciphertext<DCRTPoly>> EncryptCKKS(std::vector<std::vector<double>> data) ;
-        std::vector<Ciphertext<DCRTPoly>> EncryptCKKS(std::vector<double> data) ;
-    };
+        explicit Client(const HEContext &ctx);
 
+        [[nodiscard]] std::vector<Ciphertext<DCRTPoly> > Encrypt(const std::vector<int64_t> &data) const;
+
+        [[nodiscard]] std::vector<Ciphertext<DCRTPoly> > Encrypt(const std::vector<std::vector<int64_t> > &data) const;
+
+        [[nodiscard]] std::vector<Ciphertext<DCRTPoly> > EncryptCKKS(
+            const std::vector<std::vector<double> > &data) const;
+
+        [[nodiscard]] std::vector<Ciphertext<DCRTPoly> > EncryptCKKS(const std::vector<double> &data) const;
+    };
 }
 
 #endif //CLIENT_H
