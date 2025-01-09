@@ -98,7 +98,7 @@ int main() {
 
     std::cout << "Elapsed time: " << elapsed.count() << " ms" << std::endl;
 
-    std::cout << "# Test model ... " << std::flush;
+    std::cout << "# Test model ... " << std::endl;
 
     start = std::chrono::high_resolution_clock::now();
 
@@ -111,7 +111,7 @@ int main() {
         auto realLabel = holdoutVal.GetTestingLabels()[i];
         auto pPlainLabel = plain_label->GetCKKSPackedValue()[0].real();
         auto pPredictedLabel = pPlainLabel > 0.0 ? 1.0 : 0.0;
-        std::cout << "# Real label: " << realLabel << ". Predicted plain label: " << pPlainLabel <<
+        std::cout << "      Real label: " << realLabel << ". Predicted plain label: " << pPlainLabel <<
                 ". Decrypted label: " << pPredictedLabel << std::endl;
 
         if (pPredictedLabel == realLabel) {
@@ -127,12 +127,14 @@ int main() {
     //-----------------------------------------------------------------------------------------------------------------
 
     // Results
-    std::cout << "Correct predictions: " << correct_predictions << " ms" << std::endl;
+    std::cout << "# Metrics " << std::endl;
+
+    std::cout << "      Correct predictions: " << correct_predictions << std::endl;
 
     auto accuracy =
             static_cast<double>(correct_predictions) / static_cast<double>(holdoutVal.GetTestingLabels().size());
 
-    std::cout << "Accuracy: " << accuracy << std::endl;
+    std::cout << "      Accuracy: " << accuracy << std::endl;
 
     return EXIT_SUCCESS;
 }
