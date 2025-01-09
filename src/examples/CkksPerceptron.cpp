@@ -123,14 +123,16 @@ int main() {
     elapsed = end - start;
 
     std::cout << "Elapsed time: " << elapsed.count() << " ms" << std::endl;
-    std::cout << "Accuracy: " << (correct_predictions / holdoutVal.GetTestingLabels().size()) << std::endl;
 
-    // 420.000 -> 17 hours / 1020 minutes
-    // 200 -> x = 0,48 (appr. 30 seconds)
+    //-----------------------------------------------------------------------------------------------------------------
 
-    // Multiplicative Depth: 20 (minimum value)
-    // Encryption Time: 60 seconds
-    // Training Time: 950 seconds
+    // Results
+    std::cout << "Correct predictions: " << correct_predictions << " ms" << std::endl;
+
+    auto accuracy =
+            static_cast<double>(correct_predictions) / static_cast<double>(holdoutVal.GetTestingLabels().size());
+
+    std::cout << "Accuracy: " << accuracy << std::endl;
 
     return EXIT_SUCCESS;
 }
