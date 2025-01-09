@@ -2,7 +2,7 @@
 
 namespace hermesml {
 
-    CalculusQuant::CalculusQuant( HEContext ctx) : EncryptedObject(ctx), ants(Constants(ctx)) {}
+    CalculusQuant::CalculusQuant( HEContext ctx) : EncryptedObject(ctx), constants(Constants(ctx)) {}
 
     Ciphertext<DCRTPoly> CalculusQuant::TaylorSqrt( Ciphertext<DCRTPoly> x) {
 
@@ -16,7 +16,7 @@ namespace hermesml {
         ciphertext = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), plaintext);
 
         auto term = this->GetCc()->EvalMult(x,  ciphertext);                // First term: x/2
-        auto result = this->GetCc()->EvalAdd(this->ants.One(), term);  // result += 1 + x/2
+        auto result = this->GetCc()->EvalAdd(this->constants.One(), term);  // result += 1 + x/2
 
         if expr (TAYLOR_SQRT_PRECISION > 1) {
             plaintext = this->GetCc()->MakePackedPlaintext({static_cast<int64_t>( (-1.0 / 8.0) * QUANTIZE_SCALE_FACTOR )});

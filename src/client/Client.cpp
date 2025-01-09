@@ -1,64 +1,58 @@
 #include "client.h"
 
-namespace hermesml
-{
-    Client::Client(HEContext ctx) : EncryptedObject(ctx)
-    {
+namespace hermesml {
+    Client::Client(const HEContext &ctx) : EncryptedObject(ctx) {
     }
 
-    std::vector<Ciphertext<DCRTPoly>> Client::Encrypt(std::vector<int64_t> data)
-    {
-        auto encryptedData = std::vector<Ciphertext<DCRTPoly>>();
+    std::vector<BootstrapableCiphertext> Client::Encrypt(const std::vector<int64_t> &data) const {
+        auto eData = std::vector<BootstrapableCiphertext>();
 
-        for (auto row : data)
-        {
-            auto packedValue = this->GetCc()->MakePackedPlaintext({row});
-            auto encryptedRow = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), packedValue);
-            encryptedData.push_back(encryptedRow);
+        for (auto row: data) {
+            const auto pValue = this->GetCc()->MakePackedPlaintext({row});
+            const auto eRow = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), pValue);
+            const auto bCiphertext = BootstrapableCiphertext(eRow, this->GetCtx().GetMultiplicativeDepth());
+            eData.emplace_back(bCiphertext);
         }
 
-        return encryptedData;
+        return eData;
     }
 
-    std::vector<Ciphertext<DCRTPoly>> Client::Encrypt(std::vector<std::vector<int64_t>> data)
-    {
-        auto encryptedData = std::vector<Ciphertext<DCRTPoly>>();
+    std::vector<BootstrapableCiphertext> Client::Encrypt(const std::vector<std::vector<int64_t> > &data) const {
+        auto eData = std::vector<BootstrapableCiphertext>();
 
-        for (auto row : data)
-        {
-            auto packedValue = this->GetCc()->MakePackedPlaintext(row);
-            auto encryptedRow = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), packedValue);
-            encryptedData.push_back(encryptedRow);
+        for (auto &row: data) {
+            const auto pValue = this->GetCc()->MakePackedPlaintext(row);
+            const auto eRow = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), pValue);
+            const auto bCiphertext = BootstrapableCiphertext(eRow, this->GetCtx().GetMultiplicativeDepth());
+            eData.emplace_back(bCiphertext);
         }
 
-        return encryptedData;
+        return eData;
     }
 
-    std::vector<Ciphertext<DCRTPoly>> Client::EncryptCKKS(std::vector<std::vector<double>> data)
-    {
-        auto encryptedData = std::vector<Ciphertext<DCRTPoly>>();
+    std::vector<BootstrapableCiphertext> Client::EncryptCKKS(const std::vector<std::vector<double> > &data) const {
+        auto eData = std::vector<BootstrapableCiphertext>();
 
-        for (auto row : data)
-        {
-            auto packedValue = this->GetCc()->MakeCKKSPackedPlaintext(row);
-            auto encryptedRow = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), packedValue);
-            encryptedData.push_back(encryptedRow);
+        for (auto &row: data) {
+            const auto pValue = this->GetCc()->MakeCKKSPackedPlaintext(row);
+            const auto eRow = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), pValue);
+            const auto bCiphertext = BootstrapableCiphertext(eRow, this->GetCtx().GetMultiplicativeDepth());
+            eData.emplace_back(bCiphertext);
         }
 
-        return encryptedData;
+        return eData;
     }
 
-    std::vector<Ciphertext<DCRTPoly>> Client::EncryptCKKS(std::vector<double> data)
-    {
-        auto encryptedData = std::vector<Ciphertext<DCRTPoly>>();
+    std::vector<BootstrapableCiphertext> Client::EncryptCKKS(const std::vector<double> &data) const {
+        auto eData = std::vector<BootstrapableCiphertext>();
 
-        for (auto row : data)
-        {
-            auto packedValue = this->GetCc()->MakeCKKSPackedPlaintext(std::vector(1, row));
-            auto encryptedRow = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), packedValue);
-            encryptedData.push_back(encryptedRow);
+        for (auto &row: data) {
+            const auto pValue = this->GetCc()->MakeCKKSPackedPlaintext(std::vector(1, row));
+            const auto eRow = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), pValue);
+            const auto bCiphertext = BootstrapableCiphertext(eRow, this->GetCtx().GetMultiplicativeDepth());
+            eData.emplace_back(bCiphertext);
         }
 
-        return encryptedData;
+        return eData;
     }
 }
