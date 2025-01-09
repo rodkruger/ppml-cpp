@@ -7,6 +7,8 @@ namespace hermesml {
         this->encrypted05 = this->EncryptCKKS(std::vector<double>(n_features, 0.5));
         this->encrypted125 = this->EncryptCKKS(std::vector<double>(n_features, 0.125));
         this->encrypted0625 = this->EncryptCKKS(std::vector<double>(n_features, 0.0625));
+        this->encrypted0333333 = this->EncryptCKKS(std::vector<double>(n_features, 0.333333));
+        this->encrypted0133333 = this->EncryptCKKS(std::vector<double>(n_features, 0.133333));
     }
 
     BootstrapableCiphertext Constants::Zero() const {
@@ -27,5 +29,13 @@ namespace hermesml {
 
     BootstrapableCiphertext Constants::C0625() const {
         return this->encrypted0625;
+    }
+
+    BootstrapableCiphertext Constants::C0333333() const {
+        return this->encrypted0333333;
+    }
+
+    BootstrapableCiphertext Constants::C0133333() const {
+        return this->encrypted0133333;
     }
 }

@@ -85,8 +85,10 @@ add_executable(CkksPerceptron
         includes/context.h
         includes/core.h
         includes/csv.hpp
+        includes/datasets.h
         includes/hemath.h
         includes/model.h
+        includes/validation.h
         src/client/Client.cpp
         src/context/HEContextFactory.cpp
         src/context/HEContext.cpp
@@ -94,9 +96,12 @@ add_executable(CkksPerceptron
         src/core/EncryptedObject.cpp
         src/core/MinMaxScaler.cpp
         src/core/Quantizer.cpp
+        src/datasets/BreastCancerDataset.cpp
+        src/datasets/Datasets.cpp
         src/hemath/Calculus.cpp
         src/hemath/Constants.cpp
-        src/model/CkksPerceptron.cpp)
+        src/model/CkksPerceptron.cpp
+        src/validation/Holdout.cpp)
 
 #add_executable( Draft src/Draft.cpp
 #        src/core/EncryptedObject.cpp
@@ -122,4 +127,4 @@ add_executable(CkksPerceptron
 #        src/context/HEContext.cpp
 #        src/core/MinMaxScaler.cpp
 #        src/core/Quantizer.cpp
-#        src/model/LogisticRegressionEncrypted.cpp)
+#        src/model/CkksLogisticRegression.cpp)

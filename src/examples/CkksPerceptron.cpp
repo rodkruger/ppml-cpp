@@ -2,41 +2,12 @@
 #include "csv.hpp"
 #include "model.h"
 #include "client.h"
+#include "datasets.h"
+#include "validation.h"
 
 using namespace hermesml;
 
-void prepare_data(std::vector<std::vector<double> > &features) {
-    MinMaxScaler::Scale(features);
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
-void split_train_and_test(std::vector<std::vector<double> > &features,
-                          std::vector<double> &labels,
-                          std::vector<std::vector<double> > &training_data,
-                          std::vector<std::vector<double> > &testing_data,
-                          std::vector<double> &training_labels,
-                          std::vector<double> &testing_labels) {
-    const auto dataset_length = static_cast<int64_t>(features.size());
-    const auto training_length = static_cast<int64_t>(std::round(dataset_length) * 0.7);
-    const auto testing_length = dataset_length - training_length;
-
-    training_data.reserve(training_length);
-    training_labels.reserve(testing_length);
-    testing_data.reserve(training_length);
-    testing_labels.reserve(testing_length);
-
-    std::copy_n(features.begin(), training_length, std::back_inserter(training_data));
-    std::copy_n(labels.begin(), training_length, std::back_inserter(training_labels));
-    std::copy(features.begin() + training_length, features.end(), std::back_inserter(testing_data));
-    std::copy(labels.begin() + training_length, labels.end(), std::back_inserter(testing_labels));
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-
 int main() {
-    std::vector<std::vector<double> > features;
-    std::vector<double> labels;
     std::chrono::time_point<std::chrono::system_clock> start, end;
     std::chrono::duration<double> elapsed{};
 
@@ -44,22 +15,20 @@ int main() {
 
     // Step 01 - read and normalize data
     std::cout << "# Read dataset " << std::endl;
-    read_wine_dataset(features, labels);
-    prepare_data(features);
+    auto datasetHandler = BreastCancerDataset();
+    auto features = datasetHandler.GetFeatures();
+    auto labels = datasetHandler.GetLabels();
+
+    MinMaxScaler::Scale(features);
 
     // Step 02 - split dataset in training and testing. Holdout (70% training; 30% testing)
     std::cout << "# Split dataset (70% training; 30% testing)" << std::endl;
+    auto holdoutVal = Holdout(features, labels);
+    holdoutVal.Split();
 
-    auto training_data = std::vector<std::vector<double> >();
-    auto testing_data = std::vector<std::vector<double> >();
-    auto training_labels = std::vector<double>();
-    auto testing_labels = std::vector<double>();
-
-    split_train_and_test(features, labels, training_data, testing_data, training_labels, testing_labels);
-
-    std::cout << "      Total samples: " << (training_data.size() + testing_data.size()) << std::endl;
-    std::cout << "      Training length: " << training_data.size() << std::endl;
-    std::cout << "      Testing length: " << testing_data.size() << std::endl;
+    std::cout << "      Total samples: " << (features.size()) << std::endl;
+    std::cout << "      Training length: " << holdoutVal.GetTrainingFeatures().size() << std::endl;
+    std::cout << "      Testing length: " << holdoutVal.GetTestingFeatures().size() << std::endl;
 
     //-----------------------------------------------------------------------------------------------------------------
 
@@ -86,8 +55,8 @@ int main() {
 
     start = std::chrono::high_resolution_clock::now();
 
-    auto encrypted_training_data = ckksClient.EncryptCKKS(training_data);
-    auto encrypted_training_labels = ckksClient.EncryptCKKS(training_labels);
+    auto eTrainingData = ckksClient.EncryptCKKS(holdoutVal.GetTrainingFeatures());
+    auto eTrainingLabels = ckksClient.EncryptCKKS(holdoutVal.GetLabels());
 
     end = std::chrono::high_resolution_clock::now();
     elapsed = end - start;
@@ -103,8 +72,8 @@ int main() {
 
     start = std::chrono::high_resolution_clock::now();
 
-    auto encrypted_testing_data = ckksClient.EncryptCKKS(testing_data);
-    auto encrypted_testing_labels = ckksClient.EncryptCKKS(testing_labels);
+    auto eTestingData = ckksClient.EncryptCKKS(holdoutVal.GetTestingFeatures());
+    auto eTestingLabels = ckksClient.EncryptCKKS(holdoutVal.GetLabels());
 
     end = std::chrono::high_resolution_clock::now();
     elapsed = end - start;
@@ -122,7 +91,7 @@ int main() {
 
     start = std::chrono::high_resolution_clock::now();
 
-    clf.Fit(encrypted_training_data, encrypted_training_labels);
+    clf.Fit(eTrainingData, eTrainingLabels);
 
     end = std::chrono::high_resolution_clock::now();
     elapsed = end - start;
@@ -136,13 +105,14 @@ int main() {
     Plaintext plain_label;
     int32_t correct_predictions = 0;
 
-    for (uint32_t i = 0; i < encrypted_testing_data.size(); i++) {
-        auto encrypted_label = clf.Predict(encrypted_testing_data[i]).GetCiphertext();
-        cc->Decrypt(ckksCtx.GetPrivateKey(), encrypted_label, &plain_label);
-        auto predicted_label = plain_label->GetCKKSPackedValue()[0].real() > 0.5 ? 1 : 0;
-        std::cout << "# Decrypted label: " << predicted_label << std::endl;
+    for (uint32_t i = 0; i < eTestingData.size(); i++) {
+        auto ePredictedLabel = clf.Predict(eTestingData[i]).GetCiphertext();
+        cc->Decrypt(ckksCtx.GetPrivateKey(), ePredictedLabel, &plain_label);
+        auto pPredictedLabel = plain_label->GetCKKSPackedValue()[0].real() > 0.5 ? 1.0 : 0.0;
+        auto realLabel = holdoutVal.GetTestingLabels()[i];
+        std::cout << "# Real label: " << realLabel << ". Decrypted label: " << pPredictedLabel << std::endl;
 
-        if (predicted_label == testing_labels[i]) {
+        if (pPredictedLabel == realLabel) {
             correct_predictions++;
         }
     }
@@ -151,7 +121,7 @@ int main() {
     elapsed = end - start;
 
     std::cout << "Elapsed time: " << elapsed.count() << " ms" << std::endl;
-    std::cout << "Accuracy: " << (correct_predictions / testing_data.size()) << std::endl;
+    std::cout << "Accuracy: " << (correct_predictions / holdoutVal.GetTestingLabels().size()) << std::endl;
 
     // 420.000 -> 17 hours / 1020 minutes
     // 200 -> x = 0,48 (appr. 30 seconds)

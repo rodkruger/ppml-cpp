@@ -21,7 +21,6 @@ namespace hermesml {
     };
 
     class BgvKnnEncrypted : EncryptedObject, MlModel {
-    private:
         HEContext ctx;
         CalculusQuant calculus;
         CryptoContext<DCRTPoly> cc;
@@ -131,7 +130,6 @@ namespace hermesml {
      * - Struggles with complex relationships or high-dimensional data without feature engineering or transformation.
      */
     class LogisticRegressionEncrypted : public EncryptedObject, public MlModel {
-    private:
         Calculus calculus;
         Constants constants;
 
