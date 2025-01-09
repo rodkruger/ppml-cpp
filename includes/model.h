@@ -179,7 +179,7 @@ namespace hermesml {
         BootstrapableCiphertext eWeights;
         BootstrapableCiphertext eBias;
 
-        [[nodiscard]] BootstrapableCiphertext sigmoid(const BootstrapableCiphertext &x) const;
+        [[nodiscard]] BootstrapableCiphertext tanh(const BootstrapableCiphertext &x) const;
 
     public:
         explicit CkksPerceptron(const HEContext &ctx, uint16_t n_features, uint16_t epochs);

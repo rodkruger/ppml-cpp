@@ -108,9 +108,11 @@ int main() {
     for (uint32_t i = 0; i < eTestingData.size(); i++) {
         auto ePredictedLabel = clf.Predict(eTestingData[i]).GetCiphertext();
         cc->Decrypt(ckksCtx.GetPrivateKey(), ePredictedLabel, &plain_label);
-        auto pPredictedLabel = plain_label->GetCKKSPackedValue()[0].real() > 0.5 ? 1.0 : 0.0;
         auto realLabel = holdoutVal.GetTestingLabels()[i];
-        std::cout << "# Real label: " << realLabel << ". Decrypted label: " << pPredictedLabel << std::endl;
+        auto pPlainLabel = plain_label->GetCKKSPackedValue()[0].real();
+        auto pPredictedLabel = pPlainLabel > 0.0 ? 1.0 : 0.0;
+        std::cout << "# Real label: " << realLabel << ". Predicted plain label: " << pPlainLabel <<
+                ". Decrypted label: " << pPredictedLabel << std::endl;
 
         if (pPredictedLabel == realLabel) {
             correct_predictions++;

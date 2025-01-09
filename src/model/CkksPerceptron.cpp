@@ -16,7 +16,8 @@ namespace hermesml {
         return this->EncryptCKKS(std::vector(n_features, lr));
     }
 
-    BootstrapableCiphertext CkksPerceptron::sigmoid(const BootstrapableCiphertext &x) const {
+    BootstrapableCiphertext CkksPerceptron::tanh(const BootstrapableCiphertext &x) const {
+        // Taylor expansion for hiperbolic tangent - tanh
         // return x - (x**3*0.333333) + (x**5*0.133333)
 
         const auto x_squared = this->EvalMult(x, x);
@@ -47,13 +48,13 @@ namespace hermesml {
 
                 // Compute the error
                 const auto eError = this->EvalSub(eActivation, y[i]);
-                
+
                 // Update the weights
                 auto eNewWeights = this->EvalMult(eLr, eError);
                 eNewWeights = this->EvalMult(eNewWeights, eFeatureValues);
                 this->eWeights = this->EvalSub(this->eWeights, eNewWeights);
 
-                this->Snoop(this->eWeights, this->n_features);
+                // this->Snoop(this->eWeights, this->n_features);
             }
         }
     }
@@ -62,7 +63,7 @@ namespace hermesml {
         auto z = this->EvalMult(x, this->eWeights);
         z = this->EvalSum(z);
         z = this->EvalAdd(z, this->eBias);
-        return this->sigmoid(z);
+        return this->tanh(z);
     }
 
     std::vector<BootstrapableCiphertext> CkksPerceptron::PredictAll(const std::vector<BootstrapableCiphertext> &x) {
