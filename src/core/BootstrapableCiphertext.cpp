@@ -3,12 +3,10 @@
 namespace hermesml {
     BootstrapableCiphertext::BootstrapableCiphertext() = default;
 
-    BootstrapableCiphertext::BootstrapableCiphertext(const Ciphertext<DCRTPoly> &ciphertext) {
+    BootstrapableCiphertext::BootstrapableCiphertext(const Ciphertext<DCRTPoly> &ciphertext,
+                                                     const uint8_t remainingLevels) {
         this->ciphertext = ciphertext;
-    }
-
-    void BootstrapableCiphertext::DecrementLevel() {
-        this->remainingLevels--;
+        this->remainingLevels = remainingLevels;
     }
 
     uint8_t BootstrapableCiphertext::GetRemainingLevels() const {

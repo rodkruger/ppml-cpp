@@ -25,15 +25,15 @@ namespace hermesml {
     public:
         explicit Constants(const HEContext &ctx, int32_t n_features);
 
-        BootstrapableCiphertext Zero() const;
+        [[nodiscard]] BootstrapableCiphertext Zero() const;
 
-        BootstrapableCiphertext One() const;
+        [[nodiscard]] BootstrapableCiphertext One() const;
 
-        BootstrapableCiphertext C05() const;
+        [[nodiscard]] BootstrapableCiphertext C05() const;
 
-        BootstrapableCiphertext C125() const;
+        [[nodiscard]] BootstrapableCiphertext C125() const;
 
-        BootstrapableCiphertext C0625() const;
+        [[nodiscard]] BootstrapableCiphertext C0625() const;
     };
 
     class Calculus : EncryptedObject {

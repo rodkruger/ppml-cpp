@@ -1,31 +1,12 @@
 #include "model.h"
 
-void Monitor(const hermesml::BootstrapableCiphertext &packedFeatureValues,
-             const hermesml::BootstrapableCiphertext &encryptedWeights,
-             const hermesml::BootstrapableCiphertext &z,
-             const hermesml::BootstrapableCiphertext &encryptedBias,
-             const hermesml::BootstrapableCiphertext &encryptedSigmoid,
-             const hermesml::BootstrapableCiphertext &encryptedError,
-             const hermesml::BootstrapableCiphertext &encryptedLr,
-             const hermesml::BootstrapableCiphertext &newWeights,
-             const int32_t point) {
-    std::cout << point << " - packedFeatureValues: " << packedFeatureValues.GetCiphertext()->GetLevel() << "; ";
-    std::cout << "encryptedWeights: " << encryptedWeights.GetCiphertext()->GetLevel() << "; ";
-    std::cout << "z: " << z.GetCiphertext()->GetLevel() << "; ";
-    std::cout << "encryptedBias: " << encryptedBias.GetCiphertext()->GetLevel() << "; ";
-    std::cout << "encryptedSigmoid: " << encryptedSigmoid.GetCiphertext()->GetLevel() << "; ";
-    std::cout << "encryptedError: " << encryptedError.GetCiphertext()->GetLevel() << "; ";
-    std::cout << "encryptedLr: " << encryptedLr.GetCiphertext()->GetLevel() << "; ";
-    std::cout << "newWeights: " << newWeights.GetCiphertext()->GetLevel() << std::endl;
-}
-
 namespace hermesml {
     CkksPerceptron::CkksPerceptron(const HEContext &ctx,
-                                   const int16_t n_features,
-                                   const int16_t epochs): EncryptedObject(ctx), calculus(Calculus(ctx)),
-                                                          constants(Constants(ctx, n_features)),
-                                                          eWeights(this->constants.Zero()),
-                                                          eBias(this->constants.Zero()) {
+                                   const uint16_t n_features,
+                                   const uint16_t epochs): EncryptedObject(ctx), calculus(Calculus(ctx)),
+                                                           constants(Constants(ctx, n_features)),
+                                                           eWeights(this->constants.Zero()),
+                                                           eBias(this->constants.Zero()) {
         this->n_features = n_features;
         this->epochs = epochs;
     }
@@ -49,45 +30,32 @@ namespace hermesml {
 
     void CkksPerceptron::Fit(const std::vector<BootstrapableCiphertext> &x,
                              const std::vector<BootstrapableCiphertext> &y) {
-        /*
-        Monitor(packedFeatureValues, this->eWeights, z, this->eBias, encryptedSigmoid, encryptedError,
-                encryptedLr, newWeights, 1);
-        */
+        const auto eLr = this->GetLearningRate();
 
-        const auto encryptedLr = this->GetLearningRate();
+        // Initialize weights, bias, features, sigmoid and errors to zero
+        this->eWeights = this->constants.Zero();
+        this->eBias = this->constants.Zero();
 
-        // Initialize weights to zero
-        const auto weights = std::vector<double>(this->n_features, 0);
-        this->eWeights = this->EncryptCKKS(weights);
-
-        const auto bias = std::vector<double>(this->n_features, 0);
-        this->eBias = this->EncryptCKKS(bias);
-
-        auto packedFeatureValues = this->constants.Zero();
-        auto z = this->constants.Zero();
-        const auto encryptedSigmoid = this->constants.Zero();
-        auto encryptedError = this->constants.Zero();
-        auto newWeights = this->constants.Zero();
-
-        for (int32_t epoch = 0; epoch < epochs; epoch++) {
+        for (int32_t epoch = 0; epoch < this->epochs; epoch++) {
             // Compute encrypted gradients using plain 'y' values
             for (size_t i = 0; i < x.size(); i++) {
-                // Compute linear combination
-                packedFeatureValues = x[i];
-                z = this->EvalMult(packedFeatureValues, this->eWeights);
-                z = this->EvalSum(z);
-                z = this->EvalAdd(z, this->eBias);
+                const auto &eFeatureValues = x[i];
 
-                // Compute sigmoid
-                // encryptedSigmoid = this->sigmoid(z);
+                // Compute the linear combination Z for the feature values
+                auto eZ = this->EvalMult(eFeatureValues, this->eWeights);
+                eZ = this->EvalSum(eZ);
+                eZ = this->EvalAdd(eZ, this->eBias);
 
-                // Compute error
-                encryptedError = this->EvalSub(encryptedSigmoid, y[i]);
+                // Execute the activation function - in this case, the sigmoid
+                const auto eActivation = this->sigmoid(eZ);
 
-                // Update weights - Wrong calculation using BGV schema
-                newWeights = this->EvalMult(encryptedLr, encryptedError);
-                newWeights = this->EvalMult(newWeights, packedFeatureValues);
-                this->eWeights = this->EvalSub(this->eWeights, newWeights);
+                // Compute the error
+                const auto eError = this->EvalSub(eActivation, y[i]);
+
+                // Update the weights
+                auto eNewWeights = this->EvalMult(eLr, eError);
+                eNewWeights = this->EvalMult(eNewWeights, eFeatureValues);
+                this->eWeights = this->EvalSub(this->eWeights, eNewWeights);
                 // this->Snoop(this->encryptedWeights, this->n_features);
             }
         }

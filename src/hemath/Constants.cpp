@@ -1,11 +1,7 @@
 #include "hemath.h"
 
 namespace hermesml {
-    Constants::Constants(const HEContext &ctx, int32_t n_features) : EncryptedObject(ctx), encryptedZero(nullptr),
-                                                                     encryptedOne(nullptr),
-                                                                     encrypted05(nullptr),
-                                                                     encrypted125(nullptr),
-                                                                     encrypted0625(nullptr) {
+    Constants::Constants(const HEContext &ctx, const int32_t n_features) : EncryptedObject(ctx) {
         this->encryptedZero = this->EncryptCKKS(std::vector<double>(n_features, 0));
         this->encryptedOne = this->EncryptCKKS(std::vector<double>(n_features, 1));
         this->encrypted05 = this->EncryptCKKS(std::vector<double>(n_features, 0.5));

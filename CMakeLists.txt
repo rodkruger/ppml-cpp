@@ -18,6 +18,13 @@ cmake_minimum_required(VERSION 3.5.1)
 
 project(demo CXX)
 set(CMAKE_CXX_STANDARD 17)
+
+# Remove the flag below to improve speed
+# set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
+
+# Use the configuration below for maximum speed
+set(CMAKE_CXX_FLAGS_DEBUG "-Ofast -g0")
+
 option(BUILD_STATIC "Set to ON to include static versions of the library" OFF)
 
 find_package(OpenFHE CONFIG REQUIRED)
@@ -99,26 +106,8 @@ add_executable(CkksPerceptron
 #        src/context/HEContext.cpp)
 #target_link_libraries(Draft PRIVATE tfhe-spqlios-fma)
 
-#add_executable( BgvLogisticRegression
-#        src/BgvLogisticRegression.cpp
-#        includes/client.h
-#        includes/context.h
-#        includes/core.h
-#        includes/csv.hpp
-#        includes/hemath.h
-#        includes/model.h
-#        src/math/Calculus.cpp
-#        src/core/EncryptedObject.cpp
-#        src/math/Constants.cpp
-#        src/client/Client.cpp
-#        src/context/HEContextFactory.cpp
-#        src/context/HEContext.cpp
-#        src/core/MinMaxScaler.cpp
-#        src/core/Quantizer.cpp
-#        src/model/LogisticRegressionEncrypted.cpp)
-
 #add_executable( CkksLogisticRegression
-#        src/CkksLogisticRegression.cpp
+#        src/examples/CkksLogisticRegression.cpp
 #        includes/client.h
 #        includes/context.h
 #        includes/core.h

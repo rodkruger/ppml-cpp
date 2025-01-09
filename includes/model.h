@@ -176,17 +176,17 @@ namespace hermesml {
         Calculus calculus;
         Constants constants;
 
-        int16_t n_features;
-        int16_t epochs;
+        uint16_t n_features;
+        uint16_t epochs;
         BootstrapableCiphertext eWeights;
         BootstrapableCiphertext eBias;
 
-        BootstrapableCiphertext sigmoid(const BootstrapableCiphertext &x) const;
+        [[nodiscard]] BootstrapableCiphertext sigmoid(const BootstrapableCiphertext &x) const;
 
     public:
-        explicit CkksPerceptron(const HEContext &ctx, int16_t n_features, int16_t epochs);
+        explicit CkksPerceptron(const HEContext &ctx, uint16_t n_features, uint16_t epochs);
 
-        BootstrapableCiphertext GetLearningRate() const;
+        [[nodiscard]] BootstrapableCiphertext GetLearningRate() const;
 
         void Fit(const std::vector<BootstrapableCiphertext> &x,
                  const std::vector<BootstrapableCiphertext> &y) override;

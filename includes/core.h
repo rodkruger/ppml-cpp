@@ -20,11 +20,9 @@ namespace hermesml {
     public:
         explicit BootstrapableCiphertext();
 
-        explicit BootstrapableCiphertext(const Ciphertext<DCRTPoly> &ciphertext);
+        explicit BootstrapableCiphertext(const Ciphertext<DCRTPoly> &ciphertext, uint8_t remainingLevels);
 
         [[nodiscard]] Ciphertext<DCRTPoly> GetCiphertext() const;
-
-        void DecrementLevel();
 
         [[nodiscard]] uint8_t GetRemainingLevels() const;
 
@@ -34,9 +32,11 @@ namespace hermesml {
     //-----------------------------------------------------------------------------------------------------------------
 
     class EncryptedObject {
-    private:
         HEContext ctx;
         CryptoContext<DCRTPoly> cc;
+
+        static uint8_t ComputeRemainingLevels(const BootstrapableCiphertext &ciphertext1,
+                                              const BootstrapableCiphertext &ciphertext2);
 
     public:
         explicit EncryptedObject(const HEContext &ctx);
