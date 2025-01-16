@@ -1,19 +1,17 @@
-//
-// Created by rkruger on 23/10/24.
-//
-
 #ifndef CORE_H
 #define CORE_H
 
 #define QUANTIZE_SCALE_FACTOR 1e4 // 10^4
 
+#pragma once
+
 #include "context.h"
+#include "spdlog/spdlog.h"
 
 namespace hermesml {
     //-----------------------------------------------------------------------------------------------------------------
 
     class BootstrapableCiphertext {
-    private:
         Ciphertext<DCRTPoly> ciphertext;
         uint8_t remainingLevels = 0;
 
@@ -37,6 +35,8 @@ namespace hermesml {
 
         static uint8_t ComputeRemainingLevels(const BootstrapableCiphertext &ciphertext1,
                                               const BootstrapableCiphertext &ciphertext2);
+
+        //-----------------------------------------------------------------------------------------------------------------
 
     public:
         explicit EncryptedObject(const HEContext &ctx);
@@ -69,16 +69,36 @@ namespace hermesml {
         [[nodiscard]] static int16_t GetScalingFactor();
     };
 
+    //-----------------------------------------------------------------------------------------------------------------
+
     class MinMaxScaler {
     public:
         static void Scale(std::vector<std::vector<double> > &data);
     };
+
+    //-----------------------------------------------------------------------------------------------------------------
 
     class Quantizer {
     public:
         static std::vector<std::vector<int64_t> > Quantize(const std::vector<std::vector<double> > &data);
 
         static std::vector<int64_t> Quantize(const std::vector<double> &data);
+    };
+
+    //-----------------------------------------------------------------------------------------------------------------
+
+    class Experiment {
+        std::string experimentId;
+
+    protected:
+        std::shared_ptr<spdlog::logger> logger;
+
+    public:
+        virtual ~Experiment() = default;
+
+        explicit Experiment(std::string experimentId);
+
+        virtual void run();
     };
 }
 

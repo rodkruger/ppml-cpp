@@ -16,15 +16,15 @@ cmake_minimum_required(VERSION 3.5.1)
 ### After you run "make install" in your build directory, you can build your custom application.
 ### If you need your application to be linked statically, then run "cmake .. -DBUILD_STATIC=ON"
 
-project(demo CXX)
+project(hermesml CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Remove the flag below to improve debugging capabilities
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
+# set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 
 # Use the configuration below for maximum speed
-# set(CMAKE_CXX_FLAGS_DEBUG "-Ofast -g0")
+set(CMAKE_CXX_FLAGS_DEBUG "-Ofast -g0")
 
 option(BUILD_STATIC "Set to ON to include static versions of the library" OFF)
 
@@ -61,11 +61,20 @@ else ()
     link_libraries(${OpenFHE_SHARED_LIBRARIES})
 endif ()
 
+# Fetch and link spdlog (with fmt bundled)
+include(FetchContent)
+FetchContent_Declare(
+        spdlog
+        GIT_REPOSITORY https://github.com/gabime/spdlog.git
+        GIT_TAG v1.15.0
+)
+FetchContent_MakeAvailable(spdlog)
+
 ### Additional libraries
 # TFHE
-include_directories(/usr/local/include)
-include_directories(/usr/local/lib)
-link_directories(/usr/local/lib)
+# include_directories(/usr/local/include)
+# include_directories(/usr/local/lib)
+# link_directories(/usr/local/lib)
 
 ### ADD YOUR EXECUTABLE(s) HERE
 ### add_executable( EXECUTABLE-NAME SOURCES )
@@ -87,6 +96,7 @@ add_executable(CkksPerceptron
         includes/core.h
         includes/csv.hpp
         includes/datasets.h
+        includes/experiments.h
         includes/hemath.h
         includes/model.h
         includes/validation.h
@@ -94,15 +104,18 @@ add_executable(CkksPerceptron
         src/context/HEContextFactory.cpp
         src/context/HEContext.cpp
         src/core/BootstrapableCiphertext.cpp
+        src/core/Experiment.cpp
         src/core/EncryptedObject.cpp
         src/core/MinMaxScaler.cpp
         src/core/Quantizer.cpp
+        src/experiments/CkksPerceptronExperiment.cpp
         src/datasets/BreastCancerDataset.cpp
         src/datasets/Datasets.cpp
         src/hemath/Calculus.cpp
         src/hemath/Constants.cpp
         src/model/CkksPerceptron.cpp
         src/validation/Holdout.cpp)
+target_link_libraries(CkksPerceptron PRIVATE spdlog::spdlog)
 
 #add_executable( Draft src/Draft.cpp
 #        src/core/EncryptedObject.cpp
