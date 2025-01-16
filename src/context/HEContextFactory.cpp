@@ -6,7 +6,7 @@
 
 namespace hermesml {
     HEContext HEContextFactory::bgvHeContext() {
-        auto multiplicativeDepth = 10; // 10-20
+        constexpr auto multiplicativeDepth = 10; // 10-20
 
         auto parameters = CCParams<CryptoContextBGVRNS>();
         parameters.SetSecurityLevel(HEStd_128_classic);
@@ -15,7 +15,7 @@ namespace hermesml {
         parameters.SetMaxRelinSkDeg(3);
 
         // Crypto Contexts
-        auto cc = GenCryptoContext(parameters);
+        const auto cc = GenCryptoContext(parameters);
         cc->Enable(PKE);
         cc->Enable(KEYSWITCH);
         cc->Enable(LEVELEDSHE);
@@ -26,7 +26,7 @@ namespace hermesml {
         // cc->EvalBootstrapSetup(levelBudget);
 
         // Key generation ---------------------------------------------------------------------------------------------
-        auto keys = cc->KeyGen();
+        const auto keys = cc->KeyGen();
 
         cc->EvalMultKeyGen(keys.secretKey);
         cc->EvalSumKeyGen(keys.secretKey);
@@ -51,7 +51,7 @@ namespace hermesml {
 
         const std::vector<uint32_t> levelBudget = {2, 2};
         const std::vector<uint32_t> bsgsDim = {0, 0};
-        int32_t numSlots = 16;
+        constexpr int32_t numSlots = 32;
         auto parameters = CCParams<CryptoContextCKKSRNS>();
 
         // parameters.SetSecurityLevel(HEStd_128_classic);
@@ -78,7 +78,7 @@ namespace hermesml {
         cc->EvalBootstrapSetup(levelBudget, bsgsDim, numSlots);
 
         // Key generation ---------------------------------------------------------------------------------------------
-        auto keys = cc->KeyGen();
+        const auto keys = cc->KeyGen();
 
         cc->EvalMultKeyGen(keys.secretKey);
         cc->EvalSumKeyGen(keys.secretKey);

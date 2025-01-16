@@ -12,27 +12,29 @@ namespace hermesml {
     }
 
     BootstrapableCiphertext CkksPerceptron::GetLearningRate() const {
-        const double lr = 0.001 * GetScalingFactor();
+        const double lr = 0.01 * GetScalingFactor();
         return this->EncryptCKKS(std::vector(n_features, lr));
     }
 
-    BootstrapableCiphertext CkksPerceptron::sigmoid(const BootstrapableCiphertext &x) const {
-        //                                                    ( term 1  )   (   term 2   )
-        // Approximate sigmoid using cubic polynomial: 0.5  +  0.125 * x  -  0.0625 * x^3
+    BootstrapableCiphertext CkksPerceptron::tanh(const BootstrapableCiphertext &x) const {
+        // Taylor expansion for hiperbolic tangent - tanh
+        // return x - (x**3*0.333333) + (x**5*0.133333)
+
         const auto x_squared = this->EvalMult(x, x);
         const auto x_cubed = this->EvalMult(x_squared, x);
+        const auto x_fived = this->EvalMult(x_squared, x_cubed);
 
-        const auto term1 = this->EvalMult(x, this->constants.C125());
-        const auto term2 = this->EvalMult(x_cubed, this->constants.C0625());
+        const auto term1 = this->EvalMult(x_cubed, this->constants.C0333333());
+        const auto term2 = this->EvalMult(x_fived, this->constants.C0133333());
 
-        return this->EvalAdd(this->constants.C05(), this->EvalSub(term1, term2));
+        return this->EvalSub(x, this->EvalAdd(term1, term2));
     }
 
     void CkksPerceptron::Fit(const std::vector<BootstrapableCiphertext> &x,
                              const std::vector<BootstrapableCiphertext> &y) {
         const auto eLr = this->GetLearningRate();
 
-        // Initialize weights, bias, features, sigmoid and errors to zero
+        // Initialize weights and bias
         this->eWeights = this->constants.Zero();
         this->eBias = this->constants.Zero();
 
@@ -41,22 +43,21 @@ namespace hermesml {
             for (size_t i = 0; i < x.size(); i++) {
                 const auto &eFeatureValues = x[i];
 
-                // Compute the linear combination Z for the feature values
-                auto eZ = this->EvalMult(eFeatureValues, this->eWeights);
-                eZ = this->EvalSum(eZ);
-                eZ = this->EvalAdd(eZ, this->eBias);
-
-                // Execute the activation function - in this case, the sigmoid
-                const auto eActivation = this->sigmoid(eZ);
+                // Execute the activation function
+                const auto eActivation = this->Predict(eFeatureValues);
 
                 // Compute the error
                 const auto eError = this->EvalSub(eActivation, y[i]);
 
+                // Compute the delta
+                auto eDelta = this->EvalMult(eError, eLr);
+
                 // Update the weights
-                auto eNewWeights = this->EvalMult(eLr, eError);
-                eNewWeights = this->EvalMult(eNewWeights, eFeatureValues);
-                this->eWeights = this->EvalSub(this->eWeights, eNewWeights);
-                // this->Snoop(this->encryptedWeights, this->n_features);
+                auto eNewWeights = this->EvalMult(eFeatureValues, eDelta);
+                this->eWeights = this->EvalAdd(this->eWeights, eNewWeights);
+
+                // Update the bias
+                auto eNewBias = this->EvalAdd(this->eBias, eDelta);
             }
         }
     }
@@ -65,7 +66,7 @@ namespace hermesml {
         auto z = this->EvalMult(x, this->eWeights);
         z = this->EvalSum(z);
         z = this->EvalAdd(z, this->eBias);
-        return this->sigmoid(z);
+        return this->tanh(z);
     }
 
     std::vector<BootstrapableCiphertext> CkksPerceptron::PredictAll(const std::vector<BootstrapableCiphertext> &x) {
