@@ -1,29 +1,67 @@
 #include <algorithm>
-#include <cmath>
-#include <cstdint>
+#include <iostream>
+#include <ostream>
+#include <unordered_map>
 #include <vector>
+#include <random>
 
 #include "validation.h"
 
 namespace hermesml {
     Holdout::Holdout(const std::vector<std::vector<double> > &features,
-                     const std::vector<double> &labels) : features(features), labels(labels) {
+                     const std::vector<double> &labels) : features(features), labels(labels),
+                                                          gen(std::random_device{}()) {
     }
 
-    void Holdout::Split() {
-        const auto datasetLength = static_cast<int64_t>(features.size());
-        const auto trainingLength = static_cast<int64_t>(std::round(datasetLength) * 0.7);
-        const auto testingLength = datasetLength - trainingLength;
+    void Holdout::Split(const double trainingRatio) {
+        // 1. Group features by labels
+        std::unordered_map<double, std::vector<size_t> > groupedIndexes;
+        for (size_t i = 0; i < labels.size(); i++) {
+            groupedIndexes[labels[i]].push_back(i);
+        }
 
-        this->trainingFeatures.reserve(trainingLength);
-        this->trainingLabels.reserve(trainingLength);
-        this->testingFeatures.reserve(testingLength);
-        this->testingLabels.reserve(testingLength);
+        // 2. Shuffle each group and split based on trainingRatio
+        for (auto &[key, indexes]: groupedIndexes) {
+            // 3. Shuffle indexes
+            std::shuffle(indexes.begin(), indexes.end(), gen);
 
-        std::copy_n(features.begin(), trainingLength, std::back_inserter(this->trainingFeatures));
-        std::copy_n(labels.begin(), trainingLength, std::back_inserter(this->trainingLabels));
-        std::copy(features.begin() + trainingLength, features.end(), std::back_inserter(this->testingFeatures));
-        std::copy(labels.begin() + trainingLength, labels.end(), std::back_inserter(this->testingLabels));
+            // 4. Determine split point
+            const auto trainingDatasetSize = static_cast<size_t>(static_cast<double>(indexes.size()) * trainingRatio);
+
+            // 5. Add to training and testing datasets
+            for (size_t i = 0; i < indexes.size(); i++) {
+                const size_t idx = indexes[i];
+                if (i < trainingDatasetSize) {
+                    trainingFeatures.push_back(features[idx]);
+                    trainingLabels.push_back(labels[idx]);
+                } else {
+                    testingFeatures.push_back(features[idx]);
+                    testingLabels.push_back(labels[idx]);
+                }
+            }
+        }
+
+        this->Shuffle(trainingFeatures, trainingLabels);
+        this->Shuffle(testingFeatures, testingLabels);
+    }
+
+    void Holdout::Shuffle(std::vector<std::vector<double> > features, std::vector<double> labels) {
+        std::vector<size_t> indices(labels.size());
+        for (size_t i = 0; i < indices.size(); i++) {
+            indices[i] = i;
+        }
+
+        std::shuffle(indices.begin(), indices.end(), gen);
+
+        std::vector<std::vector<double> > shuffledFeatures(features.size());
+        std::vector<double> shuffledLabels(labels.size());
+        for (size_t i = 0; i < indices.size(); ++i) {
+            shuffledFeatures[i] = features[indices[i]];
+            shuffledLabels[i] = labels[indices[i]];
+        }
+
+        features = std::move(shuffledFeatures);
+        labels = std::move(shuffledLabels);
     }
 
     std::vector<std::vector<double> > Holdout::GetFeatures() const {

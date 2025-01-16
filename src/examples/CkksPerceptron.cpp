@@ -24,7 +24,7 @@ int main() {
     // Step 02 - split dataset in training and testing. Holdout (70% training; 30% testing)
     std::cout << "# Split dataset (70% training; 30% testing)" << std::endl;
     auto holdoutVal = Holdout(features, labels);
-    holdoutVal.Split();
+    holdoutVal.Split(0.7);
 
     std::cout << "      Total samples: " << (features.size()) << std::endl;
     std::cout << "      Training length: " << holdoutVal.GetTrainingFeatures().size() << std::endl;

@@ -18,12 +18,13 @@ cmake_minimum_required(VERSION 3.5.1)
 
 project(demo CXX)
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Remove the flag below to improve speed
-# set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
+# Remove the flag below to improve debugging capabilities
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 
 # Use the configuration below for maximum speed
-set(CMAKE_CXX_FLAGS_DEBUG "-Ofast -g0")
+# set(CMAKE_CXX_FLAGS_DEBUG "-Ofast -g0")
 
 option(BUILD_STATIC "Set to ON to include static versions of the library" OFF)
 

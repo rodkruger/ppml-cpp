@@ -11,11 +11,14 @@ namespace hermesml {
         std::vector<std::vector<double> > testingFeatures;
         std::vector<double> trainingLabels;
         std::vector<double> testingLabels;
+        std::mt19937 gen;
+
+        void Shuffle(std::vector<std::vector<double> > features, std::vector<double> labels);
 
     public:
         Holdout(const std::vector<std::vector<double> > &features, const std::vector<double> &labels);
 
-        void Split();
+        void Split(double trainingRatio);
 
         [[nodiscard]] std::vector<std::vector<double> > GetFeatures() const;
 

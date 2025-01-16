@@ -34,7 +34,7 @@ namespace hermesml {
                              const std::vector<BootstrapableCiphertext> &y) {
         const auto eLr = this->GetLearningRate();
 
-        // Initialize weights, bias, features, sigmoid and errors to zero
+        // Initialize weights and bias
         this->eWeights = this->constants.Zero();
         this->eBias = this->constants.Zero();
 
@@ -43,18 +43,21 @@ namespace hermesml {
             for (size_t i = 0; i < x.size(); i++) {
                 const auto &eFeatureValues = x[i];
 
-                // Execute the activation function - in this case, the sigmoid
+                // Execute the activation function
                 const auto eActivation = this->Predict(eFeatureValues);
 
                 // Compute the error
                 const auto eError = this->EvalSub(eActivation, y[i]);
 
-                // Update the weights
-                auto eNewWeights = this->EvalMult(eLr, eError);
-                eNewWeights = this->EvalMult(eNewWeights, eFeatureValues);
-                this->eWeights = this->EvalSub(this->eWeights, eNewWeights);
+                // Compute the delta
+                auto eDelta = this->EvalMult(eError, eLr);
 
-                // this->Snoop(this->eWeights, this->n_features);
+                // Update the weights
+                auto eNewWeights = this->EvalMult(eFeatureValues, eDelta);
+                this->eWeights = this->EvalAdd(this->eWeights, eNewWeights);
+
+                // Update the bias
+                auto eNewBias = this->EvalAdd(this->eBias, eDelta);
             }
         }
     }
