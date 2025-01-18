@@ -21,7 +21,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Remove the flag below to improve debugging capabilities
-# set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
+#set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 
 # Use the configuration below for maximum speed
 set(CMAKE_CXX_FLAGS_DEBUG "-Ofast -g0")
