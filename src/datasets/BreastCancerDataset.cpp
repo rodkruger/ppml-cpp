@@ -1,7 +1,7 @@
 #include "datasets.h"
 
 namespace hermesml {
-    BreastCancerDataset::BreastCancerDataset() : Dataset("../datasets/breast_cancer/data.csv") {
+    BreastCancerDataset::BreastCancerDataset() : Dataset("/home/rkruger/Doutorado/Datasets/breast_cancer/data.csv") {
         this->Read();
     }
 

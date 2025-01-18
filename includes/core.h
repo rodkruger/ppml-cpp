@@ -89,16 +89,26 @@ namespace hermesml {
 
     class Experiment {
         std::string experimentId;
+        std::string contentPath;
+        std::shared_ptr<spdlog::logger> logger;
 
     protected:
-        std::shared_ptr<spdlog::logger> logger;
+        [[nodiscard]] std::string BuildFilePath(const std::string &fileName) const;
 
     public:
         virtual ~Experiment() = default;
 
         explicit Experiment(std::string experimentId);
 
-        virtual void run();
+        [[nodiscard]] std::string GetExperimentId() const;
+
+        [[nodiscard]] std::string GetContentPath() const;
+
+        void Info(const std::string &message) const;
+
+        void Error(const std::string &message) const;
+
+        virtual void Run();
     };
 }
 

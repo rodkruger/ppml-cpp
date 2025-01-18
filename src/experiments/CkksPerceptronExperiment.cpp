@@ -8,54 +8,54 @@ namespace hermesml {
     CkksPerceptronExperiment::CkksPerceptronExperiment(const std::string &experimentId) : Experiment(experimentId) {
     }
 
-    void CkksPerceptronExperiment::run() {
+    void CkksPerceptronExperiment::Run() {
         std::chrono::time_point<std::chrono::system_clock> start, end;
         std::chrono::duration<double> elapsed{};
 
-        logger->info(">>>>> CLIENT SIDE PROCESSING");
+        this->Info(">>>>> CLIENT SIDE PROCESSING");
 
         spdlog::shutdown();
 
         // Step 01 - read and normalize data
-        logger->info("Read dataset");;
+        this->Info("Read dataset");;
         const auto datasetHandler = BreastCancerDataset();
         auto features = datasetHandler.GetFeatures();
         auto labels = datasetHandler.GetLabels();
 
         // Step 02 - read and normalize data
-        logger->info("Normalize dataset");;
+        this->Info("Normalize dataset");;
         MinMaxScaler::Scale(features);
 
         // Step 03 - split dataset in training and testing. Holdout (70% training; 30% testing)
-        logger->info("Split dataset (70% training; 30% testing)");
+        this->Info("Split dataset (70% training; 30% testing)");
 
         auto holdoutVal = Holdout(features, labels);
         holdoutVal.Split(0.7);
 
-        logger->info("Total samples: " + std::to_string(features.size()));
-        logger->info("Training length: " + std::to_string(holdoutVal.GetTrainingFeatures().size()));
-        logger->info("Testing length: " + std::to_string(holdoutVal.GetTestingFeatures().size()));
+        this->Info("Total samples: " + std::to_string(features.size()));
+        this->Info("Training length: " + std::to_string(holdoutVal.GetTrainingFeatures().size()));
+        this->Info("Testing length: " + std::to_string(holdoutVal.GetTestingFeatures().size()));
 
         //-----------------------------------------------------------------------------------------------------------------
 
         // Step 04 - Generating keys and crypto context. Do not share it with anybody :)
 
-        logger->info("Generate crypto context");
+        this->Info("Generate crypto context");
 
         auto ckksCtx = HEContextFactory::ckksHeContext();
         auto ckksClient = Client(ckksCtx);
         auto cc = ckksCtx.GetCc();
 
-        logger->info("Scheme: CKKS");
-        logger->info("Ring dimension: " + std::to_string(cc->GetRingDimension()));
-        logger->info("Modulus: " + cc->GetModulus().ToString());
-        logger->info("Multiplicative depth: " + std::to_string(ckksCtx.GetMultiplicativeDepth()));
+        this->Info("Scheme: CKKS");
+        this->Info("Ring dimension: " + std::to_string(cc->GetRingDimension()));
+        this->Info("Modulus: " + cc->GetModulus().ToString());
+        this->Info("Multiplicative depth: " + std::to_string(ckksCtx.GetMultiplicativeDepth()));
 
         //-----------------------------------------------------------------------------------------------------------------
 
         // Step 05 - Encrypt training data
 
-        logger->info("Encrypt training data");
+        this->Info("Encrypt training data");
 
         start = std::chrono::high_resolution_clock::now();
 
@@ -65,13 +65,13 @@ namespace hermesml {
         end = std::chrono::high_resolution_clock::now();
         elapsed = end - start;
 
-        logger->info("Elapsed time: " + std::to_string(elapsed.count()) + " ms");
+        this->Info("Elapsed time: " + std::to_string(elapsed.count()) + " ms");
 
         //-----------------------------------------------------------------------------------------------------------------
 
         // Step 06 - Encrypt testing data
 
-        logger->info("Encrypt testing data");
+        this->Info("Encrypt testing data");
 
         start = std::chrono::high_resolution_clock::now();
 
@@ -81,17 +81,17 @@ namespace hermesml {
         end = std::chrono::high_resolution_clock::now();
         elapsed = end - start;
 
-        logger->info("Elapsed time: " + std::to_string(elapsed.count()) + " ms");
+        this->Info("Elapsed time: " + std::to_string(elapsed.count()) + " ms");
 
         // S E R V E R   S I D E   P R O C E S S I N G --------------------------------------------------------------------
 
-        logger->info(">>>>> SERVER SIDE PROCESSING");
+        this->Info(">>>>> SERVER SIDE PROCESSING");
 
         auto clf = CkksPerceptron(ckksCtx, features[0].size(), 1);
 
         // Step 07 - Train the model
 
-        logger->info("Train model");
+        this->Info("Train model");
 
         start = std::chrono::high_resolution_clock::now();
 
@@ -100,44 +100,46 @@ namespace hermesml {
         end = std::chrono::high_resolution_clock::now();
         elapsed = end - start;
 
-        logger->info("Elapsed time: " + std::to_string(elapsed.count()) + " ms");
+        this->Info("Elapsed time: " + std::to_string(elapsed.count()) + " ms");
 
         // Step 08 - Test the model
 
-        logger->info("Test model");
+        this->Info("Test model");
+
+        auto predictData = std::vector<double>(eTestingData.size());
+        Plaintext plain_label;
 
         start = std::chrono::high_resolution_clock::now();
 
-        Plaintext plain_label;
-        int32_t correct_predictions = 0;
-
-        for (uint32_t i = 0; i < eTestingData.size(); i++) {
-            auto ePredictedLabel = clf.Predict(eTestingData[i]).GetCiphertext();
+        for (const auto &i: eTestingData) {
+            auto ePredictedLabel = clf.Predict(i).GetCiphertext();
             cc->Decrypt(ckksCtx.GetPrivateKey(), ePredictedLabel, &plain_label);
-            auto realLabel = holdoutVal.GetTestingLabels()[i];
             auto pPlainLabel = plain_label->GetCKKSPackedValue()[0].real();
             auto pPredictedLabel = pPlainLabel > 0.0 ? 1.0 : 0.0;
 
-            if (pPredictedLabel == realLabel) {
-                correct_predictions++;
-            }
+            predictData.push_back(pPredictedLabel);
         }
+
+        // Open the file in write mode
+        auto predictionsFileName = this->BuildFilePath("predictions.csv");
+        std::ofstream outFile(predictionsFileName);
+
+        if (!outFile) {
+            this->Error("Could not open the file " + predictionsFileName + " for writing.\n");
+            return;
+        }
+
+        // Write the data to the file
+        for (const auto &value: predictData) {
+            outFile << value << "\n";
+        }
+
+        // Close the file
+        outFile.close();
 
         end = std::chrono::high_resolution_clock::now();
         elapsed = end - start;
 
-        logger->info("Elapsed time: " + std::to_string(elapsed.count()) + " ms");
-
-        //-----------------------------------------------------------------------------------------------------------------
-
-        // Step 09 - Metrics
-
-        logger->info("Metrics");
-        logger->info("Correct predictions: " + std::to_string(correct_predictions));
-
-        auto accuracy =
-                static_cast<double>(correct_predictions) / static_cast<double>(holdoutVal.GetTestingLabels().size());
-
-        logger->info("Accuracy: " + std::to_string(accuracy));
+        this->Info("Elapsed time: " + std::to_string(elapsed.count()) + " ms");
     }
 }
