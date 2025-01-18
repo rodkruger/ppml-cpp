@@ -5,8 +5,10 @@
 
 namespace hermesml {
     class CkksPerceptronExperiment : public Experiment {
+        uint16_t epochs;
+
     public:
-        explicit CkksPerceptronExperiment(const std::string &experimentId);
+        explicit CkksPerceptronExperiment(const std::string &experimentId, uint16_t epochs);
 
         void Run() override;
     };

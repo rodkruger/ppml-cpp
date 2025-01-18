@@ -5,7 +5,9 @@
 #include "validation.h"
 
 namespace hermesml {
-    CkksPerceptronExperiment::CkksPerceptronExperiment(const std::string &experimentId) : Experiment(experimentId) {
+    CkksPerceptronExperiment::CkksPerceptronExperiment(const std::string &experimentId,
+                                                       const uint16_t epochs) : Experiment(experimentId),
+        epochs(epochs) {
     }
 
     void CkksPerceptronExperiment::Run() {
@@ -87,7 +89,7 @@ namespace hermesml {
 
         this->Info(">>>>> SERVER SIDE PROCESSING");
 
-        auto clf = CkksPerceptron(ckksCtx, features[0].size(), 1);
+        auto clf = CkksPerceptron(ckksCtx, features[0].size(), this->epochs);
 
         // Step 07 - Train the model
 
@@ -106,18 +108,22 @@ namespace hermesml {
 
         this->Info("Test model");
 
-        auto predictData = std::vector<double>(eTestingData.size());
+        auto predictData = std::vector<std::pair<double, double> >(eTestingData.size());
         Plaintext plain_label;
 
         start = std::chrono::high_resolution_clock::now();
 
-        for (const auto &i: eTestingData) {
-            auto ePredictedLabel = clf.Predict(i).GetCiphertext();
+        for (size_t i = 0; i < eTestingData.size(); i++) {
+            const auto &eTestingLabel = eTestingLabels[i];
+            const auto ePredictedLabel = clf.Predict(eTestingLabel).GetCiphertext();
             cc->Decrypt(ckksCtx.GetPrivateKey(), ePredictedLabel, &plain_label);
-            auto pPlainLabel = plain_label->GetCKKSPackedValue()[0].real();
-            auto pPredictedLabel = pPlainLabel > 0.0 ? 1.0 : 0.0;
+            const auto pPlainLabel = plain_label->GetCKKSPackedValue()[0].real();
+            const auto pPredictedLabel = pPlainLabel > 0.0 ? 1.0 : 0.0;
 
-            predictData.push_back(pPredictedLabel);
+            const auto realLabel = holdoutVal.GetLabels()[i];
+
+            const auto prediction = std::pair(realLabel, pPredictedLabel);
+            predictData.push_back(prediction);
         }
 
         // Open the file in write mode
@@ -130,8 +136,8 @@ namespace hermesml {
         }
 
         // Write the data to the file
-        for (const auto &value: predictData) {
-            outFile << value << "\n";
+        for (const auto &[realValue, predictedValue]: predictData) {
+            outFile << realValue << "," << predictedValue << std::endl;
         }
 
         // Close the file
