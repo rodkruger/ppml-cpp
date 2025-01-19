@@ -47,17 +47,14 @@ namespace hermesml {
     }
 
     HEContext HEContextFactory::ckksHeContext() {
-        // 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59
-
-        const std::vector<uint32_t> levelBudget = {2, 2};
+        const std::vector<uint32_t> levelBudget = {3, 3};
         const std::vector<uint32_t> bsgsDim = {0, 0};
         constexpr int32_t numSlots = 32;
         auto parameters = CCParams<CryptoContextCKKSRNS>();
 
         // parameters.SetSecurityLevel(HEStd_128_classic);
-        // parameters.SetRingDim(32768);
         parameters.SetSecurityLevel(HEStd_NotSet);
-        parameters.SetRingDim(4096);
+        parameters.SetRingDim(32768);
         parameters.SetKeySwitchTechnique(HYBRID);
         parameters.SetScalingModSize(59);
         parameters.SetScalingTechnique(FLEXIBLEAUTO);

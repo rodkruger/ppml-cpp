@@ -15,3 +15,6 @@
 [2025-01-19 17:25:41] [info] Elapsed time: 16.646468 ms
 [2025-01-19 17:25:41] [info] >>>>> SERVER SIDE PROCESSING
 [2025-01-19 17:25:41] [info] Train model
+[2025-01-19 18:03:43] [info] Elapsed time: 2282.023564 ms
+[2025-01-19 18:03:43] [info] Test model
+[2025-01-19 18:06:13] [info] Elapsed time: 149.982970 ms
