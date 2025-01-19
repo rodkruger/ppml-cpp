@@ -54,7 +54,7 @@ namespace hermesml {
 
         // parameters.SetSecurityLevel(HEStd_128_classic);
         parameters.SetSecurityLevel(HEStd_NotSet);
-        parameters.SetRingDim(32768);
+        parameters.SetRingDim(16384); // Insufficient for security
         parameters.SetKeySwitchTechnique(HYBRID);
         parameters.SetScalingModSize(59);
         parameters.SetScalingTechnique(FLEXIBLEAUTO);
