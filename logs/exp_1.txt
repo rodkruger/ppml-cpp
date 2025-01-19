@@ -12,3 +12,9 @@
 [2025-01-19 14:57:20] [info] Multiplicative depth: 30
 [2025-01-19 14:57:20] [info] Encrypt training data
 [2025-01-19 14:57:32] [info] Encrypt testing data
+[2025-01-19 14:57:41] [info] Elapsed time: 20.822899 ms
+[2025-01-19 14:57:41] [info] >>>>> SERVER SIDE PROCESSING
+[2025-01-19 14:57:41] [info] Train model
+[2025-01-19 15:05:47] [info] Elapsed time: 485.607440 ms
+[2025-01-19 15:05:47] [info] Test model
+[2025-01-19 15:08:45] [info] Elapsed time: 177.927304 ms

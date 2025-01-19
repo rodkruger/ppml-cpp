@@ -24,7 +24,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 
 # Use the configuration below for maximum speed
-set(CMAKE_CXX_FLAGS_DEBUG "-Ofast -g0 -fopenmp -march=native -funroll-loops")
+# If floating point precision is critical, use -O3 and remove -fassociative-math
+set(CMAKE_CXX_FLAGS_DEBUG "-Ofast -g0 -march=native -mtune=native -flto -fopenmp -funroll-loops -falign-functions=32 -fomit-frame-pointer -fprefetch-loop-arrays -fassociative-math")
+
 
 option(BUILD_STATIC "Set to ON to include static versions of the library" OFF)
 
