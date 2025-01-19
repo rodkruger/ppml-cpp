@@ -61,6 +61,23 @@ namespace hermesml {
         parameters.SetBatchSize(numSlots);
         parameters.SetSecretKeyDist(UNIFORM_TERNARY);
 
+        /* https://github.com/malb/lattice-estimator
+         *
+         * Martin R. Albrecht, Rachel Player and Sam Scott. On the concrete hardness of Learning with Errors.
+         * Journal of Mathematical Cryptology. Volume 9, Issue 3, Pages 169–203, ISSN (Online) 1862-2984,
+         * ISSN (Print) 1862-2976 DOI: 10.1515/jmc-2015-0016, October 2015
+         *
+         * https://eprint.iacr.org/2015/046
+         * 
+         * params = LWE.Parameters(n=32768, q=2^(59*10), Xs = ND.Uniform(-1,1,n), Xe=ND.DiscreteGaussian(3.2))
+         * LWE.estimate.rough(params)
+         *
+         * usvp                 :: rop: ≈2^164.7, red: ≈2^164.7, δ: 1.003122, β: 564, d: 64777, tag: usvp
+         * dual_hybrid          :: rop: ≈2^164.7, red: ≈2^164.7, guess: ≈2^109.4, β: 564, p: 4, ζ: 0, t: 40, β': 564, N: ≈2^99.2, m: ≈2^15.0
+         * {'usvp': rop: ≈2^164.7, red: ≈2^164.7, δ: 1.003122, β: 564, d: 64777, tag: usvp,
+         * 'dual_hybrid': rop: ≈2^164.7, red: ≈2^164.7, guess: ≈2^109.4, β: 564, p: 4, ζ: 0, t: 40, β': 564, N: ≈2^99.2, m: ≈2^15.0}
+         */
+
         auto depth = 30;
         auto levelsAfterBootstrap = depth - FHECKKSRNS::GetBootstrapDepth(levelBudget, parameters.GetSecretKeyDist());
         parameters.SetMultiplicativeDepth(depth);

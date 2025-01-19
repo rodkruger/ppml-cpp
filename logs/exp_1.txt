@@ -1,8 +1,8 @@
-[2025-01-19 19:11:30] [info] >>>>> CLIENT SIDE PROCESSING
-[2025-01-19 19:11:30] [info] Read dataset
-[2025-01-19 19:11:30] [info] Normalize dataset
-[2025-01-19 19:11:30] [info] Split dataset (70% training; 30% testing)
-[2025-01-19 19:11:30] [info] Total samples: 569
-[2025-01-19 19:11:30] [info] Training length: 397
-[2025-01-19 19:11:30] [info] Testing length: 172
-[2025-01-19 19:11:30] [info] Generate crypto context
+[2025-01-19 19:30:13] [info] >>>>> CLIENT SIDE PROCESSING
+[2025-01-19 19:30:13] [info] Read dataset
+[2025-01-19 19:30:13] [info] Normalize dataset
+[2025-01-19 19:30:13] [info] Split dataset (70% training; 30% testing)
+[2025-01-19 19:30:13] [info] Total samples: 569
+[2025-01-19 19:30:13] [info] Training length: 397
+[2025-01-19 19:30:13] [info] Testing length: 172
+[2025-01-19 19:30:13] [info] Generate crypto context
