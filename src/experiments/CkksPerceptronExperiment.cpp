@@ -164,7 +164,7 @@ namespace hermesml {
         parametersFile << "multiplicativeDepth = " << this->multiplicativeDepth << std::endl;
         parametersFile << "encryptingTime = " << std::to_string(this->encryptingTime.count()) << std::endl;
         parametersFile << "trainingTime = " << std::to_string(this->trainingTime.count()) << std::endl;
-        parametersFile << "testingTime = " << std::to_string(this->trainingTime.count()) << std::endl;
+        parametersFile << "testingTime = " << std::to_string(this->testingTime.count()) << std::endl;
 
         // Close the file
         parametersFile.close();
