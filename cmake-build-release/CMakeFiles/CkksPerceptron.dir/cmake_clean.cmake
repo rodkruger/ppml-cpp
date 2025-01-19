@@ -1,0 +1,41 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/CkksPerceptron.dir/src/client/Client.cpp.o"
+  "CMakeFiles/CkksPerceptron.dir/src/client/Client.cpp.o.d"
+  "CMakeFiles/CkksPerceptron.dir/src/context/HEContext.cpp.o"
+  "CMakeFiles/CkksPerceptron.dir/src/context/HEContext.cpp.o.d"
+  "CMakeFiles/CkksPerceptron.dir/src/context/HEContextFactory.cpp.o"
+  "CMakeFiles/CkksPerceptron.dir/src/context/HEContextFactory.cpp.o.d"
+  "CMakeFiles/CkksPerceptron.dir/src/core/BootstrapableCiphertext.cpp.o"
+  "CMakeFiles/CkksPerceptron.dir/src/core/BootstrapableCiphertext.cpp.o.d"
+  "CMakeFiles/CkksPerceptron.dir/src/core/EncryptedObject.cpp.o"
+  "CMakeFiles/CkksPerceptron.dir/src/core/EncryptedObject.cpp.o.d"
+  "CMakeFiles/CkksPerceptron.dir/src/core/Experiment.cpp.o"
+  "CMakeFiles/CkksPerceptron.dir/src/core/Experiment.cpp.o.d"
+  "CMakeFiles/CkksPerceptron.dir/src/core/MinMaxScaler.cpp.o"
+  "CMakeFiles/CkksPerceptron.dir/src/core/MinMaxScaler.cpp.o.d"
+  "CMakeFiles/CkksPerceptron.dir/src/core/Quantizer.cpp.o"
+  "CMakeFiles/CkksPerceptron.dir/src/core/Quantizer.cpp.o.d"
+  "CMakeFiles/CkksPerceptron.dir/src/datasets/BreastCancerDataset.cpp.o"
+  "CMakeFiles/CkksPerceptron.dir/src/datasets/BreastCancerDataset.cpp.o.d"
+  "CMakeFiles/CkksPerceptron.dir/src/datasets/Datasets.cpp.o"
+  "CMakeFiles/CkksPerceptron.dir/src/datasets/Datasets.cpp.o.d"
+  "CMakeFiles/CkksPerceptron.dir/src/examples/CkksPerceptron.cpp.o"
+  "CMakeFiles/CkksPerceptron.dir/src/examples/CkksPerceptron.cpp.o.d"
+  "CMakeFiles/CkksPerceptron.dir/src/experiments/CkksPerceptronExperiment.cpp.o"
+  "CMakeFiles/CkksPerceptron.dir/src/experiments/CkksPerceptronExperiment.cpp.o.d"
+  "CMakeFiles/CkksPerceptron.dir/src/hemath/Calculus.cpp.o"
+  "CMakeFiles/CkksPerceptron.dir/src/hemath/Calculus.cpp.o.d"
+  "CMakeFiles/CkksPerceptron.dir/src/hemath/Constants.cpp.o"
+  "CMakeFiles/CkksPerceptron.dir/src/hemath/Constants.cpp.o.d"
+  "CMakeFiles/CkksPerceptron.dir/src/model/CkksPerceptron.cpp.o"
+  "CMakeFiles/CkksPerceptron.dir/src/model/CkksPerceptron.cpp.o.d"
+  "CMakeFiles/CkksPerceptron.dir/src/validation/Holdout.cpp.o"
+  "CMakeFiles/CkksPerceptron.dir/src/validation/Holdout.cpp.o.d"
+  "CkksPerceptron"
+  "CkksPerceptron.pdb"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang CXX)
+  include(CMakeFiles/CkksPerceptron.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

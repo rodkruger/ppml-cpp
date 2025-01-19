@@ -1,0 +1,3 @@
+/home/rkruger/github.com/rodkruger/ppml-cpp/cmake-build-release/_deps/spdlog-subbuild/CMakeFiles/spdlog-populate.dir
+/home/rkruger/github.com/rodkruger/ppml-cpp/cmake-build-release/_deps/spdlog-subbuild/CMakeFiles/edit_cache.dir
+/home/rkruger/github.com/rodkruger/ppml-cpp/cmake-build-release/_deps/spdlog-subbuild/CMakeFiles/rebuild_cache.dir
