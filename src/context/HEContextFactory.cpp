@@ -68,7 +68,7 @@ namespace hermesml {
          * ISSN (Print) 1862-2976 DOI: 10.1515/jmc-2015-0016, October 2015
          *
          * https://eprint.iacr.org/2015/046
-         * 
+         *
          * params = LWE.Parameters(n=32768, q=2^(59*10), Xs = ND.Uniform(-1,1,n), Xe=ND.DiscreteGaussian(3.2))
          * LWE.estimate.rough(params)
          *
