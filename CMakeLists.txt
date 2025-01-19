@@ -19,7 +19,6 @@ cmake_minimum_required(VERSION 3.5.1)
 project(hermesml CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 
 option(BUILD_STATIC "Set to ON to include static versions of the library" OFF)
 
@@ -35,9 +34,9 @@ else ()
     message(FATAL_ERROR "PACKAGE OpenFHE NOT FOUND")
 endif ()
 
-#set(CMAKE_CXX_FLAGS ${OpenFHE_CXX_FLAGS})
-# If floating point precision is critical, use -O3 and remove -fassociative-math
-set(CMAKE_CXX_FLAGS "-Ofast -g0 -march=native -mtune=native -flto -fopenmp -funroll-loops -falign-functions=32 -fomit-frame-pointer -fprefetch-loop-arrays")
+set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -g0 -march=native -mtune=native -flto -ffunction-sections -fdata-sections -fopenmp -funroll-loops -falign-functions=32 -fomit-frame-pointer -fprefetch-loop-arrays -pipe")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
+# set(CMAKE_CXX_FLAGS ${OpenFHE_CXX_FLAGS})
 
 include_directories(${OPENMP_INCLUDES})
 include_directories(${OpenFHE_INCLUDE})

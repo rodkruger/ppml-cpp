@@ -15,8 +15,6 @@ namespace hermesml {
 
         this->Info(">>>>> CLIENT SIDE PROCESSING");
 
-        spdlog::shutdown();
-
         // Step 01 - read and normalize data
         this->Info("Read dataset");;
         const auto datasetHandler = BreastCancerDataset();

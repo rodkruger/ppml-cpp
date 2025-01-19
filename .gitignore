@@ -33,4 +33,5 @@
 
 # Build directory
 build/**
-cmake-build-**
+cmake-build-release/**
+cmake-build-debug/**

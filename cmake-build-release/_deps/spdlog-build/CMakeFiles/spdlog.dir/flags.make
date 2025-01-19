@@ -6,5 +6,5 @@ CXX_DEFINES = -DSPDLOG_COMPILED_LIB
 
 CXX_INCLUDES = -I/usr/local/include/openfhe -I/usr/local/include/openfhe/third-party/include -I/usr/local/include/openfhe/core -I/usr/local/include/openfhe/pke -I/usr/local/include/openfhe/binfhe -I/home/rkruger/github.com/rodkruger/ppml-cpp/includes -I/home/rkruger/github.com/rodkruger/ppml-cpp/cmake-build-release/_deps/spdlog-src/include
 
-CXX_FLAGS = -Ofast -g0 -march=native -mtune=native -flto -fopenmp -funroll-loops -falign-functions=32 -fomit-frame-pointer -fprefetch-loop-arrays -O3 -DNDEBUG -std=c++17 -fdiagnostics-color=always
+CXX_FLAGS = -Ofast -g0 -march=native -mtune=native -flto -ffunction-sections -fdata-sections -fopenmp -funroll-loops -falign-functions=32 -fomit-frame-pointer -fprefetch-loop-arrays -pipe -std=c++17 -fdiagnostics-color=always
 
