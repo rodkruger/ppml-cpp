@@ -12,7 +12,6 @@ namespace hermesml {
 
     void CkksPerceptronExperiment::Run() {
         std::chrono::time_point<std::chrono::system_clock> start, end;
-        std::chrono::duration<double> elapsed{};
 
         this->Info(">>>>> CLIENT SIDE PROCESSING");
 
@@ -32,7 +31,7 @@ namespace hermesml {
         this->Info("Split dataset (70% training; 30% testing)");
 
         auto holdoutVal = Holdout(features, labels);
-        holdoutVal.Split(0.7);
+        holdoutVal.Split(this->trainingRatio);
 
         this->Info("Total samples: " + std::to_string(features.size()));
         this->Info("Training length: " + std::to_string(holdoutVal.GetTrainingFeatures().size()));
@@ -64,26 +63,15 @@ namespace hermesml {
         auto eTrainingData = ckksClient.EncryptCKKS(holdoutVal.GetTrainingFeatures());
         auto eTrainingLabels = ckksClient.EncryptCKKS(holdoutVal.GetLabels());
 
-        end = std::chrono::high_resolution_clock::now();
-        elapsed = end - start;
-
-        this->Info("Elapsed time: " + std::to_string(elapsed.count()) + " ms");
-
-        //-----------------------------------------------------------------------------------------------------------------
-
-        // Step 06 - Encrypt testing data
-
         this->Info("Encrypt testing data");
-
-        start = std::chrono::high_resolution_clock::now();
 
         auto eTestingData = ckksClient.EncryptCKKS(holdoutVal.GetTestingFeatures());
         auto eTestingLabels = ckksClient.EncryptCKKS(holdoutVal.GetLabels());
 
         end = std::chrono::high_resolution_clock::now();
-        elapsed = end - start;
+        this->encryptingTime = end - start;
 
-        this->Info("Elapsed time: " + std::to_string(elapsed.count()) + " ms");
+        this->Info("Elapsed time: " + std::to_string(this->encryptingTime.count()) + " ms");
 
         // S E R V E R   S I D E   P R O C E S S I N G --------------------------------------------------------------------
 
@@ -91,7 +79,7 @@ namespace hermesml {
 
         auto clf = CkksPerceptron(ckksCtx, features[0].size(), this->epochs);
 
-        // Step 07 - Train the model
+        // Step 06 - Train the model
 
         this->Info("Train model");
 
@@ -100,11 +88,11 @@ namespace hermesml {
         clf.Fit(eTrainingData, eTrainingLabels);
 
         end = std::chrono::high_resolution_clock::now();
-        elapsed = end - start;
+        this->trainingTime = end - start;
 
-        this->Info("Elapsed time: " + std::to_string(elapsed.count()) + " ms");
+        this->Info("Elapsed time: " + std::to_string(this->trainingTime.count()) + " ms");
 
-        // Step 08 - Test the model
+        // Step 07 - Test the model
 
         this->Info("Test model");
 
@@ -128,24 +116,57 @@ namespace hermesml {
 
         // Open the file in write mode
         auto predictionsFileName = this->BuildFilePath("predictions.csv");
-        std::ofstream outFile(predictionsFileName);
+        std::ofstream predictionsFile(predictionsFileName);
 
-        if (!outFile) {
+        if (!predictionsFile) {
             this->Error("Could not open the file " + predictionsFileName + " for writing.\n");
             return;
         }
 
         // Write the data to the file
         for (const auto &[realValue, predictedValue]: predictData) {
-            outFile << realValue << "," << predictedValue << std::endl;
+            predictionsFile << realValue << "," << predictedValue << std::endl;
         }
 
         // Close the file
-        outFile.close();
+        predictionsFile.close();
 
         end = std::chrono::high_resolution_clock::now();
-        elapsed = end - start;
+        this->testingTime = end - start;
 
-        this->Info("Elapsed time: " + std::to_string(elapsed.count()) + " ms");
+        this->Info("Elapsed time: " + std::to_string(this->testingTime.count()) + " ms");
+
+        //-------------------------------------------------------------------------------------------------------------
+
+        // Dump parameters into file
+
+        auto parametersFileName = this->BuildFilePath("parameters.csv");
+        std::ofstream parametersFile(parametersFileName);
+
+        if (!parametersFile) {
+            this->Error("Could not open the file " + predictionsFileName + " for writing.\n");
+            return;
+        }
+
+        this->datasetLength = features.size();
+        this->trainingLength = holdoutVal.GetTrainingFeatures().size();
+        this->testingLength = holdoutVal.GetTestingFeatures().size();
+        this->ringDimension = cc->GetRingDimension();
+        this->multiplicativeDepth = ckksCtx.GetMultiplicativeDepth();
+
+        // Write the data to the file
+        parametersFile << "epochs = " << this->epochs << std::endl;
+        parametersFile << "datasetLength = " << this->datasetLength << std::endl;
+        parametersFile << "trainingRatio = " << this->trainingRatio << std::endl;
+        parametersFile << "trainingLength = " << this->trainingLength << std::endl;
+        parametersFile << "testingLength = " << this->testingLength << std::endl;
+        parametersFile << "ringDimension = " << this->ringDimension << std::endl;
+        parametersFile << "multiplicativeDepth = " << this->multiplicativeDepth << std::endl;
+        parametersFile << "encryptingTime = " << std::to_string(this->encryptingTime.count()) << std::endl;
+        parametersFile << "trainingTime = " << std::to_string(this->trainingTime.count()) << std::endl;
+        parametersFile << "testingTime = " << std::to_string(this->trainingTime.count()) << std::endl;
+
+        // Close the file
+        parametersFile.close();
     }
 }

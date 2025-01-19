@@ -24,7 +24,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 
 # Use the configuration below for maximum speed
-set(CMAKE_CXX_FLAGS_DEBUG "-Ofast -g0")
+set(CMAKE_CXX_FLAGS_DEBUG "-Ofast -g0 -fopenmp -march=native -funroll-loops")
 
 option(BUILD_STATIC "Set to ON to include static versions of the library" OFF)
 
