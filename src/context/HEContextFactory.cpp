@@ -47,16 +47,16 @@ namespace hermesml {
     }
 
     HEContext HEContextFactory::ckksHeContext() {
-        const std::vector<uint32_t> levelBudget = {3, 3};
+        const std::vector<uint32_t> levelBudget = {2, 2};
         const std::vector<uint32_t> bsgsDim = {0, 0};
         constexpr int32_t numSlots = 32;
         auto parameters = CCParams<CryptoContextCKKSRNS>();
 
         // parameters.SetSecurityLevel(HEStd_128_classic);
         parameters.SetSecurityLevel(HEStd_NotSet);
-        parameters.SetRingDim(16384); // Insufficient for security
+        parameters.SetRingDim(16384);
         parameters.SetKeySwitchTechnique(HYBRID);
-        parameters.SetScalingModSize(59);
+        parameters.SetScalingModSize(53); // 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59
         parameters.SetScalingTechnique(FLEXIBLEAUTO);
         parameters.SetBatchSize(numSlots);
         parameters.SetSecretKeyDist(UNIFORM_TERNARY);
@@ -78,11 +78,17 @@ namespace hermesml {
          * 'dual_hybrid': rop: ≈2^164.7, red: ≈2^164.7, guess: ≈2^109.4, β: 564, p: 4, ζ: 0, t: 40, β': 564, N: ≈2^99.2, m: ≈2^15.0}
          */
 
-        auto depth = 30;
-        auto levelsAfterBootstrap = depth - FHECKKSRNS::GetBootstrapDepth(levelBudget, parameters.GetSecretKeyDist());
+        constexpr int32_t depth = 30;
+        int32_t levelsAfterBootstrap =
+                depth - static_cast<int32_t>(FHECKKSRNS::GetBootstrapDepth(levelBudget, parameters.GetSecretKeyDist()));
+
+        if (levelsAfterBootstrap < 0) {
+            levelsAfterBootstrap = 0;
+        }
+
         parameters.SetMultiplicativeDepth(depth);
 
-        auto cc = GenCryptoContext(parameters);
+        const auto cc = GenCryptoContext(parameters);
         cc->Enable(PKE);
         cc->Enable(KEYSWITCH);
         cc->Enable(LEVELEDSHE);

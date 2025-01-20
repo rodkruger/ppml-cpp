@@ -1,7 +1,0 @@
-/home/rkruger/github.com/rodkruger/ppml-cpp/cmake-build-release/CMakeFiles/CkksBootstrapping.dir
-/home/rkruger/github.com/rodkruger/ppml-cpp/cmake-build-release/CMakeFiles/CkksPerceptron.dir
-/home/rkruger/github.com/rodkruger/ppml-cpp/cmake-build-release/CMakeFiles/edit_cache.dir
-/home/rkruger/github.com/rodkruger/ppml-cpp/cmake-build-release/CMakeFiles/rebuild_cache.dir
-/home/rkruger/github.com/rodkruger/ppml-cpp/cmake-build-release/_deps/spdlog-build/CMakeFiles/spdlog.dir
-/home/rkruger/github.com/rodkruger/ppml-cpp/cmake-build-release/_deps/spdlog-build/CMakeFiles/edit_cache.dir
-/home/rkruger/github.com/rodkruger/ppml-cpp/cmake-build-release/_deps/spdlog-build/CMakeFiles/rebuild_cache.dir

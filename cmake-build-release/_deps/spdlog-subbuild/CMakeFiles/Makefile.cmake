@@ -10,8 +10,10 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/3.30.5/CMakeSystem.cmake"
   "CMakeLists.txt"
   "spdlog-populate-prefix/tmp/spdlog-populate-mkdirs.cmake"
+  "/home/rkruger/opt/clion-2024.3/bin/cmake/linux/x64/share/cmake-3.30/Modules/CMakeDetermineSystem.cmake"
   "/home/rkruger/opt/clion-2024.3/bin/cmake/linux/x64/share/cmake-3.30/Modules/CMakeGenericSystem.cmake"
   "/home/rkruger/opt/clion-2024.3/bin/cmake/linux/x64/share/cmake-3.30/Modules/CMakeInitializeConfigs.cmake"
+  "/home/rkruger/opt/clion-2024.3/bin/cmake/linux/x64/share/cmake-3.30/Modules/CMakeSystem.cmake.in"
   "/home/rkruger/opt/clion-2024.3/bin/cmake/linux/x64/share/cmake-3.30/Modules/CMakeSystemSpecificInformation.cmake"
   "/home/rkruger/opt/clion-2024.3/bin/cmake/linux/x64/share/cmake-3.30/Modules/CMakeSystemSpecificInitialize.cmake"
   "/home/rkruger/opt/clion-2024.3/bin/cmake/linux/x64/share/cmake-3.30/Modules/ExternalProject.cmake"
@@ -36,6 +38,7 @@ set(CMAKE_MAKEFILE_OUTPUTS
 
 # Byproducts of CMake generate step:
 set(CMAKE_MAKEFILE_PRODUCTS
+  "CMakeFiles/3.30.5/CMakeSystem.cmake"
   "spdlog-populate-prefix/tmp/spdlog-populate-mkdirs.cmake"
   "spdlog-populate-prefix/tmp/spdlog-populate-gitclone.cmake"
   "spdlog-populate-prefix/src/spdlog-populate-stamp/spdlog-populate-gitinfo.txt"
