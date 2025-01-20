@@ -5,7 +5,7 @@
 #include "context.h"
 
 namespace hermesml {
-    CryptoContext<DCRTPoly> HEContext::GetCc() const{
+    CryptoContext<DCRTPoly> HEContext::GetCc() const {
         return this->cc;
     }
 
@@ -27,6 +27,14 @@ namespace hermesml {
 
     void HEContext::SetPrivateKey(const PrivateKey<DCRTPoly> &privateKey) {
         this->privateKey = privateKey;
+    }
+
+    uint16_t HEContext::GetScalingModSize() const {
+        return this->scalingModSize;
+    }
+
+    void HEContext::SetScalingModSize(const uint16_t scalingModSize) {
+        this->scalingModSize = scalingModSize;
     }
 
     uint16_t HEContext::GetMultiplicativeDepth() const {

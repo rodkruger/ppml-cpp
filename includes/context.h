@@ -10,6 +10,7 @@ namespace hermesml {
         CryptoContext<DCRTPoly> cc;
         PublicKey<DCRTPoly> publicKey;
         PrivateKey<DCRTPoly> privateKey;
+        uint32_t scalingModSize = 0;
         uint16_t multiplicativeDepth = 0;
         uint16_t numSlots = 0;
         uint16_t levelsAfterBootstrapping = 0;
@@ -26,6 +27,10 @@ namespace hermesml {
         [[nodiscard]] PrivateKey<DCRTPoly> GetPrivateKey() const;
 
         void SetPrivateKey(const PrivateKey<DCRTPoly> &privateKey);
+
+        [[nodiscard]] uint16_t GetScalingModSize() const;
+
+        void SetScalingModSize(uint16_t scalingModSize);
 
         [[nodiscard]] uint16_t GetMultiplicativeDepth() const;
 

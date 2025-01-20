@@ -50,13 +50,16 @@ namespace hermesml {
         const std::vector<uint32_t> levelBudget = {2, 2};
         const std::vector<uint32_t> bsgsDim = {0, 0};
         constexpr int32_t numSlots = 32;
+        constexpr int32_t depth = 30;
+        constexpr int32_t ringDimension = 16384;
+        constexpr int32_t scalingModSize = 53; // 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59
         auto parameters = CCParams<CryptoContextCKKSRNS>();
 
         // parameters.SetSecurityLevel(HEStd_128_classic);
         parameters.SetSecurityLevel(HEStd_NotSet);
-        parameters.SetRingDim(16384);
+        parameters.SetRingDim(ringDimension);
         parameters.SetKeySwitchTechnique(HYBRID);
-        parameters.SetScalingModSize(53); // 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59
+        parameters.SetScalingModSize(scalingModSize);
         parameters.SetScalingTechnique(FLEXIBLEAUTO);
         parameters.SetBatchSize(numSlots);
         parameters.SetSecretKeyDist(UNIFORM_TERNARY);
@@ -69,7 +72,7 @@ namespace hermesml {
          *
          * https://eprint.iacr.org/2015/046
          *
-         * params = LWE.Parameters(n=32768, q=2^(59*10), Xs = ND.Uniform(-1,1,n), Xe=ND.DiscreteGaussian(3.2))
+         * params = LWE.Parameters(n=16384, q=2^(53*10), Xs = ND.Uniform(-1,1,n), Xe=ND.DiscreteGaussian(3.2))
          * LWE.estimate.rough(params)
          *
          * usvp                 :: rop: ≈2^164.7, red: ≈2^164.7, δ: 1.003122, β: 564, d: 64777, tag: usvp
@@ -78,7 +81,6 @@ namespace hermesml {
          * 'dual_hybrid': rop: ≈2^164.7, red: ≈2^164.7, guess: ≈2^109.4, β: 564, p: 4, ζ: 0, t: 40, β': 564, N: ≈2^99.2, m: ≈2^15.0}
          */
 
-        constexpr int32_t depth = 20;
         int32_t levelsAfterBootstrap =
                 depth - static_cast<int32_t>(FHECKKSRNS::GetBootstrapDepth(levelBudget, parameters.GetSecretKeyDist()));
 
@@ -107,6 +109,7 @@ namespace hermesml {
         // Build context ----------------------------------------------------------------------------------------------
         auto ctx = HEContext();
         ctx.SetCc(cc);
+        ctx.SetScalingModSize(scalingModSize);
         ctx.SetMultiplicativeDepth(depth);
         ctx.SetLevelsAfterBootstrapping(levelsAfterBootstrap);
         ctx.SetNumSlots(numSlots);

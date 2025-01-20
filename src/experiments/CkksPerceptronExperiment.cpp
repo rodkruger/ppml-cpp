@@ -47,6 +47,7 @@ namespace hermesml {
 
         this->Info("Scheme: CKKS");
         this->Info("Ring dimension: " + std::to_string(cc->GetRingDimension()));
+        this->Info("Scaling Modulus Size: " + std::to_string(ckksCtx.GetScalingModSize()));
         this->Info("Modulus: " + cc->GetModulus().ToString());
         this->Info("Multiplicative depth: " + std::to_string(ckksCtx.GetMultiplicativeDepth()));
 
