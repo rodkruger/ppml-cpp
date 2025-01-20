@@ -78,7 +78,7 @@ namespace hermesml {
          * 'dual_hybrid': rop: ≈2^164.7, red: ≈2^164.7, guess: ≈2^109.4, β: 564, p: 4, ζ: 0, t: 40, β': 564, N: ≈2^99.2, m: ≈2^15.0}
          */
 
-        constexpr int32_t depth = 30;
+        constexpr int32_t depth = 20;
         int32_t levelsAfterBootstrap =
                 depth - static_cast<int32_t>(FHECKKSRNS::GetBootstrapDepth(levelBudget, parameters.GetSecretKeyDist()));
 
