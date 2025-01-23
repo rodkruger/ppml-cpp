@@ -2,9 +2,18 @@
 #define EXPERIMENTS_H
 
 #include "core.h"
+#include "model.h"
 
 namespace hermesml {
     class CkksPerceptronExperiment : public Experiment {
+    public:
+        explicit CkksPerceptronExperiment(const std::string &experimentId, CkksPerceptron::Activation activation,
+                                          uint16_t epochs);
+
+        void Run() override;
+
+    private:
+        CkksPerceptron::Activation activation;
         uint16_t epochs;
         size_t datasetLength{};
         double trainingRatio{0.7};
@@ -18,9 +27,6 @@ namespace hermesml {
         std::chrono::duration<double> testingTime{};
 
     public:
-        explicit CkksPerceptronExperiment(const std::string &experimentId, uint16_t epochs);
-
-        void Run() override;
     };
 }
 

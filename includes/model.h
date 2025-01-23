@@ -170,19 +170,11 @@ namespace hermesml {
     };
 
     class CkksPerceptron : public EncryptedObject, public MlModel {
-    private:
-        Calculus calculus;
-        Constants constants;
-
-        uint16_t n_features;
-        uint16_t epochs;
-        BootstrapableCiphertext eWeights;
-        BootstrapableCiphertext eBias;
-
-        [[nodiscard]] BootstrapableCiphertext tanh(const BootstrapableCiphertext &x) const;
-
     public:
-        explicit CkksPerceptron(const HEContext &ctx, uint16_t n_features, uint16_t epochs);
+        enum Activation { TANH, SIGMOID };
+
+        explicit CkksPerceptron(const HEContext &ctx, uint16_t n_features, uint16_t epochs,
+                                Activation activation = TANH);
 
         [[nodiscard]] BootstrapableCiphertext GetLearningRate() const;
 
@@ -192,6 +184,20 @@ namespace hermesml {
         BootstrapableCiphertext Predict(const BootstrapableCiphertext &x) override;
 
         std::vector<BootstrapableCiphertext> PredictAll(const std::vector<BootstrapableCiphertext> &x);
+
+    private:
+        Calculus calculus;
+        Constants constants;
+
+        Activation activation;
+        uint16_t n_features;
+        uint16_t epochs;
+        BootstrapableCiphertext eWeights;
+        BootstrapableCiphertext eBias;
+
+        [[nodiscard]] BootstrapableCiphertext sigmoid(const BootstrapableCiphertext &x) const;
+
+        [[nodiscard]] BootstrapableCiphertext tanh(const BootstrapableCiphertext &x) const;
     };
 }
 

@@ -1,14 +1,14 @@
 #include "model.h"
 
 namespace hermesml {
-    CkksPerceptron::CkksPerceptron(const HEContext &ctx,
-                                   const uint16_t n_features,
-                                   const uint16_t epochs): EncryptedObject(ctx), calculus(Calculus(ctx)),
-                                                           constants(Constants(ctx, n_features)),
-                                                           eWeights(this->constants.Zero()),
-                                                           eBias(this->constants.Zero()) {
-        this->n_features = n_features;
-        this->epochs = epochs;
+    CkksPerceptron::CkksPerceptron(const HEContext &ctx, const uint16_t n_features, const uint16_t epochs,
+                                   const Activation activation): EncryptedObject(ctx), calculus(Calculus(ctx)),
+                                                                 constants(Constants(ctx, n_features)),
+                                                                 activation(activation),
+                                                                 n_features(n_features),
+                                                                 epochs(epochs),
+                                                                 eWeights(this->constants.Zero()),
+                                                                 eBias(this->constants.Zero()) {
     }
 
     BootstrapableCiphertext CkksPerceptron::GetLearningRate() const {
@@ -16,9 +16,25 @@ namespace hermesml {
         return this->EncryptCKKS(std::vector(n_features, lr));
     }
 
+    BootstrapableCiphertext CkksPerceptron::sigmoid(const BootstrapableCiphertext &x) const {
+        // Least Squares method for sigmoid approximation
+        // return 0.5 + x*0.21689 - x**3*0.0081934 + x**5*0.00016588
+
+        const auto x_squared = this->EvalMult(x, x);
+        const auto x_cubed = this->EvalMult(x_squared, x);
+        const auto x_fived = this->EvalMult(x_squared, x_cubed);
+        const auto x_sevened = this->EvalMult(x_squared, x_fived);
+
+        const auto term1 = this->EvalMult(x, this->constants.C021689());
+        const auto term2 = this->EvalMult(x_cubed, this->constants.C00081934());
+        const auto term3 = this->EvalMult(x_fived, this->constants.C000016588());
+
+        return this->EvalAdd(this->EvalSub(this->EvalAdd(this->constants.C05(), term1), term2), term3);
+    }
+
     BootstrapableCiphertext CkksPerceptron::tanh(const BootstrapableCiphertext &x) const {
-        // Taylor expansion for hiperbolic tangent - tanh
-        // return x - (x**3*0.333333) + (x**5*0.133333)
+        // Taylor expansion method for tanh approximation
+        // return x - x**3*0.333333 + x**5*0.133333
 
         const auto x_squared = this->EvalMult(x, x);
         const auto x_cubed = this->EvalMult(x_squared, x);
@@ -66,7 +82,13 @@ namespace hermesml {
         auto z = this->EvalMult(x, this->eWeights);
         z = this->EvalSum(z);
         z = this->EvalAdd(z, this->eBias);
-        return this->tanh(z);
+
+        switch (this->activation) {
+            case SIGMOID:
+                return this->sigmoid(z);
+            default:
+                return this->tanh(z);
+        }
     }
 
     std::vector<BootstrapableCiphertext> CkksPerceptron::PredictAll(const std::vector<BootstrapableCiphertext> &x) {

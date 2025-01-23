@@ -24,6 +24,11 @@ namespace hermesml {
         BootstrapableCiphertext encrypted0333333;
         BootstrapableCiphertext encrypted0133333;
 
+        BootstrapableCiphertext encrypted021689;
+        BootstrapableCiphertext encrypted00081934;
+        BootstrapableCiphertext encrypted000016588;
+        BootstrapableCiphertext encrypted00000011959;
+
     public:
         explicit Constants(const HEContext &ctx, int32_t n_features);
 
@@ -40,6 +45,14 @@ namespace hermesml {
         [[nodiscard]] BootstrapableCiphertext C0333333() const;
 
         [[nodiscard]] BootstrapableCiphertext C0133333() const;
+
+        [[nodiscard]] BootstrapableCiphertext C021689() const;
+
+        [[nodiscard]] BootstrapableCiphertext C00081934() const;
+
+        [[nodiscard]] BootstrapableCiphertext C000016588() const;
+
+        [[nodiscard]] BootstrapableCiphertext C00000011959() const;
     };
 
     class Calculus : EncryptedObject {

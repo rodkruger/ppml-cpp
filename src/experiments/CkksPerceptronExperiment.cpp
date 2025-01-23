@@ -6,13 +6,16 @@
 
 namespace hermesml {
     CkksPerceptronExperiment::CkksPerceptronExperiment(const std::string &experimentId,
+                                                       const CkksPerceptron::Activation activation,
                                                        const uint16_t epochs) : Experiment(experimentId),
+        activation(activation),
         epochs(epochs) {
     }
 
     void CkksPerceptronExperiment::Run() {
         std::chrono::time_point<std::chrono::system_clock> start, end;
 
+        this->Info("Initiating experiment " + this->GetExperimentId());
         this->Info(">>>>> CLIENT SIDE PROCESSING");
 
         // Step 01 - read and normalize data
@@ -46,6 +49,7 @@ namespace hermesml {
         auto cc = ckksCtx.GetCc();
 
         this->Info("Scheme: CKKS");
+        this->Info("Activation: " + std::to_string(this->activation));
         this->Info("Ring dimension: " + std::to_string(cc->GetRingDimension()));
         this->Info("Scaling Modulus Size: " + std::to_string(ckksCtx.GetScalingModSize()));
         this->Info("Modulus: " + cc->GetModulus().ToString());
@@ -105,7 +109,17 @@ namespace hermesml {
             const auto ePredictedLabel = clf.Predict(eTestingLabel).GetCiphertext();
             cc->Decrypt(ckksCtx.GetPrivateKey(), ePredictedLabel, &plain_label);
             const auto pPlainLabel = plain_label->GetCKKSPackedValue()[0].real();
-            const auto pPredictedLabel = pPlainLabel > 0.0 ? 1.0 : 0.0;
+
+            double pPredictedLabel = 0.0;
+            switch (activation) {
+                case CkksPerceptron::TANH:
+                    pPredictedLabel = pPlainLabel > 0.0 ? 1.0 : 0.0;
+                    break;
+
+                case CkksPerceptron::SIGMOID:
+                    pPredictedLabel = pPlainLabel > 0.5 ? 1.0 : 0.0;
+                    break;
+            }
 
             const auto realLabel = holdoutVal.GetLabels()[i];
 
@@ -167,5 +181,7 @@ namespace hermesml {
 
         // Close the file
         parametersFile.close();
+
+        this->Info("Experiment " + this->GetExperimentId() + " completed!");
     }
 }
