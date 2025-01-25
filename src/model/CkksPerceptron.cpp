@@ -23,7 +23,6 @@ namespace hermesml {
         const auto x_squared = this->EvalMult(x, x);
         const auto x_cubed = this->EvalMult(x_squared, x);
         const auto x_fived = this->EvalMult(x_squared, x_cubed);
-        const auto x_sevened = this->EvalMult(x_squared, x_fived);
 
         const auto term1 = this->EvalMult(x, this->constants.C021689());
         const auto term2 = this->EvalMult(x_cubed, this->constants.C00081934());

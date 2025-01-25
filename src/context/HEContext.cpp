@@ -60,4 +60,12 @@ namespace hermesml {
     void HEContext::SetLevelsAfterBootstrapping(const uint16_t levelsAfterBootstrapping) {
         this->levelsAfterBootstrapping = levelsAfterBootstrapping;
     }
+
+    uint8_t HEContext::GetEarlyBootstrapping() const {
+        return this->earlyBootstrapping;
+    }
+
+    void HEContext::SetEarlyBootstrapping(const uint8_t earlyBootstrapping) {
+        this->earlyBootstrapping = earlyBootstrapping;
+    }
 }

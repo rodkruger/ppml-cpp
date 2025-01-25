@@ -8,7 +8,7 @@ namespace hermesml {
     class CkksPerceptronExperiment : public Experiment {
     public:
         explicit CkksPerceptronExperiment(const std::string &experimentId, CkksPerceptron::Activation activation,
-                                          uint16_t epochs);
+                                          uint16_t epochs, uint8_t earlyBootstrapping);
 
         void Run() override;
 
@@ -21,6 +21,7 @@ namespace hermesml {
         size_t testingLength{};
         size_t ringDimension{};
         size_t multiplicativeDepth{};
+        uint8_t earlyBootstrapping;
 
         std::chrono::duration<double> encryptingTime{};
         std::chrono::duration<double> trainingTime{};

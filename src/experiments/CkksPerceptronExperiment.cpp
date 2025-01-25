@@ -7,9 +7,11 @@
 namespace hermesml {
     CkksPerceptronExperiment::CkksPerceptronExperiment(const std::string &experimentId,
                                                        const CkksPerceptron::Activation activation,
-                                                       const uint16_t epochs) : Experiment(experimentId),
+                                                       const uint16_t epochs,
+                                                       const uint8_t earlyBootstrapping) : Experiment(experimentId),
         activation(activation),
-        epochs(epochs) {
+        epochs(epochs),
+        earlyBootstrapping(earlyBootstrapping) {
     }
 
     void CkksPerceptronExperiment::Run() {
@@ -45,6 +47,8 @@ namespace hermesml {
         this->Info("Generate crypto context");
 
         auto ckksCtx = HEContextFactory::ckksHeContext();
+        ckksCtx.SetEarlyBootstrapping(earlyBootstrapping);
+
         auto ckksClient = Client(ckksCtx);
         auto cc = ckksCtx.GetCc();
 
@@ -54,6 +58,7 @@ namespace hermesml {
         this->Info("Scaling Modulus Size: " + std::to_string(ckksCtx.GetScalingModSize()));
         this->Info("Modulus: " + cc->GetModulus().ToString());
         this->Info("Multiplicative depth: " + std::to_string(ckksCtx.GetMultiplicativeDepth()));
+        this->Info("Early Boostrapping: " + std::to_string(ckksCtx.GetEarlyBootstrapping()));
 
         //-----------------------------------------------------------------------------------------------------------------
 
@@ -80,7 +85,7 @@ namespace hermesml {
 
         this->Info(">>>>> SERVER SIDE PROCESSING");
 
-        auto clf = CkksPerceptron(ckksCtx, features[0].size(), this->epochs);
+        auto clf = CkksPerceptron(ckksCtx, features[0].size(), this->epochs, activation);
 
         // Step 06 - Train the model
 

@@ -77,7 +77,7 @@ namespace hermesml {
     }
 
     BootstrapableCiphertext EncryptedObject::EvalBootstrap(const BootstrapableCiphertext &ciphertext) const {
-        if (ciphertext.GetRemainingLevels() <= 1) {
+        if ((ciphertext.GetRemainingLevels() - this->GetCtx().GetEarlyBootstrapping()) <= 1) {
             return BootstrapableCiphertext(this->GetCc()->EvalBootstrap(ciphertext.GetCiphertext()),
                                            this->GetCtx().GetLevelsAfterBootstrapping());
         }
