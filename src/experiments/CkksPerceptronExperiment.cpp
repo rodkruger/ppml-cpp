@@ -6,12 +6,9 @@
 
 namespace hermesml {
     CkksPerceptronExperiment::CkksPerceptronExperiment(const std::string &experimentId,
-                                                       const CkksPerceptron::Activation activation,
-                                                       const uint16_t epochs,
-                                                       const uint8_t earlyBootstrapping) : Experiment(experimentId),
-        activation(activation),
-        epochs(epochs),
-        earlyBootstrapping(earlyBootstrapping) {
+                                                       const CkksPerceptronExperimentParams &params) : Experiment(
+            experimentId),
+        params(params) {
     }
 
     void CkksPerceptronExperiment::Run() {
@@ -28,7 +25,7 @@ namespace hermesml {
 
         // Step 02 - read and normalize data
         this->Info("Normalize dataset");;
-        MinMaxScaler::Scale(features);
+        MinMaxScaler(this->params.scalingAlpha, this->params.scalingBeta).Scale(features);
 
         // Step 03 - split dataset in training and testing. Holdout (70% training; 30% testing)
         this->Info("Split dataset (70% training; 30% testing)");
@@ -47,13 +44,13 @@ namespace hermesml {
         this->Info("Generate crypto context");
 
         auto ckksCtx = HEContextFactory::ckksHeContext();
-        ckksCtx.SetEarlyBootstrapping(earlyBootstrapping);
+        ckksCtx.SetEarlyBootstrapping(this->params.earlyBootstrapping);
 
         auto ckksClient = Client(ckksCtx);
         auto cc = ckksCtx.GetCc();
 
         this->Info("Scheme: CKKS");
-        this->Info("Activation: " + std::to_string(this->activation));
+        this->Info("Activation: " + std::to_string(this->params.activation));
         this->Info("Ring dimension: " + std::to_string(cc->GetRingDimension()));
         this->Info("Scaling Modulus Size: " + std::to_string(ckksCtx.GetScalingModSize()));
         this->Info("Modulus: " + cc->GetModulus().ToString());
@@ -85,7 +82,7 @@ namespace hermesml {
 
         this->Info(">>>>> SERVER SIDE PROCESSING");
 
-        auto clf = CkksPerceptron(ckksCtx, features[0].size(), this->epochs, activation);
+        auto clf = CkksPerceptron(ckksCtx, features[0].size(), this->params.epochs, this->params.activation);
 
         // Step 06 - Train the model
 
@@ -116,7 +113,7 @@ namespace hermesml {
             const auto pPlainLabel = plain_label->GetCKKSPackedValue()[0].real();
 
             double pPredictedLabel = 0.0;
-            switch (activation) {
+            switch (this->params.activation) {
                 case CkksPerceptron::TANH:
                     pPredictedLabel = pPlainLabel > 0.0 ? 1.0 : 0.0;
                     break;
@@ -173,7 +170,7 @@ namespace hermesml {
         this->multiplicativeDepth = ckksCtx.GetMultiplicativeDepth();
 
         // Write the data to the file
-        parametersFile << "epochs = " << this->epochs << std::endl;
+        parametersFile << "epochs = " << this->params.epochs << std::endl;
         parametersFile << "datasetLength = " << this->datasetLength << std::endl;
         parametersFile << "trainingRatio = " << this->trainingRatio << std::endl;
         parametersFile << "trainingLength = " << this->trainingLength << std::endl;

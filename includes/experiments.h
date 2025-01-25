@@ -5,29 +5,33 @@
 #include "model.h"
 
 namespace hermesml {
-    class CkksPerceptronExperiment : public Experiment {
-    public:
-        explicit CkksPerceptronExperiment(const std::string &experimentId, CkksPerceptron::Activation activation,
-                                          uint16_t epochs, uint8_t earlyBootstrapping);
-
-        void Run() override;
-
-    private:
+    struct CkksPerceptronExperimentParams {
         CkksPerceptron::Activation activation;
         uint16_t epochs;
+        uint8_t earlyBootstrapping;
+        int8_t scalingAlpha;
+        int8_t scalingBeta;
+    };
+
+    class CkksPerceptronExperiment : public Experiment {
+        CkksPerceptronExperimentParams params;
+
         size_t datasetLength{};
         double trainingRatio{0.7};
         size_t trainingLength{};
         size_t testingLength{};
         size_t ringDimension{};
         size_t multiplicativeDepth{};
-        uint8_t earlyBootstrapping;
 
         std::chrono::duration<double> encryptingTime{};
         std::chrono::duration<double> trainingTime{};
         std::chrono::duration<double> testingTime{};
 
     public:
+        explicit CkksPerceptronExperiment(const std::string &experimentId,
+                                          const CkksPerceptronExperimentParams &params);
+
+        void Run() override;
     };
 }
 

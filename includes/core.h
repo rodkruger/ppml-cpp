@@ -72,8 +72,13 @@ namespace hermesml {
     //-----------------------------------------------------------------------------------------------------------------
 
     class MinMaxScaler {
+        int8_t alpha{0};
+        int8_t beta{1};
+
     public:
-        static void Scale(std::vector<std::vector<double> > &data);
+        explicit MinMaxScaler(int8_t alpha = 0, int8_t beta = 1);
+
+        void Scale(std::vector<std::vector<double> > &data) const;
     };
 
     //-----------------------------------------------------------------------------------------------------------------
