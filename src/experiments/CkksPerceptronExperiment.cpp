@@ -2,7 +2,6 @@
 #include "datasets.h"
 #include "experiments.h"
 #include "model.h"
-#include "validation.h"
 
 namespace hermesml {
     CkksPerceptronExperiment::CkksPerceptronExperiment(const std::string &experimentId,
@@ -19,27 +18,35 @@ namespace hermesml {
 
         // Step 01 - read and normalize data
         this->Info("Read dataset");;
-        const auto datasetHandler = BreastCancerDataset();
-        auto features = datasetHandler.GetFeatures();
-        auto labels = datasetHandler.GetLabels();
 
-        // Step 02 - read and normalize data
-        this->Info("Normalize dataset");;
-        MinMaxScaler(this->params.scalingAlpha, this->params.scalingBeta).Scale(features);
+        BreastCancerDataset::BreastCancerDatasetRanges datasetType;
 
-        // Step 03 - split dataset in training and testing. Holdout (70% training; 30% testing)
-        this->Info("Split dataset (70% training; 30% testing)");
+        switch (this->params.activation) {
+            case CkksPerceptron::TANH:
+                datasetType = BreastCancerDataset::BreastCancerDatasetRanges::F01;
+                break;
 
-        auto holdoutVal = Holdout(features, labels);
-        holdoutVal.Split(this->trainingRatio);
+            case CkksPerceptron::SIGMOID:
+                datasetType = BreastCancerDataset::BreastCancerDatasetRanges::FM22;
+                break;
 
-        this->Info("Total samples: " + std::to_string(features.size()));
-        this->Info("Training length: " + std::to_string(holdoutVal.GetTrainingFeatures().size()));
-        this->Info("Testing length: " + std::to_string(holdoutVal.GetTestingFeatures().size()));
+            default:
+                datasetType = BreastCancerDataset::BreastCancerDatasetRanges::F01;
+                break;
+        }
+
+        const auto trainingFeatures = BreastCancerDataset::GetTrainingFeatures(datasetType);
+        const auto trainingLabels = BreastCancerDataset::GetTrainingLabels(datasetType);
+        const auto testingFeatures = BreastCancerDataset::GetTestingFeatures(datasetType);
+        const auto testingLabels = BreastCancerDataset::GetTestingLabels(datasetType);
+
+        this->Info("Total samples: " + std::to_string(trainingFeatures.size() + testingFeatures.size()));
+        this->Info("Training length: " + std::to_string(trainingFeatures.size()));
+        this->Info("Testing length: " + std::to_string(testingFeatures.size()));
 
         //-----------------------------------------------------------------------------------------------------------------
 
-        // Step 04 - Generating keys and crypto context. Do not share it with anybody :)
+        // Step 02 - Generating keys and crypto context. Do not share it with anybody :)
 
         this->Info("Generate crypto context");
 
@@ -59,19 +66,19 @@ namespace hermesml {
 
         //-----------------------------------------------------------------------------------------------------------------
 
-        // Step 05 - Encrypt training data
+        // Step 03 - Encrypt training data
 
         this->Info("Encrypt training data");
 
         start = std::chrono::high_resolution_clock::now();
 
-        auto eTrainingData = ckksClient.EncryptCKKS(holdoutVal.GetTrainingFeatures());
-        auto eTrainingLabels = ckksClient.EncryptCKKS(holdoutVal.GetLabels());
+        auto eTrainingData = ckksClient.EncryptCKKS(trainingFeatures);
+        auto eTrainingLabels = ckksClient.EncryptCKKS(trainingLabels);
 
         this->Info("Encrypt testing data");
 
-        auto eTestingData = ckksClient.EncryptCKKS(holdoutVal.GetTestingFeatures());
-        auto eTestingLabels = ckksClient.EncryptCKKS(holdoutVal.GetLabels());
+        auto eTestingData = ckksClient.EncryptCKKS(testingFeatures);
+        auto eTestingLabels = ckksClient.EncryptCKKS(testingLabels);
 
         end = std::chrono::high_resolution_clock::now();
         this->encryptingTime = end - start;
@@ -82,9 +89,9 @@ namespace hermesml {
 
         this->Info(">>>>> SERVER SIDE PROCESSING");
 
-        auto clf = CkksPerceptron(ckksCtx, features[0].size(), this->params.epochs, this->params.activation);
+        auto clf = CkksPerceptron(ckksCtx, trainingFeatures[0].size(), this->params.epochs, this->params.activation);
 
-        // Step 06 - Train the model
+        // Step 04 - Train the model
 
         this->Info("Train model");
 
@@ -97,7 +104,7 @@ namespace hermesml {
 
         this->Info("Elapsed time: " + std::to_string(this->trainingTime.count()) + " ms");
 
-        // Step 07 - Test the model
+        // Step 05 - Test the model
 
         this->Info("Test model");
 
@@ -123,7 +130,7 @@ namespace hermesml {
                     break;
             }
 
-            const auto realLabel = holdoutVal.GetLabels()[i];
+            const auto realLabel = testingLabels[i];
 
             const auto prediction = std::pair(realLabel, pPredictedLabel);
             predictData.push_back(prediction);
@@ -163,9 +170,9 @@ namespace hermesml {
             return;
         }
 
-        this->datasetLength = features.size();
-        this->trainingLength = holdoutVal.GetTrainingFeatures().size();
-        this->testingLength = holdoutVal.GetTestingFeatures().size();
+        this->datasetLength = trainingFeatures.size() + testingFeatures.size();
+        this->trainingLength = trainingFeatures.size();
+        this->testingLength = testingFeatures.size();
         this->ringDimension = cc->GetRingDimension();
         this->multiplicativeDepth = ckksCtx.GetMultiplicativeDepth();
 

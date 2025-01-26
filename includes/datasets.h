@@ -31,10 +31,26 @@ namespace hermesml {
     };
 
     class BreastCancerDataset : public Dataset {
+        static std::vector<std::vector<double> > ReadFeatures(const std::string &fileName);
+
+        static std::vector<double> ReadLabels(const std::string &fileName);
+
     public:
+        enum BreastCancerDatasetRanges {
+            FM22, F01
+        };
+
         explicit BreastCancerDataset();
 
         [[nodiscard]] std::vector<std::string> Split(const std::string &line, char delimiter) override;
+
+        static std::vector<std::vector<double> > GetTrainingFeatures(BreastCancerDatasetRanges range);
+
+        static std::vector<double> GetTrainingLabels(BreastCancerDatasetRanges range);
+
+        static std::vector<std::vector<double> > GetTestingFeatures(BreastCancerDatasetRanges range);
+
+        static std::vector<double> GetTestingLabels(BreastCancerDatasetRanges range);
     };
 }
 
