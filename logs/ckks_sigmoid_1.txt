@@ -17,3 +17,7 @@
 [2025-01-26 15:14:38] [info] Elapsed time: 5.914030 ms
 [2025-01-26 15:14:38] [info] >>>>> SERVER SIDE PROCESSING
 [2025-01-26 15:14:38] [info] Train model
+[2025-01-26 15:29:06] [info] Elapsed time: 868.519692 ms
+[2025-01-26 15:29:06] [info] Test model
+[2025-01-26 15:33:26] [info] Elapsed time: 259.562638 ms
+[2025-01-26 15:33:26] [info] Experiment ckks_sigmoid_1 completed!
