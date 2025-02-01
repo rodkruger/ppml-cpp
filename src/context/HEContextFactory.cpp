@@ -58,8 +58,9 @@ namespace hermesml {
         // parameters.SetSecurityLevel(HEStd_128_classic);
         parameters.SetSecurityLevel(HEStd_NotSet);
         parameters.SetRingDim(ringDimension);
-        parameters.SetKeySwitchTechnique(HYBRID);
         parameters.SetScalingModSize(scalingModSize);
+        parameters.SetMultiplicativeDepth(depth);
+        parameters.SetKeySwitchTechnique(HYBRID);
         parameters.SetScalingTechnique(FLEXIBLEAUTO);
         parameters.SetBatchSize(numSlots);
         parameters.SetSecretKeyDist(UNIFORM_TERNARY);
@@ -88,8 +89,6 @@ namespace hermesml {
         if (levelsAfterBootstrap < 0) {
             levelsAfterBootstrap = 0;
         }
-
-        parameters.SetMultiplicativeDepth(depth);
 
         const auto cc = GenCryptoContext(parameters);
         cc->Enable(PKE);

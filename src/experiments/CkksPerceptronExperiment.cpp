@@ -128,6 +128,10 @@ namespace hermesml {
                 case CkksPerceptron::SIGMOID:
                     pPredictedLabel = pPlainLabel > 0.5 ? 1.0 : 0.0;
                     break;
+
+                default:
+                    pPredictedLabel = pPlainLabel > 0.5 ? 1.0 : 0.0;
+                    break;
             }
 
             const auto realLabel = testingLabels[i];

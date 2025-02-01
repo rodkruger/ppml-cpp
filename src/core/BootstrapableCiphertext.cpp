@@ -4,17 +4,32 @@ namespace hermesml {
     BootstrapableCiphertext::BootstrapableCiphertext() = default;
 
     BootstrapableCiphertext::BootstrapableCiphertext(const Ciphertext<DCRTPoly> &ciphertext,
-                                                     const uint8_t remainingLevels) {
-        this->ciphertext = ciphertext;
-        this->remainingLevels = remainingLevels;
+                                                     const int8_t remainingLevels,
+                                                     const int32_t additionsExecuted) : ciphertext(ciphertext),
+        remainingLevels(remainingLevels), additionsExecuted(additionsExecuted) {
+        if (remainingLevels <= 0 || remainingLevels > 30) {
+            std::cout << "Warning: remainingLevels must be between 0 and 30!" << std::endl;
+        }
     }
 
-    uint8_t BootstrapableCiphertext::GetRemainingLevels() const {
+    int8_t BootstrapableCiphertext::GetRemainingLevels() const {
         return this->remainingLevels;
     }
 
-    void BootstrapableCiphertext::SetRemainingLevels(uint8_t pRemainingLevels) {
+    void BootstrapableCiphertext::SetRemainingLevels(const int8_t pRemainingLevels) {
         this->remainingLevels = pRemainingLevels;
+
+        if (remainingLevels <= 0 || remainingLevels > 30) {
+            std::cout << "Warning: remainingLevels must be between 0 and 30!" << std::endl;
+        }
+    }
+
+    int32_t BootstrapableCiphertext::GetAdditionsExecuted() const {
+        return this->additionsExecuted;
+    }
+
+    void BootstrapableCiphertext::SetRemainingLevels(const int32_t additionsExecuted) {
+        this->additionsExecuted = additionsExecuted;
     }
 
     Ciphertext<DCRTPoly> BootstrapableCiphertext::GetCiphertext() const {

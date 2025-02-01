@@ -13,18 +13,24 @@ namespace hermesml {
 
     class BootstrapableCiphertext {
         Ciphertext<DCRTPoly> ciphertext;
-        uint8_t remainingLevels = 0;
+        int8_t remainingLevels = 0;
+        int32_t additionsExecuted = 0;
 
     public:
         explicit BootstrapableCiphertext();
 
-        explicit BootstrapableCiphertext(const Ciphertext<DCRTPoly> &ciphertext, uint8_t remainingLevels);
+        explicit BootstrapableCiphertext(const Ciphertext<DCRTPoly> &ciphertext, int8_t remainingLevels,
+                                         int32_t additionsExecuted = 0);
 
         [[nodiscard]] Ciphertext<DCRTPoly> GetCiphertext() const;
 
-        [[nodiscard]] uint8_t GetRemainingLevels() const;
+        [[nodiscard]] int8_t GetRemainingLevels() const;
 
-        void SetRemainingLevels(uint8_t pRemainingLevels);
+        void SetRemainingLevels(int8_t pRemainingLevels);
+
+        [[nodiscard]] int32_t GetAdditionsExecuted() const;
+
+        void SetRemainingLevels(int32_t additionsExecuted);
     };
 
     //-----------------------------------------------------------------------------------------------------------------
@@ -33,8 +39,8 @@ namespace hermesml {
         HEContext ctx;
         CryptoContext<DCRTPoly> cc;
 
-        static uint8_t ComputeRemainingLevels(const BootstrapableCiphertext &ciphertext1,
-                                              const BootstrapableCiphertext &ciphertext2);
+        static int8_t ComputeRemainingLevels(const BootstrapableCiphertext &ciphertext1,
+                                             const BootstrapableCiphertext &ciphertext2);
 
         //-----------------------------------------------------------------------------------------------------------------
 

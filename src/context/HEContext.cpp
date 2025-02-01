@@ -37,11 +37,11 @@ namespace hermesml {
         this->scalingModSize = scalingModSize;
     }
 
-    uint16_t HEContext::GetMultiplicativeDepth() const {
+    int8_t HEContext::GetMultiplicativeDepth() const {
         return this->multiplicativeDepth;
     }
 
-    void HEContext::SetMultiplicativeDepth(const uint16_t multiplicativeDepth) {
+    void HEContext::SetMultiplicativeDepth(const int8_t multiplicativeDepth) {
         this->multiplicativeDepth = multiplicativeDepth;
     }
 
@@ -61,11 +61,11 @@ namespace hermesml {
         this->levelsAfterBootstrapping = levelsAfterBootstrapping;
     }
 
-    uint8_t HEContext::GetEarlyBootstrapping() const {
+    int8_t HEContext::GetEarlyBootstrapping() const {
         return this->earlyBootstrapping;
     }
 
-    void HEContext::SetEarlyBootstrapping(const uint8_t earlyBootstrapping) {
+    void HEContext::SetEarlyBootstrapping(const int8_t earlyBootstrapping) {
         this->earlyBootstrapping = earlyBootstrapping;
     }
 }

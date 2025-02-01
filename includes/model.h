@@ -171,7 +171,7 @@ namespace hermesml {
 
     class CkksPerceptron : public EncryptedObject, public MlModel {
     public:
-        enum Activation { TANH, SIGMOID };
+        enum Activation { TANH, SIGMOID, IDENTITY };
 
         explicit CkksPerceptron(const HEContext &ctx, uint16_t n_features, uint16_t epochs,
                                 Activation activation = TANH);
@@ -195,9 +195,11 @@ namespace hermesml {
         BootstrapableCiphertext eWeights;
         BootstrapableCiphertext eBias;
 
-        [[nodiscard]] BootstrapableCiphertext sigmoid(const BootstrapableCiphertext &x) const;
+        [[nodiscard]] BootstrapableCiphertext Identity(const BootstrapableCiphertext &x) const;
 
-        [[nodiscard]] BootstrapableCiphertext tanh(const BootstrapableCiphertext &x) const;
+        [[nodiscard]] BootstrapableCiphertext Sigmoid(const BootstrapableCiphertext &x) const;
+
+        [[nodiscard]] BootstrapableCiphertext Tanh(const BootstrapableCiphertext &x) const;
     };
 }
 

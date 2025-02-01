@@ -11,7 +11,7 @@ namespace hermesml {
         PublicKey<DCRTPoly> publicKey;
         PrivateKey<DCRTPoly> privateKey;
         uint32_t scalingModSize = 0;
-        uint16_t multiplicativeDepth = 0;
+        int8_t multiplicativeDepth = 0;
         uint16_t numSlots = 0;
         uint16_t levelsAfterBootstrapping = 0;
         uint8_t earlyBootstrapping = 0;
@@ -33,9 +33,9 @@ namespace hermesml {
 
         void SetScalingModSize(uint16_t scalingModSize);
 
-        [[nodiscard]] uint16_t GetMultiplicativeDepth() const;
+        [[nodiscard]] int8_t GetMultiplicativeDepth() const;
 
-        void SetMultiplicativeDepth(uint16_t multiplicativeDepth);
+        void SetMultiplicativeDepth(int8_t multiplicativeDepth);
 
         [[nodiscard]] uint16_t GetNumSlots() const;
 
@@ -45,9 +45,9 @@ namespace hermesml {
 
         void SetLevelsAfterBootstrapping(uint16_t levelsAfterBootstrapping);
 
-        [[nodiscard]] uint8_t GetEarlyBootstrapping() const;
+        [[nodiscard]] int8_t GetEarlyBootstrapping() const;
 
-        void SetEarlyBootstrapping(uint8_t earlyBootstrapping);
+        void SetEarlyBootstrapping(int8_t earlyBootstrapping);
     };
 
     class HEContextFactory {

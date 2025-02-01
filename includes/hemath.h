@@ -15,19 +15,19 @@ using namespace lbcrypto;
 
 namespace hermesml {
     class Constants : EncryptedObject {
-    private:
-        BootstrapableCiphertext encryptedZero;
-        BootstrapableCiphertext encryptedOne;
-        BootstrapableCiphertext encrypted05;
-        BootstrapableCiphertext encrypted125;
-        BootstrapableCiphertext encrypted0625;
-        BootstrapableCiphertext encrypted0333333;
-        BootstrapableCiphertext encrypted0133333;
-
-        BootstrapableCiphertext encrypted021689;
-        BootstrapableCiphertext encrypted00081934;
-        BootstrapableCiphertext encrypted000016588;
-        BootstrapableCiphertext encrypted00000011959;
+        int32_t n_features;
+        BootstrapableCiphertext zero;
+        BootstrapableCiphertext one;
+        BootstrapableCiphertext two;
+        BootstrapableCiphertext c05;
+        BootstrapableCiphertext c125;
+        BootstrapableCiphertext c0625;
+        BootstrapableCiphertext c0333333;
+        BootstrapableCiphertext c0133333;
+        BootstrapableCiphertext c021689;
+        BootstrapableCiphertext c00081934;
+        BootstrapableCiphertext c000016588;
+        BootstrapableCiphertext c00000011959;
 
     public:
         explicit Constants(const HEContext &ctx, int32_t n_features);
@@ -35,6 +35,8 @@ namespace hermesml {
         [[nodiscard]] BootstrapableCiphertext Zero() const;
 
         [[nodiscard]] BootstrapableCiphertext One() const;
+
+        [[nodiscard]] BootstrapableCiphertext Two() const;
 
         [[nodiscard]] BootstrapableCiphertext C05() const;
 
@@ -63,22 +65,15 @@ namespace hermesml {
         explicit Calculus(const HEContext &ctx);
 
         [[nodiscard]] BootstrapableCiphertext TaylorSqrt(const BootstrapableCiphertext &x) const;
-
-        // [[nodiscard]] BootstrapableCiphertext Euclidean(const BootstrapableCiphertext &point1,
-        //                                                 const BootstrapableCiphertext &point2) const;
     };
 
     class CalculusQuant : EncryptedObject {
-    private:
         Constants constants;
 
     public:
         explicit CalculusQuant(const HEContext &ctx);
 
         [[nodiscard]] BootstrapableCiphertext TaylorSqrt(const BootstrapableCiphertext &x) const;
-
-        // [[nodiscard]] BootstrapableCiphertext Euclidean(const BootstrapableCiphertext &point1,
-        //                                                 const BootstrapableCiphertext &point2) const;
     };
 }
 

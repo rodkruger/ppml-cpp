@@ -12,11 +12,31 @@ namespace hermesml {
     }
 
     BootstrapableCiphertext CkksPerceptron::GetLearningRate() const {
-        const double lr = 0.01 * GetScalingFactor();
-        return this->EncryptCKKS(std::vector(n_features, lr));
+        double lr;
+
+        switch (this->activation) {
+            case TANH:
+                lr = 0.05;
+                break;
+            case SIGMOID:
+                lr = 0.0025;
+                break;
+            case IDENTITY:
+                lr = 0.001;
+                break;
+            default:
+                lr = 0.01;
+        }
+
+        return this->EncryptCKKS(std::vector(this->n_features, lr));
     }
 
-    BootstrapableCiphertext CkksPerceptron::sigmoid(const BootstrapableCiphertext &x) const {
+    BootstrapableCiphertext CkksPerceptron::Identity(const BootstrapableCiphertext &x) const {
+        // Linear activation function
+        return this->EvalAdd(x, this->constants.C05());
+    }
+
+    BootstrapableCiphertext CkksPerceptron::Sigmoid(const BootstrapableCiphertext &x) const {
         // Least Squares method for sigmoid approximation
         // return 0.5 + x*0.21689 - x**3*0.0081934 + x**5*0.00016588
 
@@ -28,10 +48,17 @@ namespace hermesml {
         const auto term2 = this->EvalMult(x_cubed, this->constants.C00081934());
         const auto term3 = this->EvalMult(x_fived, this->constants.C000016588());
 
-        return this->EvalAdd(this->EvalSub(this->EvalAdd(this->constants.C05(), term1), term2), term3);
+        const auto result = this->EvalAdd(
+            this->EvalSub(
+                this->EvalAdd(this->constants.C05(), term1), term2
+            ),
+            term3
+        );
+
+        return result;
     }
 
-    BootstrapableCiphertext CkksPerceptron::tanh(const BootstrapableCiphertext &x) const {
+    BootstrapableCiphertext CkksPerceptron::Tanh(const BootstrapableCiphertext &x) const {
         // Taylor expansion method for tanh approximation
         // return x - x**3*0.333333 + x**5*0.133333
 
@@ -50,8 +77,8 @@ namespace hermesml {
         const auto eLr = this->GetLearningRate();
 
         // Initialize weights and bias
-        this->eWeights = this->constants.Zero();
-        this->eBias = this->constants.Zero();
+        this->eWeights = eLr;
+        this->eBias = eLr;
 
         for (int32_t epoch = 0; epoch < this->epochs; epoch++) {
             // Compute encrypted gradients using plain 'y' values
@@ -60,6 +87,7 @@ namespace hermesml {
 
                 // Execute the activation function
                 const auto eActivation = this->Predict(eFeatureValues);
+                // this->Snoop(eActivation, this->n_features);
 
                 // Compute the error
                 const auto eError = this->EvalSub(eActivation, y[i]);
@@ -72,21 +100,25 @@ namespace hermesml {
                 this->eWeights = this->EvalAdd(this->eWeights, eNewWeights);
 
                 // Update the bias
-                auto eNewBias = this->EvalAdd(this->eBias, eDelta);
+                this->eBias = this->EvalAdd(this->eBias, eDelta);
             }
         }
     }
 
     BootstrapableCiphertext CkksPerceptron::Predict(const BootstrapableCiphertext &x) {
-        auto z = this->EvalMult(x, this->eWeights);
+        auto z = this->EvalMult(this->eWeights, x);
         z = this->EvalSum(z);
         z = this->EvalAdd(z, this->eBias);
 
         switch (this->activation) {
             case SIGMOID:
-                return this->sigmoid(z);
+                return this->Sigmoid(z);
+            case TANH:
+                return this->Tanh(z);
+            case IDENTITY:
+                return this->Identity(z);
             default:
-                return this->tanh(z);
+                return this->Tanh(z);
         }
     }
 
