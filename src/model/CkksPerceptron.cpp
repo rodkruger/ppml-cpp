@@ -19,7 +19,7 @@ namespace hermesml {
                 lr = 0.05;
                 break;
             case SIGMOID:
-                lr = 0.0025;
+                lr = 0.001;
                 break;
             case IDENTITY:
                 lr = 0.001;
