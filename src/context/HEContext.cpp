@@ -53,11 +53,11 @@ namespace hermesml {
         this->numSlots = numSlots;
     }
 
-    uint32_t HEContext::GetLevelsAfterBootstrapping() const {
+    int8_t HEContext::GetLevelsAfterBootstrapping() const {
         return this->levelsAfterBootstrapping;
     }
 
-    void HEContext::SetLevelsAfterBootstrapping(const uint16_t levelsAfterBootstrapping) {
+    void HEContext::SetLevelsAfterBootstrapping(const int8_t levelsAfterBootstrapping) {
         this->levelsAfterBootstrapping = levelsAfterBootstrapping;
     }
 

@@ -75,7 +75,13 @@ namespace hermesml {
             std::string value;
 
             while (std::getline(ss, value, ',')) {
-                data.push_back(std::stod(value));
+                auto dValue = std::stod(value);
+
+                if (dValue == 0.0) {
+                    dValue = -1.0;
+                }
+
+                data.push_back(dValue);
                 break;
             }
         }
@@ -89,6 +95,7 @@ namespace hermesml {
         switch (range) {
             case FM22: return ReadFeatures("training_features_range22.csv");
             case F01: return ReadFeatures("training_features_range01.csv");
+            case F11: return ReadFeatures("training_features_range11.csv");
             default: return {};
         }
     }
@@ -97,22 +104,25 @@ namespace hermesml {
         switch (range) {
             case FM22: return ReadLabels("training_labels_range22.csv");
             case F01: return ReadLabels("training_labels_range01.csv");
+            case F11: return ReadLabels("training_labels_range11.csv");
             default: return {};
         }
     }
 
-    std::vector<std::vector<double> > BreastCancerDataset::GetTestingFeatures(BreastCancerDatasetRanges range) {
+    std::vector<std::vector<double> > BreastCancerDataset::GetTestingFeatures(const BreastCancerDatasetRanges range) {
         switch (range) {
             case FM22: return ReadFeatures("testing_features_range22.csv");
             case F01: return ReadFeatures("testing_features_range01.csv");
+            case F11: return ReadFeatures("testing_features_range11.csv");
             default: return {};
         }
     }
 
-    std::vector<double> BreastCancerDataset::GetTestingLabels(BreastCancerDatasetRanges range) {
+    std::vector<double> BreastCancerDataset::GetTestingLabels(const BreastCancerDatasetRanges range) {
         switch (range) {
             case FM22: return ReadLabels("testing_labels_range22.csv");
             case F01: return ReadLabels("testing_labels_range01.csv");
+            case F11: return ReadLabels("testing_labels_range11.csv");
             default: return {};
         }
     }

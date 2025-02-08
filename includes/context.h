@@ -13,8 +13,8 @@ namespace hermesml {
         uint32_t scalingModSize = 0;
         int8_t multiplicativeDepth = 0;
         uint16_t numSlots = 0;
-        uint16_t levelsAfterBootstrapping = 0;
-        uint8_t earlyBootstrapping = 0;
+        int8_t levelsAfterBootstrapping = 0;
+        int8_t earlyBootstrapping = 0;
 
     public:
         [[nodiscard]] CryptoContext<DCRTPoly> GetCc() const;
@@ -41,9 +41,9 @@ namespace hermesml {
 
         void SetNumSlots(uint16_t numSlots);
 
-        [[nodiscard]] uint32_t GetLevelsAfterBootstrapping() const;
+        [[nodiscard]] int8_t GetLevelsAfterBootstrapping() const;
 
-        void SetLevelsAfterBootstrapping(uint16_t levelsAfterBootstrapping);
+        void SetLevelsAfterBootstrapping(int8_t levelsAfterBootstrapping);
 
         [[nodiscard]] int8_t GetEarlyBootstrapping() const;
 

@@ -37,7 +37,7 @@ namespace hermesml {
 
     public:
         enum BreastCancerDatasetRanges {
-            FM22, F01
+            FM22, F11, F01
         };
 
         explicit BreastCancerDataset();

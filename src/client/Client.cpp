@@ -43,11 +43,12 @@ namespace hermesml {
         return eData;
     }
 
-    std::vector<BootstrapableCiphertext> Client::EncryptCKKS(const std::vector<double> &data) const {
+    std::vector<BootstrapableCiphertext> Client::EncryptCKKS(const std::vector<double> &data,
+                                                             const size_t n_features) const {
         auto eData = std::vector<BootstrapableCiphertext>();
 
         for (auto &row: data) {
-            const auto pValue = this->GetCc()->MakeCKKSPackedPlaintext(std::vector(1, row));
+            const auto pValue = this->GetCc()->MakeCKKSPackedPlaintext(std::vector(n_features, row));
             const auto eRow = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), pValue);
             const auto bCiphertext = BootstrapableCiphertext(eRow, this->GetCtx().GetMultiplicativeDepth());
             eData.emplace_back(bCiphertext);

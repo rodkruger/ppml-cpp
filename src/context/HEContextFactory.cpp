@@ -47,23 +47,22 @@ namespace hermesml {
     }
 
     HEContext HEContextFactory::ckksHeContext() {
-        const std::vector<uint32_t> levelBudget = {2, 2};
+        const std::vector<uint32_t> levelBudget = {5, 4};
         const std::vector<uint32_t> bsgsDim = {0, 0};
-        constexpr int32_t numSlots = 32;
-        constexpr int32_t ringDimension = 2048;
-        constexpr int32_t scalingModSize = 56;
+        constexpr int32_t ringDimension = 4096;
+        constexpr int32_t scalingModSize = 59;
         constexpr int32_t depth = 30;
-        auto parameters = CCParams<CryptoContextCKKSRNS>();
+        constexpr int32_t numSlots = ringDimension / 2;
 
-        // parameters.SetSecurityLevel(HEStd_128_classic);
+        auto parameters = CCParams<CryptoContextCKKSRNS>();
         parameters.SetSecurityLevel(HEStd_NotSet);
         parameters.SetRingDim(ringDimension);
         parameters.SetScalingModSize(scalingModSize);
         parameters.SetMultiplicativeDepth(depth);
         parameters.SetKeySwitchTechnique(HYBRID);
         parameters.SetScalingTechnique(FLEXIBLEAUTO);
-        parameters.SetBatchSize(numSlots);
         parameters.SetSecretKeyDist(UNIFORM_TERNARY);
+        parameters.SetBatchSize(numSlots);
 
         /* https://github.com/malb/lattice-estimator
          *

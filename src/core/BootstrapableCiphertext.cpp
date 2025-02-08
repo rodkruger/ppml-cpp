@@ -7,9 +7,11 @@ namespace hermesml {
                                                      const int8_t remainingLevels,
                                                      const int32_t additionsExecuted) : ciphertext(ciphertext),
         remainingLevels(remainingLevels), additionsExecuted(additionsExecuted) {
+        /*
         if (remainingLevels <= 0 || remainingLevels > 30) {
             std::cout << "Warning: remainingLevels must be between 0 and 30!" << std::endl;
         }
+        */
     }
 
     int8_t BootstrapableCiphertext::GetRemainingLevels() const {
@@ -19,9 +21,11 @@ namespace hermesml {
     void BootstrapableCiphertext::SetRemainingLevels(const int8_t pRemainingLevels) {
         this->remainingLevels = pRemainingLevels;
 
+        /*
         if (remainingLevels <= 0 || remainingLevels > 30) {
             std::cout << "Warning: remainingLevels must be between 0 and 30!" << std::endl;
         }
+        */
     }
 
     int32_t BootstrapableCiphertext::GetAdditionsExecuted() const {

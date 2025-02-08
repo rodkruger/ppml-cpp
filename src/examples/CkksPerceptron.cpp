@@ -14,15 +14,19 @@ int main() {
         params.earlyBootstrapping = 0;
         hermesml::CkksPerceptronExperiment("ckks_tanh_" + epoch_str, params).Run();
 
+        /*
         params.activation = hermesml::CkksPerceptron::SIGMOID;
         params.epochs = epoch;
         params.earlyBootstrapping = 0;
         hermesml::CkksPerceptronExperiment("ckks_sigmoid_" + epoch_str, params).Run();
+        */
 
+        /*
         params.activation = hermesml::CkksPerceptron::IDENTITY;
         params.epochs = epoch;
         params.earlyBootstrapping = 0;
         hermesml::CkksPerceptronExperiment("ckks_identity_" + epoch_str, params).Run();
+        */
     }
 
     return EXIT_SUCCESS;

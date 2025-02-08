@@ -23,7 +23,7 @@ namespace hermesml {
 
         switch (this->params.activation) {
             case CkksPerceptron::TANH:
-                datasetType = BreastCancerDataset::BreastCancerDatasetRanges::F01;
+                datasetType = BreastCancerDataset::BreastCancerDatasetRanges::F11;
                 break;
 
             case CkksPerceptron::SIGMOID:
@@ -43,6 +43,14 @@ namespace hermesml {
         this->Info("Total samples: " + std::to_string(trainingFeatures.size() + testingFeatures.size()));
         this->Info("Training length: " + std::to_string(trainingFeatures.size()));
         this->Info("Testing length: " + std::to_string(testingFeatures.size()));
+
+        if (trainingFeatures.size() != trainingLabels.size()) {
+            throw std::runtime_error("Wrong number of training features and labels provided!");
+        }
+
+        if (testingFeatures.size() != testingLabels.size()) {
+            throw std::runtime_error("Wrong number of testing features and labels provided!");
+        }
 
         //-----------------------------------------------------------------------------------------------------------------
 
@@ -73,12 +81,20 @@ namespace hermesml {
         start = std::chrono::high_resolution_clock::now();
 
         auto eTrainingData = ckksClient.EncryptCKKS(trainingFeatures);
-        auto eTrainingLabels = ckksClient.EncryptCKKS(trainingLabels);
+        auto eTrainingLabels = ckksClient.EncryptCKKS(trainingLabels, trainingFeatures[0].size());
 
         this->Info("Encrypt testing data");
 
         auto eTestingData = ckksClient.EncryptCKKS(testingFeatures);
-        auto eTestingLabels = ckksClient.EncryptCKKS(testingLabels);
+        auto eTestingLabels = ckksClient.EncryptCKKS(testingLabels, testingFeatures[0].size());
+
+        if (eTrainingData.size() != eTrainingLabels.size()) {
+            throw std::runtime_error("Wrong number of encrypted training features and labels provided!");
+        }
+
+        if (eTestingData.size() != eTestingLabels.size()) {
+            throw std::runtime_error("Wrong number of encrypted testing features and labels provided!");
+        }
 
         end = std::chrono::high_resolution_clock::now();
         this->encryptingTime = end - start;
@@ -108,40 +124,13 @@ namespace hermesml {
 
         this->Info("Test model");
 
-        auto predictData = std::vector<std::pair<double, double> >(eTestingData.size());
-        Plaintext plain_label;
-
-        start = std::chrono::high_resolution_clock::now();
-
-        for (size_t i = 0; i < eTestingData.size(); i++) {
-            const auto &eTestingLabel = eTestingLabels[i];
-            const auto ePredictedLabel = clf.Predict(eTestingLabel).GetCiphertext();
-            cc->Decrypt(ckksCtx.GetPrivateKey(), ePredictedLabel, &plain_label);
-            const auto pPlainLabel = plain_label->GetCKKSPackedValue()[0].real();
-
-            double pPredictedLabel = 0.0;
-            switch (this->params.activation) {
-                case CkksPerceptron::TANH:
-                    pPredictedLabel = pPlainLabel > 0.0 ? 1.0 : 0.0;
-                    break;
-
-                case CkksPerceptron::SIGMOID:
-                    pPredictedLabel = pPlainLabel > 0.5 ? 1.0 : 0.0;
-                    break;
-
-                default:
-                    pPredictedLabel = pPlainLabel > 0.5 ? 1.0 : 0.0;
-                    break;
-            }
-
-            const auto realLabel = testingLabels[i];
-
-            const auto prediction = std::pair(realLabel, pPredictedLabel);
-            predictData.push_back(prediction);
-        }
-
         // Open the file in write mode
         auto predictionsFileName = this->BuildFilePath("predictions.csv");
+
+        if (std::filesystem::exists(predictionsFileName)) {
+            std::filesystem::remove(predictionsFileName);
+        }
+
         std::ofstream predictionsFile(predictionsFileName);
 
         if (!predictionsFile) {
@@ -149,9 +138,34 @@ namespace hermesml {
             return;
         }
 
-        // Write the data to the file
-        for (const auto &[realValue, predictedValue]: predictData) {
-            predictionsFile << realValue << "," << predictedValue << std::endl;
+        start = std::chrono::high_resolution_clock::now();
+
+        Plaintext plain_label;
+
+        for (size_t i = 0; i < eTestingData.size(); i++) {
+            const auto &eFeatures = eTestingData[i];
+            const auto ePredictedLabel = clf.Predict(eFeatures).GetCiphertext();
+            cc->Decrypt(ckksCtx.GetPrivateKey(), ePredictedLabel, &plain_label);
+            const auto pPrediction = plain_label->GetCKKSPackedValue()[0].real();
+
+            double pPredictedLabel = 0.0;
+            switch (this->params.activation) {
+                case CkksPerceptron::TANH:
+                    pPredictedLabel = pPrediction > 0.0 ? 1.0 : -1.0;
+                    break;
+
+                case CkksPerceptron::SIGMOID:
+                    pPredictedLabel = pPrediction > 0.5 ? 1.0 : -1.0;
+                    break;
+
+                default:
+                    pPredictedLabel = pPrediction > 0.5 ? 1.0 : -1.0;
+                    break;
+            }
+
+            const auto realLabel = testingLabels[i];
+
+            predictionsFile << pPrediction << "," << realLabel << "," << pPredictedLabel << std::endl;
         }
 
         // Close the file
@@ -167,6 +181,11 @@ namespace hermesml {
         // Dump parameters into file
 
         auto parametersFileName = this->BuildFilePath("parameters.csv");
+
+        if (std::filesystem::exists(parametersFileName)) {
+            std::filesystem::remove(parametersFileName);
+        }
+
         std::ofstream parametersFile(parametersFileName);
 
         if (!parametersFile) {
@@ -187,7 +206,7 @@ namespace hermesml {
         parametersFile << "trainingLength = " << this->trainingLength << std::endl;
         parametersFile << "testingLength = " << this->testingLength << std::endl;
         parametersFile << "ringDimension = " << this->ringDimension << std::endl;
-        parametersFile << "multiplicativeDepth = " << this->multiplicativeDepth << std::endl;
+        parametersFile << "multiplicativeDepth = " << std::to_string(this->multiplicativeDepth) << std::endl;
         parametersFile << "encryptingTime = " << std::to_string(this->encryptingTime.count()) << std::endl;
         parametersFile << "trainingTime = " << std::to_string(this->trainingTime.count()) << std::endl;
         parametersFile << "testingTime = " << std::to_string(this->testingTime.count()) << std::endl;

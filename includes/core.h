@@ -39,6 +39,7 @@ namespace hermesml {
         HEContext ctx;
         CryptoContext<DCRTPoly> cc;
 
+    protected:
         static int8_t ComputeRemainingLevels(const BootstrapableCiphertext &ciphertext1,
                                              const BootstrapableCiphertext &ciphertext2);
 

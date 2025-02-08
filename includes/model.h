@@ -195,6 +195,8 @@ namespace hermesml {
         BootstrapableCiphertext eWeights;
         BootstrapableCiphertext eBias;
 
+        void InitWeights();
+
         [[nodiscard]] BootstrapableCiphertext Identity(const BootstrapableCiphertext &x) const;
 
         [[nodiscard]] BootstrapableCiphertext Sigmoid(const BootstrapableCiphertext &x) const;

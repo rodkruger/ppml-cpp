@@ -77,9 +77,11 @@ namespace hermesml {
                                                       const BootstrapableCiphertext &ciphertext2) const {
         const auto ciphertext = this->GetCc()->EvalMult(ciphertext1.GetCiphertext(), ciphertext2.GetCiphertext());
         const auto additionsExecuted = ciphertext1.GetAdditionsExecuted() + ciphertext2.GetAdditionsExecuted();
+
+        const int decLevels = ComputeRemainingLevels(ciphertext1, ciphertext2) - 1;
+
         return this->EvalBootstrap(
-            BootstrapableCiphertext(ciphertext, ComputeRemainingLevels(ciphertext1, ciphertext2) - 1,
-                                    additionsExecuted));
+            BootstrapableCiphertext(ciphertext, static_cast<int8_t>(decLevels), additionsExecuted));
     }
 
     BootstrapableCiphertext EncryptedObject::EvalBootstrap(const BootstrapableCiphertext &ciphertext) const {

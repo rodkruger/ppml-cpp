@@ -8,7 +8,7 @@ namespace hermesml {
     struct CkksPerceptronExperimentParams {
         CkksPerceptron::Activation activation;
         uint16_t epochs;
-        uint8_t earlyBootstrapping;
+        int8_t earlyBootstrapping;
         int8_t scalingAlpha;
         int8_t scalingBeta;
     };
@@ -21,7 +21,7 @@ namespace hermesml {
         size_t trainingLength{};
         size_t testingLength{};
         size_t ringDimension{};
-        size_t multiplicativeDepth{};
+        int8_t multiplicativeDepth{};
 
         std::chrono::duration<double> encryptingTime{};
         std::chrono::duration<double> trainingTime{};
