@@ -27,7 +27,7 @@ namespace hermesml {
                 break;
 
             case CkksPerceptron::SIGMOID:
-                datasetType = BreastCancerDataset::BreastCancerDatasetRanges::FM22;
+                datasetType = BreastCancerDataset::BreastCancerDatasetRanges::F11;
                 break;
 
             default:

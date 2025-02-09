@@ -37,44 +37,51 @@ namespace hermesml {
     }
 
     BootstrapableCiphertext CkksPerceptron::Sigmoid(const BootstrapableCiphertext &x) const {
-        // Least Squares method for sigmoid approximation
-        // return 0.5 + x*0.21689 - x**3*0.0081934 + x**5*0.00016588
+        /* Least Squares method for sigmoid approximation */
+        /* return 0.5 + x*0.21689 - x**3*0.0081934 + x**5*0.00016588 */
 
-        // TODO: EvalLogistic
-
+        /*
         const auto x_squared = this->EvalMult(x, x);
         const auto x_cubed = this->EvalMult(x_squared, x);
         const auto x_fived = this->EvalMult(x_squared, x_cubed);
-
         const auto term1 = this->EvalMult(x, this->constants.C021689());
         const auto term2 = this->EvalMult(x_cubed, this->constants.C00081934());
         const auto term3 = this->EvalMult(x_fived, this->constants.C000016588());
-
         const auto result = this->EvalAdd(
             this->EvalSub(
                 this->EvalAdd(this->constants.C05(), term1), term2
             ),
             term3
         );
-
         return result;
+        */
+
+        /* Sigmoid by Chebyshev Approximation */
+        const int decLevels = x.GetRemainingLevels() - 3;
+
+        const auto b = this->
+                EvalBootstrap(BootstrapableCiphertext(x.GetCiphertext(), static_cast<int8_t>(decLevels),
+                                                      x.GetAdditionsExecuted()));
+
+        const auto c = this->GetCc()->EvalLogistic(b.GetCiphertext(), -1, 1, 5);
+
+        return BootstrapableCiphertext(c, b.GetRemainingLevels(), b.GetAdditionsExecuted());
     }
 
     BootstrapableCiphertext CkksPerceptron::Tanh(const BootstrapableCiphertext &x) const {
-        // Taylor expansion method for tanh approximation
-        // return x - x**3*0.333333 + x**5*0.133333
+        /* Taylor expansion method for tanh approximation */
+        /* return x - x**3*0.333333 + x**5*0.133333 */
 
         /*
         const auto x_squared = this->EvalMult(x, x);
         const auto x_cubed = this->EvalMult(x_squared, x);
         const auto x_fived = this->EvalMult(x_squared, x_cubed);
-
         const auto term1 = this->EvalMult(x_cubed, this->constants.C0333333());
         const auto term2 = this->EvalMult(x_fived, this->constants.C0133333());
-
         return this->EvalSub(x, this->EvalAdd(term1, term2));
         */
 
+        /* Tanh by Chebyshev Approximation */
         const int decLevels = x.GetRemainingLevels() - 3;
 
         const auto b = this->

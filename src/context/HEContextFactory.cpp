@@ -72,14 +72,11 @@ namespace hermesml {
          *
          * https://eprint.iacr.org/2015/046
          *
-         * params = LWE.Parameters(n=2048, q=2^(56*10), Xs = ND.Uniform(-1,1,n), Xe=ND.DiscreteGaussian(3.2))
+         * params = LWE.Parameters(n=4096, q=2^(59), Xs = ND.Uniform(-1,1,n), Xe=ND.DiscreteGaussian(3.2))
          * LWE.estimate.rough(params)
          *
-         * usvp                 :: rop: ≈2^164.7, red: ≈2^164.7, δ: 1.003122, β: 564, d: 64777, tag: usvp
-         * dual_hybrid          :: rop: ≈2^164.7, red: ≈2^164.7, guess: ≈2^109.4, β: 564, p: 4, ζ: 0, t: 40, β': 564, N: ≈2^99.2, m: ≈2^15.0
-         * BKZ
-         * {'usvp': rop: ≈2^164.7, red: ≈2^164.7, δ: 1.003122, β: 564, d: 64777, tag: usvp,
-         * 'dual_hybrid': rop: ≈2^164.7, red: ≈2^164.7, guess: ≈2^109.4, β: 564, p: 4, ζ: 0, t: 40, β': 564, N: ≈2^99.2, m: ≈2^15.0}
+         * usvp                 :: rop: ≈2^223.1, red: ≈2^223.1, δ: 1.002500, β: 764, d: 7929, tag: usvp
+         * dual_hybrid          :: rop: ≈2^219.0, red: ≈2^219.0, guess: ≈2^209.6, β: 750, p: 3, ζ: 0, t: 120, β': 750, N: ≈2^155.3, m: ≈2^12.0
          */
 
         int32_t levelsAfterBootstrap =
