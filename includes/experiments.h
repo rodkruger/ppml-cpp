@@ -29,6 +29,7 @@ namespace hermesml {
 
     public:
         explicit CkksPerceptronExperiment(const std::string &experimentId,
+                                          Dataset &dataset,
                                           const CkksPerceptronExperimentParams &params);
 
         void Run() override;

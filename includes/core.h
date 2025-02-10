@@ -6,6 +6,7 @@
 #pragma once
 
 #include "context.h"
+#include "datasets.h"
 #include "spdlog/spdlog.h"
 
 namespace hermesml {
@@ -102,6 +103,7 @@ namespace hermesml {
     class Experiment {
         std::string experimentId;
         std::string contentPath;
+        Dataset &dataset;
         std::shared_ptr<spdlog::logger> logger;
 
     protected:
@@ -110,11 +112,13 @@ namespace hermesml {
     public:
         virtual ~Experiment() = default;
 
-        explicit Experiment(std::string experimentId);
+        explicit Experiment(std::string experimentId, Dataset &dataset);
 
         [[nodiscard]] std::string GetExperimentId() const;
 
         [[nodiscard]] std::string GetContentPath() const;
+
+        [[nodiscard]] Dataset &GetDataset() const;
 
         void Info(const std::string &message) const;
 

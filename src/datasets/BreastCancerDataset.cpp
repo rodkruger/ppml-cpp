@@ -3,8 +3,9 @@
 #include "datasets.h"
 
 namespace hermesml {
-    BreastCancerDataset::BreastCancerDataset() : Dataset("/home/rkruger/Doutorado/Datasets/breast_cancer/data.csv") {
-        this->Read();
+    BreastCancerDataset::BreastCancerDataset(const DatasetRanges range) : Dataset("breast_cancer",
+                                                                              "/home/rkruger/Doutorado/Datasets/breast_cancer/data.csv"),
+                                                                          range(range) {
     }
 
     std::vector<std::string> BreastCancerDataset::Split(const std::string &line, const char delimiter) {
@@ -34,95 +35,38 @@ namespace hermesml {
         return tokens;
     }
 
-    std::vector<std::vector<double> > BreastCancerDataset::ReadFeatures(const std::string &fileName) {
-        std::vector<std::vector<double> > data;
-        std::ifstream file("/home/rkruger/Doutorado/Datasets/breast_cancer/" + fileName);
-
-        if (!file.is_open()) {
-            throw std::runtime_error("Could not open file: " + fileName);
-        }
-
-        std::string line;
-        while (std::getline(file, line)) {
-            std::vector<double> row;
-            std::stringstream ss(line);
-            std::string value;
-
-            while (std::getline(ss, value, ',')) {
-                row.push_back(std::stod(value));
-            }
-
-            data.push_back(row);
-        }
-
-        file.close();
-
-        return data;
-    }
-
-    std::vector<double> BreastCancerDataset::ReadLabels(const std::string &fileName) {
-        std::vector<double> data;
-        std::ifstream file("/home/rkruger/Doutorado/Datasets/breast_cancer/" + fileName);
-
-        if (!file.is_open()) {
-            throw std::runtime_error("Could not open file: " + fileName);
-        }
-
-        std::string line;
-        while (std::getline(file, line)) {
-            std::vector<double> row;
-            std::stringstream ss(line);
-            std::string value;
-
-            while (std::getline(ss, value, ',')) {
-                auto dValue = std::stod(value);
-
-                if (dValue == 0.0) {
-                    dValue = -1.0;
-                }
-
-                data.push_back(dValue);
-                break;
-            }
-        }
-
-        file.close();
-
-        return data;
-    }
-
-    std::vector<std::vector<double> > BreastCancerDataset::GetTrainingFeatures(const BreastCancerDatasetRanges range) {
-        switch (range) {
-            case FM22: return ReadFeatures("training_features_range22.csv");
-            case F01: return ReadFeatures("training_features_range01.csv");
-            case F11: return ReadFeatures("training_features_range11.csv");
+    std::vector<std::vector<double> > BreastCancerDataset::GetTrainingFeatures() {
+        switch (this->range) {
+            case FM22: return this->ReadFeatures("training_features_range22.csv");
+            case F01: return this->ReadFeatures("training_features_range01.csv");
+            case F11: return this->ReadFeatures("training_features_range11.csv");
             default: return {};
         }
     }
 
-    std::vector<double> BreastCancerDataset::GetTrainingLabels(const BreastCancerDatasetRanges range) {
-        switch (range) {
-            case FM22: return ReadLabels("training_labels_range22.csv");
-            case F01: return ReadLabels("training_labels_range01.csv");
-            case F11: return ReadLabels("training_labels_range11.csv");
+    std::vector<double> BreastCancerDataset::GetTrainingLabels() {
+        switch (this->range) {
+            case FM22: return this->ReadLabels("training_labels_range22.csv");
+            case F01: return this->ReadLabels("training_labels_range01.csv");
+            case F11: return this->ReadLabels("training_labels_range11.csv");
             default: return {};
         }
     }
 
-    std::vector<std::vector<double> > BreastCancerDataset::GetTestingFeatures(const BreastCancerDatasetRanges range) {
-        switch (range) {
-            case FM22: return ReadFeatures("testing_features_range22.csv");
-            case F01: return ReadFeatures("testing_features_range01.csv");
-            case F11: return ReadFeatures("testing_features_range11.csv");
+    std::vector<std::vector<double> > BreastCancerDataset::GetTestingFeatures() {
+        switch (this->range) {
+            case FM22: return this->ReadFeatures("testing_features_range22.csv");
+            case F01: return this->ReadFeatures("testing_features_range01.csv");
+            case F11: return this->ReadFeatures("testing_features_range11.csv");
             default: return {};
         }
     }
 
-    std::vector<double> BreastCancerDataset::GetTestingLabels(const BreastCancerDatasetRanges range) {
-        switch (range) {
-            case FM22: return ReadLabels("testing_labels_range22.csv");
-            case F01: return ReadLabels("testing_labels_range01.csv");
-            case F11: return ReadLabels("testing_labels_range11.csv");
+    std::vector<double> BreastCancerDataset::GetTestingLabels() {
+        switch (this->range) {
+            case FM22: return this->ReadLabels("testing_labels_range22.csv");
+            case F01: return this->ReadLabels("testing_labels_range01.csv");
+            case F11: return this->ReadLabels("testing_labels_range11.csv");
             default: return {};
         }
     }

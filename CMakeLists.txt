@@ -107,6 +107,7 @@ add_executable(CkksPerceptron
         src/experiments/CkksPerceptronExperiment.cpp
         src/datasets/BreastCancerDataset.cpp
         src/datasets/Datasets.cpp
+        src/datasets/DiabetesDataset.cpp
         src/hemath/Calculus.cpp
         src/hemath/Constants.cpp
         src/model/CkksPerceptron.cpp

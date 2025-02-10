@@ -5,8 +5,9 @@
 
 namespace hermesml {
     CkksPerceptronExperiment::CkksPerceptronExperiment(const std::string &experimentId,
+                                                       Dataset &dataset,
                                                        const CkksPerceptronExperimentParams &params) : Experiment(
-            experimentId),
+            experimentId, dataset),
         params(params) {
     }
 
@@ -19,26 +20,10 @@ namespace hermesml {
         // Step 01 - read and normalize data
         this->Info("Read dataset");;
 
-        BreastCancerDataset::BreastCancerDatasetRanges datasetType;
-
-        switch (this->params.activation) {
-            case CkksPerceptron::TANH:
-                datasetType = BreastCancerDataset::BreastCancerDatasetRanges::F11;
-                break;
-
-            case CkksPerceptron::SIGMOID:
-                datasetType = BreastCancerDataset::BreastCancerDatasetRanges::F11;
-                break;
-
-            default:
-                datasetType = BreastCancerDataset::BreastCancerDatasetRanges::F01;
-                break;
-        }
-
-        const auto trainingFeatures = BreastCancerDataset::GetTrainingFeatures(datasetType);
-        const auto trainingLabels = BreastCancerDataset::GetTrainingLabels(datasetType);
-        const auto testingFeatures = BreastCancerDataset::GetTestingFeatures(datasetType);
-        const auto testingLabels = BreastCancerDataset::GetTestingLabels(datasetType);
+        const auto trainingFeatures = this->GetDataset().GetTrainingFeatures();
+        const auto trainingLabels = this->GetDataset().GetTrainingLabels();
+        const auto testingFeatures = this->GetDataset().GetTestingFeatures();
+        const auto testingLabels = this->GetDataset().GetTestingLabels();
 
         this->Info("Total samples: " + std::to_string(trainingFeatures.size() + testingFeatures.size()));
         this->Info("Training length: " + std::to_string(trainingFeatures.size()));

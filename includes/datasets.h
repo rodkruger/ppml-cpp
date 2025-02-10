@@ -10,16 +10,27 @@
 #include <filesystem>
 
 namespace hermesml {
+    enum DatasetRanges {
+        FM22, F11, F01
+    };
+
     class Dataset {
     protected:
+        std::string name;
         std::vector<std::vector<double> > features;
         std::vector<double> labels;
         std::string filePath;
 
+        [[nodiscard]] std::vector<std::vector<double> > ReadFeatures(const std::string &fileName) const;
+
+        [[nodiscard]] std::vector<double> ReadLabels(const std::string &fileName) const;
+
     public:
         virtual ~Dataset() = default;
 
-        explicit Dataset(const std::string &filePath);
+        explicit Dataset(const std::string &name, const std::string &filePath);
+
+        [[nodiscard]] std::string GetName() const;
 
         [[nodiscard]] std::vector<std::vector<double> > GetFeatures() const;
 
@@ -28,29 +39,48 @@ namespace hermesml {
         void Read();
 
         [[nodiscard]] virtual std::vector<std::string> Split(const std::string &line, char delimiter);
+
+        [[nodiscard]] virtual std::vector<std::vector<double> > GetTrainingFeatures() = 0;
+
+        [[nodiscard]] virtual std::vector<double> GetTrainingLabels() = 0;
+
+        [[nodiscard]] virtual std::vector<std::vector<double> > GetTestingFeatures() = 0;
+
+        [[nodiscard]] virtual std::vector<double> GetTestingLabels() = 0;
     };
 
     class BreastCancerDataset : public Dataset {
-        static std::vector<std::vector<double> > ReadFeatures(const std::string &fileName);
-
-        static std::vector<double> ReadLabels(const std::string &fileName);
+        DatasetRanges range;
 
     public:
-        enum BreastCancerDatasetRanges {
-            FM22, F11, F01
-        };
-
-        explicit BreastCancerDataset();
+        explicit BreastCancerDataset(DatasetRanges range);
 
         [[nodiscard]] std::vector<std::string> Split(const std::string &line, char delimiter) override;
 
-        static std::vector<std::vector<double> > GetTrainingFeatures(BreastCancerDatasetRanges range);
+        [[nodiscard]] std::vector<std::vector<double> > GetTrainingFeatures() override;
 
-        static std::vector<double> GetTrainingLabels(BreastCancerDatasetRanges range);
+        [[nodiscard]] std::vector<double> GetTrainingLabels() override;
 
-        static std::vector<std::vector<double> > GetTestingFeatures(BreastCancerDatasetRanges range);
+        [[nodiscard]] std::vector<std::vector<double> > GetTestingFeatures() override;
 
-        static std::vector<double> GetTestingLabels(BreastCancerDatasetRanges range);
+        [[nodiscard]] std::vector<double> GetTestingLabels() override;
+    };
+
+    class DiabetesDataset : public Dataset {
+        DatasetRanges range;
+
+    public:
+        explicit DiabetesDataset(DatasetRanges range);
+
+        [[nodiscard]] std::vector<std::string> Split(const std::string &line, char delimiter) override;
+
+        [[nodiscard]] std::vector<std::vector<double> > GetTrainingFeatures() override;
+
+        [[nodiscard]] std::vector<double> GetTrainingLabels() override;
+
+        [[nodiscard]] std::vector<std::vector<double> > GetTestingFeatures() override;
+
+        [[nodiscard]] std::vector<double> GetTestingLabels() override;
     };
 }
 
