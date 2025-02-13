@@ -62,9 +62,11 @@ namespace hermesml {
             while (std::getline(ss, value, ',')) {
                 auto dValue = std::stod(value);
 
+                /*
                 if (dValue == 0.0) {
                     dValue = -1.0;
                 }
+                */
 
                 data.push_back(dValue);
                 break;

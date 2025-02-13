@@ -57,13 +57,14 @@ namespace hermesml {
         */
 
         /* Sigmoid by Chebyshev Approximation */
-        const int decLevels = x.GetRemainingLevels() - 3;
+        constexpr auto levels = 4;
+        const auto decLevels = x.GetRemainingLevels() - levels;
 
         const auto b = this->
                 EvalBootstrap(BootstrapableCiphertext(x.GetCiphertext(), static_cast<int8_t>(decLevels),
                                                       x.GetAdditionsExecuted()));
 
-        const auto c = this->GetCc()->EvalLogistic(b.GetCiphertext(), -1, 1, 5);
+        const auto c = this->GetCc()->EvalLogistic(b.GetCiphertext(), -1.0, 1.0, 5);
 
         return BootstrapableCiphertext(c, b.GetRemainingLevels(), b.GetAdditionsExecuted());
     }
@@ -82,7 +83,7 @@ namespace hermesml {
         */
 
         /* Tanh by Chebyshev Approximation */
-        const int decLevels = x.GetRemainingLevels() - 3;
+        const int decLevels = x.GetRemainingLevels() - 4;
 
         const auto b = this->
                 EvalBootstrap(BootstrapableCiphertext(x.GetCiphertext(), static_cast<int8_t>(decLevels),
@@ -97,7 +98,7 @@ namespace hermesml {
     }
 
     void CkksPerceptron::InitWeights() {
-        /* Use only for debugging purposes */
+        /* Use only for debugging purposes
         const auto weights = {
             0.03373467, -0.00025997, -0.03883165, 0.06173363, -0.00649833, 0.04869294, -0.02772681, -0.00845026,
             -0.08583626, -0.05578794, 0.00677842, -0.06297108, 0.016218, -0.0001006, -0.02879055, -0.03708422,
@@ -106,7 +107,6 @@ namespace hermesml {
         };
         /**/
 
-        /*
         std::vector<double> weights(this->n_features);
         std::random_device rd;
         std::mt19937 gen(rd());
@@ -115,7 +115,6 @@ namespace hermesml {
         for (double &w: weights) {
             w = dist(gen);
         }
-        */
 
         this->eWeights = this->EncryptCKKS(weights);
     }
