@@ -9,7 +9,7 @@ namespace hermesml {
     Dataset::Dataset(const std::string &name, const DatasetRanges &range) {
         this->name = name;
         this->range = range;
-        this->contentPath = std::filesystem::current_path().string();
+        this->contentPath = std::filesystem::current_path().string() + "/";
     }
 
     std::string Dataset::GetName() const {
