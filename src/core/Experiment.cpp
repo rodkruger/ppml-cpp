@@ -21,7 +21,7 @@ namespace hermesml {
         this->contentPath = std::filesystem::current_path().string() + "/Predictions/" + dataset.GetName() + "/" + this->experimentId + "/";
 
         if (!std::filesystem::exists(this->contentPath)) {
-            std::filesystem::create_directory(this->contentPath);
+            std::filesystem::create_directories(this->contentPath);
         }
     }
 
