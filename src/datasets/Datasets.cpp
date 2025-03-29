@@ -6,13 +6,10 @@
 #include <string>
 
 namespace hermesml {
-    Dataset::Dataset(const std::string &name, const std::string &filePath) {
-        if (!std::filesystem::exists(filePath)) {
-            throw std::runtime_error("File not found: " + filePath);
-        }
-
+    Dataset::Dataset(const std::string &name, const DatasetRanges &range) {
         this->name = name;
-        this->filePath = filePath;
+        this->range = range;
+        this->contentPath = std::filesystem::current_path().string();
     }
 
     std::string Dataset::GetName() const {
@@ -21,7 +18,7 @@ namespace hermesml {
 
     std::vector<std::vector<double> > Dataset::ReadFeatures(const std::string &fileName) const {
         std::vector<std::vector<double> > data;
-        std::ifstream file("/home/rkruger/Doutorado/Datasets/" + this->name + "/" + fileName);
+        std::ifstream file(this->contentPath + fileName);
 
         if (!file.is_open()) {
             throw std::runtime_error("Could not open file: " + fileName);
@@ -47,10 +44,10 @@ namespace hermesml {
 
     std::vector<double> Dataset::ReadLabels(const std::string &fileName) const {
         std::vector<double> data;
-        std::ifstream file("/home/rkruger/Doutorado/Datasets/" + this->name + "/" + fileName);
+        std::ifstream file(this->contentPath + fileName);
 
         if (!file.is_open()) {
-            throw std::runtime_error("Could not open file: " + this->filePath);
+            throw std::runtime_error("Could not open file: " + this->contentPath);
         }
 
         std::string line;
@@ -61,13 +58,6 @@ namespace hermesml {
 
             while (std::getline(ss, value, ',')) {
                 auto dValue = std::stod(value);
-
-                /*
-                if (dValue == 0.0) {
-                    dValue = -1.0;
-                }
-                */
-
                 data.push_back(dValue);
                 break;
             }
@@ -78,54 +68,39 @@ namespace hermesml {
         return data;
     }
 
-    std::vector<std::vector<double> > Dataset::GetFeatures() const {
-        return this->features;
+    std::vector<std::vector<double> > Dataset::GetTrainingFeatures() {
+        switch (this->range) {
+            case FM22: return this->ReadFeatures("training_features_range22.csv");
+            case F01: return this->ReadFeatures("training_features_range01.csv");
+            case F11: return this->ReadFeatures("training_features_range11.csv");
+            default: return {};
+        }
     }
 
-    std::vector<double> Dataset::GetLabels() const {
-        return this->labels;
+    std::vector<double> Dataset::GetTrainingLabels() {
+        switch (this->range) {
+            case FM22: return this->ReadLabels("training_labels_range22.csv");
+            case F01: return this->ReadLabels("training_labels_range01.csv");
+            case F11: return this->ReadLabels("training_labels_range11.csv");
+            default: return {};
+        }
     }
 
-    std::vector<std::string> Dataset::Split(const std::string &line, const char delimiter) {
-        std::vector<std::string> tokens;
-        std::stringstream ss(line);
-        std::string token;
-        while (std::getline(ss, token, delimiter)) {
-            tokens.push_back(token);
+    std::vector<std::vector<double> > Dataset::GetTestingFeatures() {
+        switch (this->range) {
+            case FM22: return this->ReadFeatures("testing_features_range22.csv");
+            case F01: return this->ReadFeatures("testing_features_range01.csv");
+            case F11: return this->ReadFeatures("testing_features_range11.csv");
+            default: return {};
         }
-        return tokens;
     }
 
-    void Dataset::Read() {
-        std::ifstream file(this->filePath);
-        if (!file.is_open()) {
-            throw std::runtime_error("Unable to open file: " + this->filePath);
+    std::vector<double> Dataset::GetTestingLabels() {
+        switch (this->range) {
+            case FM22: return this->ReadLabels("testing_labels_range22.csv");
+            case F01: return this->ReadLabels("testing_labels_range01.csv");
+            case F11: return this->ReadLabels("testing_labels_range11.csv");
+            default: return {};
         }
-
-        std::string line;
-        bool isHeader = true;
-        while (std::getline(file, line)) {
-            if (isHeader) {
-                // Skip the header line
-                isHeader = false;
-                continue;
-            }
-
-            std::vector<std::string> tokens = Split(line, ',');
-            std::vector<double> featureRow;
-
-            // Convert features to double and add to feature vector
-            for (size_t i = 0; i < tokens.size() - 1; i++) {
-                featureRow.push_back(std::stod(tokens[i]));
-            }
-
-            // Add the features row
-            this->features.push_back(featureRow);
-
-            // Add the label as a double value as well
-            this->labels.push_back(std::stod(tokens.back()));
-        }
-
-        file.close();
     }
 }

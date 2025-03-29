@@ -111,7 +111,12 @@ add_executable(CkksPerceptron
         src/hemath/Calculus.cpp
         src/hemath/Constants.cpp
         src/model/CkksPerceptron.cpp
-        src/validation/Holdout.cpp)
+        src/validation/Holdout.cpp
+        src/datasets/GliomaGradingDataset.cpp
+        src/datasets/DifferentiatedThyroidDataset.cpp
+        src/datasets/CirrhosisPatientDataset.cpp
+        src/datasets/LoanPredictionDataset.cpp
+        src/datasets/CreditCardFraudDataset.cpp)
 target_link_libraries(CkksPerceptron PRIVATE spdlog::spdlog)
 
 #add_executable( Draft src/Draft.cpp

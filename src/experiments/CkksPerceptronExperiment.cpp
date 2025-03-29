@@ -18,7 +18,7 @@ namespace hermesml {
         this->Info(">>>>> CLIENT SIDE PROCESSING");
 
         // Step 01 - read and normalize data
-        this->Info("Read dataset");;
+        this->Info("Read dataset " + this->GetDataset().GetName());;
 
         const auto trainingFeatures = this->GetDataset().GetTrainingFeatures();
         const auto trainingLabels = this->GetDataset().GetTrainingLabels();

@@ -4,56 +4,25 @@
 using namespace hermesml;
 
 int main() {
+
+    constexpr auto epochs = 10;
+    const auto epochs_str = std::to_string(epochs);
+
     CkksPerceptronExperimentParams params{};
+    params.activation = CkksPerceptron::TANH;
+    params.epochs = epochs;
+    params.earlyBootstrapping = 0;
 
-    constexpr auto epoch_begin = 1;
-    constexpr auto epoch_end = 10;
+    std::vector<std::unique_ptr<Dataset>> datasets;
+    datasets.emplace_back(std::make_unique<BreastCancerDataset>(F11));
+    datasets.emplace_back(std::make_unique<DiabetesDataset>(F11));
+    datasets.emplace_back(std::make_unique<GliomaGradingDataset>(F11));
+    datasets.emplace_back(std::make_unique<DifferentiatedThyroidDataset>(F11));
+    datasets.emplace_back(std::make_unique<CirrhosisPatientDataset>(F11));
+    datasets.emplace_back(std::make_unique<LoanPredictionDataset>(F11));
+    datasets.emplace_back(std::make_unique<CreditCardFraudDataset>(F11));
 
-    auto dataset1 = DiabetesDataset(F11);
-
-    for (uint16_t epoch = epoch_begin; epoch <= epoch_end; epoch++) {
-        const auto epoch_str = std::to_string(epoch);
-
-        params.activation = hermesml::CkksPerceptron::SIGMOID;
-        params.epochs = epoch;
-        params.earlyBootstrapping = 0;
-        CkksPerceptronExperiment("ckks_sigmoid_" + epoch_str, dataset1, params).Run();
-
-        params.activation = hermesml::CkksPerceptron::TANH;
-        params.epochs = epoch;
-        params.earlyBootstrapping = 0;
-        CkksPerceptronExperiment("ckks_tanh_" + epoch_str, dataset1, params).Run();
-
-        /*
-        params.activation = hermesml::CkksPerceptron::IDENTITY;
-        params.epochs = epoch;
-        params.earlyBootstrapping = 0;
-        hermesml::CkksPerceptronExperiment("ckks_identity_" + epoch_str, dataset, params).Run();
-        */
+    for (auto& dataset : datasets) {
+        CkksPerceptronExperiment("ckks_tanh_" + dataset->GetName(), *dataset, params).Run();
     }
-
-    auto dataset2 = BreastCancerDataset(F11);
-
-    for (uint16_t epoch = epoch_begin; epoch <= epoch_end; epoch++) {
-        const auto epoch_str = std::to_string(epoch);
-
-        params.activation = hermesml::CkksPerceptron::SIGMOID;
-        params.epochs = epoch;
-        params.earlyBootstrapping = 0;
-        CkksPerceptronExperiment("ckks_sigmoid_" + epoch_str, dataset2, params).Run();
-
-        params.activation = hermesml::CkksPerceptron::TANH;
-        params.epochs = epoch;
-        params.earlyBootstrapping = 0;
-        CkksPerceptronExperiment("ckks_tanh_" + epoch_str, dataset2, params).Run();
-
-        /*
-        params.activation = hermesml::CkksPerceptron::IDENTITY;
-        params.epochs = epoch;
-        params.earlyBootstrapping = 0;
-        hermesml::CkksPerceptronExperiment("ckks_identity_" + epoch_str, dataset, params).Run();
-        */
-    }
-
-    return EXIT_SUCCESS;
 }
