@@ -18,7 +18,7 @@ namespace hermesml {
         spdlog::set_default_logger(this->logger);
         spdlog::flush_on(spdlog::level::info);
 
-        this->contentPath = "/home/rkruger/Doutorado/Predictions/" + dataset.GetName() + "/" + this->experimentId + "/";
+        this->contentPath = std::filesystem::current_path().string() + "/Predictions/" + dataset.GetName() + "/" + this->experimentId + "/";
 
         if (!std::filesystem::exists(this->contentPath)) {
             std::filesystem::create_directory(this->contentPath);
