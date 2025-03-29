@@ -32,10 +32,10 @@ namespace hermesml {
             std::string value;
 
             while (std::getline(ss, value, ',')) {
-                row.push_back(std::stod(value));
+                row.emplace_back(std::stod(value));
             }
 
-            data.push_back(row);
+            data.emplace_back(row);
         }
 
         file.close();
@@ -45,7 +45,7 @@ namespace hermesml {
 
     std::vector<double> Dataset::ReadLabels(const std::string &fileName) const {
         const auto filePath = this->contentPath + fileName;
-        std::vector<std::vector<double> > data;
+        std::vector<double > data;
         std::ifstream file(filePath);
 
         if (!file.is_open()) {
@@ -60,7 +60,7 @@ namespace hermesml {
 
             while (std::getline(ss, value, ',')) {
                 auto dValue = std::stod(value);
-                data.push_back(dValue);
+                data.emplace_back(dValue);
                 break;
             }
         }
