@@ -17,11 +17,12 @@ namespace hermesml {
     }
 
     std::vector<std::vector<double> > Dataset::ReadFeatures(const std::string &fileName) const {
+        const auto filePath = this->contentPath + fileName;
         std::vector<std::vector<double> > data;
-        std::ifstream file(this->contentPath + fileName);
+        std::ifstream file(filePath);
 
         if (!file.is_open()) {
-            throw std::runtime_error("Could not open file: " + fileName);
+            throw std::runtime_error("Could not open file: " + filePath);
         }
 
         std::string line;
@@ -43,11 +44,12 @@ namespace hermesml {
     }
 
     std::vector<double> Dataset::ReadLabels(const std::string &fileName) const {
-        std::vector<double> data;
-        std::ifstream file(this->contentPath + fileName);
+        const auto filePath = this->contentPath + fileName;
+        std::vector<std::vector<double> > data;
+        std::ifstream file(filePath);
 
         if (!file.is_open()) {
-            throw std::runtime_error("Could not open file: " + this->contentPath);
+            throw std::runtime_error("Could not open file: " + filePath);
         }
 
         std::string line;
