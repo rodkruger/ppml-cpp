@@ -136,15 +136,15 @@ namespace hermesml {
             double pPredictedLabel = 0.0;
             switch (this->params.activation) {
                 case CkksPerceptron::TANH:
-                    pPredictedLabel = pPrediction > 0.0 ? 1.0 : -1.0;
+                    pPredictedLabel = pPrediction > 0.0 ? 1.0 : 0.0;
                     break;
 
                 case CkksPerceptron::SIGMOID:
-                    pPredictedLabel = pPrediction > 0.5 ? 1.0 : -1.0;
+                    pPredictedLabel = pPrediction > 0.5 ? 1.0 : 0.0;
                     break;
 
                 default:
-                    pPredictedLabel = pPrediction > 0.5 ? 1.0 : -1.0;
+                    pPredictedLabel = pPrediction > 0.5 ? 1.0 : 0.0;
                     break;
             }
 
