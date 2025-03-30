@@ -18,6 +18,7 @@ namespace hermesml {
                                      this->GetExperimentId();
 
         if (exists(predictionsPath) && is_directory(predictionsPath)) {
+            this->Info("Folder  " + predictionsPath.string() + "already exists. Ignoring!");
             return;
         }
 
