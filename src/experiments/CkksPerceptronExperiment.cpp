@@ -14,6 +14,12 @@ namespace hermesml {
     void CkksPerceptronExperiment::Run() {
         std::chrono::time_point<std::chrono::system_clock> start, end;
 
+        const auto predictionsPath = std::filesystem::current_path() / "Predictions";
+
+        if (exists(predictionsPath) && is_directory(predictionsPath)) {
+            return;
+        }
+
         this->Info("Initiating experiment " + this->GetExperimentId());
         this->Info(">>>>> CLIENT SIDE PROCESSING");
 
