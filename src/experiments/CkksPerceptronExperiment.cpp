@@ -20,7 +20,7 @@ namespace hermesml {
         if (exists(predictionsPath) && is_directory(predictionsPath)) {
             if (std::filesystem::directory_iterator(predictionsPath) != std::filesystem::end(
                     std::filesystem::directory_iterator())) {
-                this->Info("Experiment  " + this->GetExperimentId() + " already executed. Ignoring!");
+                this->Info("Experiment " + this->GetExperimentId() + " already executed. Ignoring!");
                 return;
             }
         }
