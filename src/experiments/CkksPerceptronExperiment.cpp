@@ -18,8 +18,11 @@ namespace hermesml {
                                      this->GetExperimentId();
 
         if (exists(predictionsPath) && is_directory(predictionsPath)) {
-            this->Info("Folder  " + predictionsPath.string() + "already exists. Ignoring!");
-            return;
+            if (std::filesystem::directory_iterator(predictionsPath) != std::filesystem::end(
+                    std::filesystem::directory_iterator())) {
+                this->Info("Experiment  " + this->GetExperimentId() + " already executed. Ignoring!");
+                return;
+            }
         }
 
         this->Info("Initiating experiment " + this->GetExperimentId());
