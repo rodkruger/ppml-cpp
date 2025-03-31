@@ -33,6 +33,8 @@ namespace hermesml {
                                           const CkksPerceptronExperimentParams &params);
 
         void Run() override;
+
+        void Run2();
     };
 }
 

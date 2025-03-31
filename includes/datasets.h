@@ -31,6 +31,8 @@ namespace hermesml {
 
         explicit Dataset(const std::string &name, const DatasetRanges &range);
 
+        [[nodiscard]] std::string GetContentPath() const;
+
         [[nodiscard]] std::string GetName() const;
 
         [[nodiscard]] virtual std::vector<std::vector<double> > GetTrainingFeatures();
@@ -76,7 +78,6 @@ namespace hermesml {
     public:
         explicit CreditCardFraudDataset(DatasetRanges range);
     };
-
 }
 
 

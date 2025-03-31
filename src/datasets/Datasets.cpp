@@ -10,6 +10,11 @@ namespace hermesml {
         this->name = name;
         this->range = range;
         this->contentPath = std::filesystem::current_path().string() + "/" + this->name + "/";
+        this->contentPath = "/home/rkruger/Doutorado/Datasets/" + this->name + "/";
+    }
+
+    std::string Dataset::GetContentPath() const {
+        return this->contentPath;
     }
 
     std::string Dataset::GetName() const {
@@ -45,7 +50,7 @@ namespace hermesml {
 
     std::vector<double> Dataset::ReadLabels(const std::string &fileName) const {
         const auto filePath = this->contentPath + fileName;
-        std::vector<double > data;
+        std::vector<double> data;
         std::ifstream file(filePath);
 
         if (!file.is_open()) {

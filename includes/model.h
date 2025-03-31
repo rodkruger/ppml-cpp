@@ -181,9 +181,13 @@ namespace hermesml {
         void Fit(const std::vector<BootstrapableCiphertext> &x,
                  const std::vector<BootstrapableCiphertext> &y) override;
 
+        void Fit(const std::string &eTrainingFeaturesFilePath, const std::string &eTrainingLabelsFilePath);
+
         BootstrapableCiphertext Predict(const BootstrapableCiphertext &x) override;
 
         std::vector<BootstrapableCiphertext> PredictAll(const std::vector<BootstrapableCiphertext> &x);
+
+        std::vector<BootstrapableCiphertext> PredictAll(const std::string &eTestingFeaturesFilePath);
 
     private:
         Calculus calculus;

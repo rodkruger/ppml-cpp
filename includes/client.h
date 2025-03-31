@@ -21,6 +21,10 @@ namespace hermesml {
 
         [[nodiscard]] std::vector<BootstrapableCiphertext> EncryptCKKS(const std::vector<double> &data,
                                                                        size_t n_features = 0) const;
+
+        void EncryptCKKS(const std::vector<std::vector<double> > &data, const std::string& filePath) const;
+
+        void EncryptCKKS(const std::vector<double> &data, size_t n_features, const std::string &filePath) const;
     };
 }
 

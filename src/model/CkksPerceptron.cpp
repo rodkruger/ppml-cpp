@@ -184,6 +184,76 @@ namespace hermesml {
         }
     }
 
+    void CkksPerceptron::Fit(const std::string &eTrainingFeaturesFilePath,
+                             const std::string &eTrainingLabelsFilePath) {
+        const auto eLr = this->GetLearningRate();
+
+        // Initialize weights and bias
+        this->InitWeights();
+        this->eBias = this->constants.Zero();
+
+        for (int32_t epoch = 0; epoch < this->epochs; epoch++) {
+            std::ifstream eFeaturesStream(eTrainingFeaturesFilePath, std::ios::binary);
+            std::ifstream eLabelsStream(eTrainingLabelsFilePath, std::ios::binary);
+
+            while (eFeaturesStream.peek() != EOF) {
+                Ciphertext<DCRTPoly> cipherFeatures;
+                Serial::Deserialize(cipherFeatures, eFeaturesStream, SerType::BINARY);
+                const auto eFeatures = BootstrapableCiphertext(cipherFeatures, this->GetCtx().GetMultiplicativeDepth());
+
+                Ciphertext<DCRTPoly> cipherLabels;
+                Serial::Deserialize(cipherLabels, eLabelsStream, SerType::BINARY);
+                const auto eLabels = BootstrapableCiphertext(cipherLabels, this->GetCtx().GetMultiplicativeDepth());
+
+                // Execute the activation function
+                const auto eActivation = this->Predict(eFeatures);
+
+                // Compute the error
+                const auto eError = this->EvalSub(eLabels, eActivation);
+
+                // Compute the delta
+                auto eDelta = this->EvalMult(eError, eLr);
+
+                // Update the weights
+                auto eNewWeights = this->EvalMult(eFeatures, eDelta);
+                this->eWeights = this->EvalAdd(this->eWeights, eNewWeights);
+
+                // Update the bias
+                this->eBias = this->EvalAdd(this->eBias, eDelta);
+
+                /* Use only for debugging purpose
+                std::cout << "label: " << std::flush;
+                this->Snoop(y[i], this->n_features);
+
+                std::cout << "eActivation: " << std::flush;
+                this->Snoop(eActivation, this->n_features);
+
+                std::cout << "Error: " << std::flush;
+                this->Snoop(eError, this->n_features);
+
+                std::cout << "eDelta: " << std::flush;
+                this->Snoop(eDelta, this->n_features);
+
+                std::cout << "eNewWeights: " << std::flush;
+                this->Snoop(eNewWeights, this->n_features);
+
+                std::cout << "this->eWeights: " << std::flush;
+                this->Snoop(this->eWeights, this->n_features);
+
+                std::cout << "this->eBias: " << std::flush;
+                this->Snoop(this->eBias, this->n_features);
+
+                std::string key;
+                std::cout << "Press any key to continue: ";
+                std::cin >> key;
+                /* */
+            }
+
+            eFeaturesStream.close();
+            eLabelsStream.close();
+        }
+    }
+
     BootstrapableCiphertext CkksPerceptron::Predict(const BootstrapableCiphertext &x) {
         const auto linearDot = this->EvalMult(this->eWeights, x);
         const auto sumLinearDot = this->EvalSum(linearDot);
@@ -234,6 +304,23 @@ namespace hermesml {
         for (size_t i = 0; i < x.size(); ++i) {
             predictions[i] = this->Predict(x[i]);
         }
+
+        return predictions;
+    }
+
+    std::vector<BootstrapableCiphertext> CkksPerceptron::PredictAll(const std::string &eTestingFeaturesFilePath) {
+        std::vector<BootstrapableCiphertext> predictions{};
+
+        std::ifstream eFeaturesStream(eTestingFeaturesFilePath, std::ios::binary);
+
+        while (eFeaturesStream.peek() != EOF) {
+            Ciphertext<DCRTPoly> eFeatures;
+            Serial::Deserialize(eFeatures, eFeaturesStream, SerType::BINARY);
+            predictions.emplace_back(
+                this->Predict(BootstrapableCiphertext(eFeatures, this->GetCtx().GetMultiplicativeDepth())));
+        }
+
+        eFeaturesStream.close();
 
         return predictions;
     }
