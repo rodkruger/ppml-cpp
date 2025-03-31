@@ -17,3 +17,7 @@
 [2025-03-31 14:58:34] [info] Elapsed time: 7.253400 ms
 [2025-03-31 14:58:34] [info] >>>>> SERVER SIDE PROCESSING
 [2025-03-31 14:58:34] [info] Train model
+[2025-03-31 16:25:27] [info] Elapsed time: 5213.192671 ms
+[2025-03-31 16:25:27] [info] Test model
+[2025-03-31 16:28:57] [info] Elapsed time: 209.992354 ms
+[2025-03-31 16:28:57] [info] Experiment ckks_tanh_breast_cancer completed!

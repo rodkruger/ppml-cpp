@@ -19,7 +19,7 @@ int main() {
     datasets.emplace_back(std::make_unique<DifferentiatedThyroidDataset>(F11));
     datasets.emplace_back(std::make_unique<CirrhosisPatientDataset>(F11));
     // datasets.emplace_back(std::make_unique<LoanPredictionDataset>(F11));
-    datasets.emplace_back(std::make_unique<CreditCardFraudDataset>(F11));
+    // datasets.emplace_back(std::make_unique<CreditCardFraudDataset>(F11));
 
     for (auto &dataset: datasets) {
         CkksPerceptronExperiment("ckks_tanh_" + dataset->GetName(), *dataset, params).Run();

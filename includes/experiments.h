@@ -34,7 +34,9 @@ namespace hermesml {
 
         void Run() override;
 
-        void Run2();
+        void RunMemory();
+
+        void RunHardDisk();
     };
 }
 
