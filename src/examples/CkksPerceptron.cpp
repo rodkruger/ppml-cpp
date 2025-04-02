@@ -8,7 +8,7 @@ int main() {
     const auto epochs_str = std::to_string(epochs);
 
     CkksPerceptronExperimentParams params{};
-    params.activation = CkksPerceptron::TANH;
+    params.activation = CkksPerceptron::SIGMOID;
     params.epochs = epochs;
     params.earlyBootstrapping = 0;
 
@@ -22,6 +22,6 @@ int main() {
     // datasets.emplace_back(std::make_unique<CreditCardFraudDataset>(F11));
 
     for (auto &dataset: datasets) {
-        CkksPerceptronExperiment("ckks_tanh_" + dataset->GetName(), *dataset, params).Run();
+        CkksPerceptronExperiment("ckks_sigmoid_" + dataset->GetName(), *dataset, params).Run();
     }
 }
