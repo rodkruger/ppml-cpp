@@ -57,7 +57,7 @@ namespace hermesml {
         */
 
         /* Sigmoid by Chebyshev Approximation */
-        constexpr auto levels = 4;
+        constexpr auto levels = 3;
         const auto decLevels = x.GetRemainingLevels() - levels;
 
         const auto b = this->
@@ -72,7 +72,6 @@ namespace hermesml {
     BootstrapableCiphertext CkksPerceptron::Tanh(const BootstrapableCiphertext &x) const {
         /* Taylor expansion method for tanh approximation */
         /* return x - x**3*0.333333 + x**5*0.133333 */
-
         /*
         const auto x_squared = this->EvalMult(x, x);
         const auto x_cubed = this->EvalMult(x_squared, x);
@@ -83,7 +82,7 @@ namespace hermesml {
         */
 
         /* Tanh by Chebyshev Approximation */
-        const int decLevels = x.GetRemainingLevels() - 4;
+        const int decLevels = x.GetRemainingLevels() - 3;
 
         const auto b = this->
                 EvalBootstrap(BootstrapableCiphertext(x.GetCiphertext(), static_cast<int8_t>(decLevels),

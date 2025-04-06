@@ -34,7 +34,7 @@ else ()
     message(FATAL_ERROR "PACKAGE OpenFHE NOT FOUND")
 endif ()
 
-set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -g0 -march=native -mtune=native -flto -ffunction-sections -fdata-sections -fopenmp -funroll-loops -falign-functions=32 -fomit-frame-pointer -fprefetch-loop-arrays -pipe")
+set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -g0 -march=native -mtune=native -flto=auto -ffunction-sections -fdata-sections -fopenmp -funroll-loops -falign-functions=32 -fomit-frame-pointer -fprefetch-loop-arrays -pipe")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 # set(CMAKE_CXX_FLAGS ${OpenFHE_CXX_FLAGS})
 
