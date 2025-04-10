@@ -4,18 +4,18 @@
 #include "model.h"
 
 namespace hermesml {
-    CkksPerceptronExperiment::CkksPerceptronExperiment(const std::string &experimentId,
+    CkksLogisticRegressionExperiment::CkksLogisticRegressionExperiment(const std::string &experimentId,
                                                        Dataset &dataset,
-                                                       const CkksPerceptronExperimentParams &params) : Experiment(
+                                                       const CkksLogisticRegressionExperimentParams &params) : Experiment(
             experimentId, dataset),
         params(params) {
     }
 
-    void CkksPerceptronExperiment::Run() {
+    void CkksLogisticRegressionExperiment::Run() {
         RunMemory();
     }
 
-    void CkksPerceptronExperiment::RunMemory() {
+    void CkksLogisticRegressionExperiment::RunMemory() {
         std::chrono::time_point<std::chrono::system_clock> start, end;
 
         const auto predictionsPath = std::filesystem::current_path() / "Predictions" / this->GetDataset().GetName() /
@@ -105,7 +105,7 @@ namespace hermesml {
 
         this->Info(">>>>> SERVER SIDE PROCESSING");
 
-        auto clf = CkksPerceptron(ckksCtx, trainingFeatures[0].size(), this->params.epochs, this->params.activation);
+        auto clf = CkksLogisticRegression(ckksCtx, trainingFeatures[0].size(), this->params.epochs, this->params.activation);
 
         // Step 04 - Train the model
 
@@ -150,11 +150,11 @@ namespace hermesml {
 
             double pPredictedLabel = 0.0;
             switch (this->params.activation) {
-                case CkksPerceptron::TANH:
+                case CkksLogisticRegression::TANH:
                     pPredictedLabel = pPrediction > 0.0 ? 1.0 : 0.0;
                     break;
 
-                case CkksPerceptron::SIGMOID:
+                case CkksLogisticRegression::SIGMOID:
                     pPredictedLabel = pPrediction > 0.5 ? 1.0 : 0.0;
                     break;
 
@@ -217,7 +217,7 @@ namespace hermesml {
         this->Info("Experiment " + this->GetExperimentId() + " completed!");
     }
 
-    void CkksPerceptronExperiment::RunHardDisk() {
+    void CkksLogisticRegressionExperiment::RunHardDisk() {
         std::chrono::time_point<std::chrono::system_clock> start, end;
 
         const auto predictionsPath = std::filesystem::current_path() / "Predictions" / this->GetDataset().GetName() /
@@ -304,7 +304,7 @@ namespace hermesml {
 
         this->Info(">>>>> SERVER SIDE PROCESSING");
 
-        auto clf = CkksPerceptron(ckksCtx, trainingFeatures[0].size(), this->params.epochs, this->params.activation);
+        auto clf = CkksLogisticRegression(ckksCtx, trainingFeatures[0].size(), this->params.epochs, this->params.activation);
 
         // Step 04 - Train the model
 
@@ -349,11 +349,11 @@ namespace hermesml {
 
             double pPredictedLabel = 0.0;
             switch (this->params.activation) {
-                case CkksPerceptron::TANH:
+                case CkksLogisticRegression::TANH:
                     pPredictedLabel = pPrediction > 0.0 ? 1.0 : 0.0;
                     break;
 
-                case CkksPerceptron::SIGMOID:
+                case CkksLogisticRegression::SIGMOID:
                     pPredictedLabel = pPrediction > 0.5 ? 1.0 : 0.0;
                     break;
 

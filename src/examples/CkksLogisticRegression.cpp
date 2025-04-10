@@ -24,19 +24,19 @@ int main() {
     // datasets01.emplace_back(std::make_unique<LoanPredictionDataset>(F01));
     // datasets01.emplace_back(std::make_unique<CreditCardFraudDataset>(F01));
 
-    CkksPerceptronExperimentParams params{};
+    CkksLogisticRegressionExperimentParams params{};
 
     for (auto i = 1; i <= epochs; i++) {
         for (auto j = 0; j < datasets11.size(); j++) {
-            params.activation = CkksPerceptron::TANH;
+            params.activation = CkksLogisticRegression::TANH;
             params.epochs = i;
             params.earlyBootstrapping = 0;
-            CkksPerceptronExperiment("ckks_tanh_" + std::to_string(params.epochs), *datasets11[j], params).Run();
+            CkksLogisticRegressionExperiment("ckks_tanh_" + std::to_string(params.epochs), *datasets11[j], params).Run();
 
-            params.activation = CkksPerceptron::SIGMOID;
+            params.activation = CkksLogisticRegression::SIGMOID;
             params.epochs = i;
             params.earlyBootstrapping = 0;
-            CkksPerceptronExperiment("ckks_sigmoid_" + std::to_string(params.epochs), *datasets01[j], params).Run();
+            CkksLogisticRegressionExperiment("ckks_sigmoid_" + std::to_string(params.epochs), *datasets01[j], params).Run();
         }
     }
 }

@@ -5,16 +5,16 @@
 #include "model.h"
 
 namespace hermesml {
-    struct CkksPerceptronExperimentParams {
-        CkksPerceptron::Activation activation;
+    struct CkksLogisticRegressionExperimentParams {
+        CkksLogisticRegression::Activation activation;
         uint16_t epochs;
         int8_t earlyBootstrapping;
         int8_t scalingAlpha;
         int8_t scalingBeta;
     };
 
-    class CkksPerceptronExperiment : public Experiment {
-        CkksPerceptronExperimentParams params;
+    class CkksLogisticRegressionExperiment : public Experiment {
+        CkksLogisticRegressionExperimentParams params;
 
         size_t datasetLength{};
         double trainingRatio{0.7};
@@ -28,9 +28,9 @@ namespace hermesml {
         std::chrono::duration<double> testingTime{};
 
     public:
-        explicit CkksPerceptronExperiment(const std::string &experimentId,
+        explicit CkksLogisticRegressionExperiment(const std::string &experimentId,
                                           Dataset &dataset,
-                                          const CkksPerceptronExperimentParams &params);
+                                          const CkksLogisticRegressionExperimentParams &params);
 
         void Run() override;
 

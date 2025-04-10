@@ -69,8 +69,8 @@ FetchContent_MakeAvailable(spdlog)
 ### add_executable( EXECUTABLE-NAME SOURCES )
 ###
 
-add_executable(CkksPerceptron
-        src/examples/CkksPerceptron.cpp
+add_executable(CkksLogisticRegression
+        src/examples/CkksLogisticRegression.cpp
         includes/client.h
         includes/context.h
         includes/core.h
@@ -87,17 +87,17 @@ add_executable(CkksPerceptron
         src/core/EncryptedObject.cpp
         src/core/MinMaxScaler.cpp
         src/core/Quantizer.cpp
-        src/experiments/CkksPerceptronExperiment.cpp
+        src/experiments/CkksLogisticRegressionExperiment.cpp
         src/datasets/BreastCancerDataset.cpp
         src/datasets/Datasets.cpp
         src/datasets/DiabetesDataset.cpp
         src/hemath/Calculus.cpp
         src/hemath/Constants.cpp
-        src/model/CkksPerceptron.cpp
+        src/model/CkksLogisticRegression.cpp
         src/validation/Holdout.cpp
         src/datasets/GliomaGradingDataset.cpp
         src/datasets/DifferentiatedThyroidDataset.cpp
         src/datasets/CirrhosisPatientDataset.cpp
         src/datasets/LoanPredictionDataset.cpp
         src/datasets/CreditCardFraudDataset.cpp)
-target_link_libraries(CkksPerceptron PRIVATE spdlog::spdlog)
+target_link_libraries(CkksLogisticRegression PRIVATE spdlog::spdlog)

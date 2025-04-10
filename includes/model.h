@@ -20,11 +20,11 @@ namespace hermesml {
         virtual ~MlModel() = default;
     };
 
-    class CkksPerceptron : public EncryptedObject, public MlModel {
+    class CkksLogisticRegression : public EncryptedObject, public MlModel {
     public:
         enum Activation { TANH, SIGMOID, IDENTITY };
 
-        explicit CkksPerceptron(const HEContext &ctx, uint16_t n_features, uint16_t epochs,
+        explicit CkksLogisticRegression(const HEContext &ctx, uint16_t n_features, uint16_t epochs,
                                 Activation activation = TANH);
 
         [[nodiscard]] BootstrapableCiphertext GetLearningRate() const;

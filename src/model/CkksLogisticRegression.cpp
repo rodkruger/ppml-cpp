@@ -1,7 +1,7 @@
 #include "model.h"
 
 namespace hermesml {
-    CkksPerceptron::CkksPerceptron(const HEContext &ctx, const uint16_t n_features, const uint16_t epochs,
+    CkksLogisticRegression::CkksLogisticRegression(const HEContext &ctx, const uint16_t n_features, const uint16_t epochs,
                                    const Activation activation): EncryptedObject(ctx), calculus(Calculus(ctx)),
                                                                  constants(Constants(ctx, n_features)),
                                                                  activation(activation),
@@ -11,7 +11,7 @@ namespace hermesml {
                                                                  eBias(this->constants.Zero()) {
     }
 
-    BootstrapableCiphertext CkksPerceptron::GetLearningRate() const {
+    BootstrapableCiphertext CkksLogisticRegression::GetLearningRate() const {
         double lr;
 
         switch (this->activation) {
@@ -31,12 +31,12 @@ namespace hermesml {
         return this->EncryptCKKS(std::vector(this->n_features, lr));
     }
 
-    BootstrapableCiphertext CkksPerceptron::Identity(const BootstrapableCiphertext &x) const {
+    BootstrapableCiphertext CkksLogisticRegression::Identity(const BootstrapableCiphertext &x) const {
         // Linear activation function
         return this->EvalAdd(x, this->constants.C05());
     }
 
-    BootstrapableCiphertext CkksPerceptron::Sigmoid(const BootstrapableCiphertext &x) const {
+    BootstrapableCiphertext CkksLogisticRegression::Sigmoid(const BootstrapableCiphertext &x) const {
         /* Least Squares method for sigmoid approximation */
         /* return 0.5 + x*0.21689 - x**3*0.0081934 + x**5*0.00016588 */
 
@@ -69,7 +69,7 @@ namespace hermesml {
         return BootstrapableCiphertext(c, b.GetRemainingLevels(), b.GetAdditionsExecuted());
     }
 
-    BootstrapableCiphertext CkksPerceptron::Tanh(const BootstrapableCiphertext &x) const {
+    BootstrapableCiphertext CkksLogisticRegression::Tanh(const BootstrapableCiphertext &x) const {
         /* Taylor expansion method for tanh approximation */
         /* return x - x**3*0.333333 + x**5*0.133333 */
         /*
@@ -96,7 +96,7 @@ namespace hermesml {
         return BootstrapableCiphertext(c, b.GetRemainingLevels(), b.GetAdditionsExecuted());
     }
 
-    void CkksPerceptron::InitWeights() {
+    void CkksLogisticRegression::InitWeights() {
         /* Use only for debugging purposes
         const auto weights = {
             0.03373467, -0.00025997, -0.03883165, 0.06173363, -0.00649833, 0.04869294, -0.02772681, -0.00845026,
@@ -118,7 +118,7 @@ namespace hermesml {
         this->eWeights = this->EncryptCKKS(weights);
     }
 
-    void CkksPerceptron::Fit(const std::vector<BootstrapableCiphertext> &x,
+    void CkksLogisticRegression::Fit(const std::vector<BootstrapableCiphertext> &x,
                              const std::vector<BootstrapableCiphertext> &y) {
         if (x.size() != y.size()) {
             throw std::runtime_error(
@@ -183,7 +183,7 @@ namespace hermesml {
         }
     }
 
-    void CkksPerceptron::Fit(const std::string &eTrainingFeaturesFilePath,
+    void CkksLogisticRegression::Fit(const std::string &eTrainingFeaturesFilePath,
                              const std::string &eTrainingLabelsFilePath) {
         const auto eLr = this->GetLearningRate();
 
@@ -253,7 +253,7 @@ namespace hermesml {
         }
     }
 
-    BootstrapableCiphertext CkksPerceptron::Predict(const BootstrapableCiphertext &x) {
+    BootstrapableCiphertext CkksLogisticRegression::Predict(const BootstrapableCiphertext &x) {
         const auto linearDot = this->EvalMult(this->eWeights, x);
         const auto sumLinearDot = this->EvalSum(linearDot);
         const auto sumLinearDotBias = this->EvalAdd(sumLinearDot, this->eBias);
@@ -297,7 +297,7 @@ namespace hermesml {
         return activation;
     }
 
-    std::vector<BootstrapableCiphertext> CkksPerceptron::PredictAll(const std::vector<BootstrapableCiphertext> &x) {
+    std::vector<BootstrapableCiphertext> CkksLogisticRegression::PredictAll(const std::vector<BootstrapableCiphertext> &x) {
         std::vector<BootstrapableCiphertext> predictions(x.size());
 
         for (size_t i = 0; i < x.size(); ++i) {
@@ -307,7 +307,7 @@ namespace hermesml {
         return predictions;
     }
 
-    std::vector<BootstrapableCiphertext> CkksPerceptron::PredictAll(const std::string &eTestingFeaturesFilePath) {
+    std::vector<BootstrapableCiphertext> CkksLogisticRegression::PredictAll(const std::string &eTestingFeaturesFilePath) {
         std::vector<BootstrapableCiphertext> predictions{};
 
         std::ifstream eFeaturesStream(eTestingFeaturesFilePath, std::ios::binary);
