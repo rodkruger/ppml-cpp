@@ -5,7 +5,8 @@
 #include "spdlog/sinks/stdout_color_sinks.h"
 
 namespace hermesml {
-    Experiment::Experiment(std::string experimentId) : experimentId(std::move(experimentId)) {
+    Experiment::Experiment(std::string experimentId, Dataset &dataset) : experimentId(std::move(experimentId)),
+                                                                         dataset(dataset) {
         auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
         auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(
             "../logs/" + this->experimentId + ".txt", true);
@@ -17,15 +18,19 @@ namespace hermesml {
         spdlog::set_default_logger(this->logger);
         spdlog::flush_on(spdlog::level::info);
 
-        this->contentPath = "/home/rkruger/Doutorado/" + this->experimentId + "/";
+        this->contentPath = std::filesystem::current_path().string() + "/Predictions/" + dataset.GetName() + "/" + this->experimentId + "/";
 
         if (!std::filesystem::exists(this->contentPath)) {
-            std::filesystem::create_directory(this->contentPath);
+            std::filesystem::create_directories(this->contentPath);
         }
     }
 
     std::string Experiment::BuildFilePath(const std::string &fileName) const {
         return this->contentPath + fileName;
+    }
+
+    Dataset &Experiment::GetDataset() const {
+        return this->dataset;
     }
 
     std::string Experiment::GetExperimentId() const {

@@ -5,7 +5,7 @@
 #include "context.h"
 
 namespace hermesml {
-    CryptoContext<DCRTPoly> HEContext::GetCc() const{
+    CryptoContext<DCRTPoly> HEContext::GetCc() const {
         return this->cc;
     }
 
@@ -29,11 +29,19 @@ namespace hermesml {
         this->privateKey = privateKey;
     }
 
-    uint16_t HEContext::GetMultiplicativeDepth() const {
+    uint16_t HEContext::GetScalingModSize() const {
+        return this->scalingModSize;
+    }
+
+    void HEContext::SetScalingModSize(const uint16_t scalingModSize) {
+        this->scalingModSize = scalingModSize;
+    }
+
+    int8_t HEContext::GetMultiplicativeDepth() const {
         return this->multiplicativeDepth;
     }
 
-    void HEContext::SetMultiplicativeDepth(const uint16_t multiplicativeDepth) {
+    void HEContext::SetMultiplicativeDepth(const int8_t multiplicativeDepth) {
         this->multiplicativeDepth = multiplicativeDepth;
     }
 
@@ -45,11 +53,19 @@ namespace hermesml {
         this->numSlots = numSlots;
     }
 
-    uint32_t HEContext::GetLevelsAfterBootstrapping() const {
+    int8_t HEContext::GetLevelsAfterBootstrapping() const {
         return this->levelsAfterBootstrapping;
     }
 
-    void HEContext::SetLevelsAfterBootstrapping(const uint16_t levelsAfterBootstrapping) {
+    void HEContext::SetLevelsAfterBootstrapping(const int8_t levelsAfterBootstrapping) {
         this->levelsAfterBootstrapping = levelsAfterBootstrapping;
+    }
+
+    int8_t HEContext::GetEarlyBootstrapping() const {
+        return this->earlyBootstrapping;
+    }
+
+    void HEContext::SetEarlyBootstrapping(const int8_t earlyBootstrapping) {
+        this->earlyBootstrapping = earlyBootstrapping;
     }
 }

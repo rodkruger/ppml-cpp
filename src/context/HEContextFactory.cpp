@@ -47,28 +47,47 @@ namespace hermesml {
     }
 
     HEContext HEContextFactory::ckksHeContext() {
-        // 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59
-
-        const std::vector<uint32_t> levelBudget = {2, 2};
+        const std::vector<uint32_t> levelBudget = {1, 1};
         const std::vector<uint32_t> bsgsDim = {0, 0};
-        constexpr int32_t numSlots = 32;
+        constexpr int32_t ringDimension = 2048;
+        constexpr int32_t scalingModSize = 56;
+        constexpr int32_t depth = 30;
+        // constexpr int32_t numSlots = ringDimension / 2;
+        constexpr int32_t numSlots = 32; // Adjust according to the number of features
+
         auto parameters = CCParams<CryptoContextCKKSRNS>();
-
-        // parameters.SetSecurityLevel(HEStd_128_classic);
-        // parameters.SetRingDim(32768);
         parameters.SetSecurityLevel(HEStd_NotSet);
-        parameters.SetRingDim(4096);
-        parameters.SetKeySwitchTechnique(HYBRID);
-        parameters.SetScalingModSize(59);
-        parameters.SetScalingTechnique(FLEXIBLEAUTO);
-        parameters.SetBatchSize(numSlots);
-        parameters.SetSecretKeyDist(UNIFORM_TERNARY);
-
-        auto depth = 30;
-        auto levelsAfterBootstrap = depth - FHECKKSRNS::GetBootstrapDepth(levelBudget, parameters.GetSecretKeyDist());
+        parameters.SetRingDim(ringDimension);
+        parameters.SetScalingModSize(scalingModSize);
         parameters.SetMultiplicativeDepth(depth);
+        parameters.SetKeySwitchTechnique(HYBRID);
+        parameters.SetScalingTechnique(FLEXIBLEAUTO);
+        parameters.SetSecretKeyDist(UNIFORM_TERNARY);
+        parameters.SetBatchSize(numSlots);
 
-        auto cc = GenCryptoContext(parameters);
+        /* https://github.com/malb/lattice-estimator
+         *
+         * Martin R. Albrecht, Rachel Player and Sam Scott. On the concrete hardness of Learning with Errors.
+         * Journal of Mathematical Cryptology. Volume 9, Issue 3, Pages 169–203, ISSN (Online) 1862-2984,
+         * ISSN (Print) 1862-2976 DOI: 10.1515/jmc-2015-0016, October 2015
+         *
+         * https://eprint.iacr.org/2015/046
+         *
+         * params = LWE.Parameters(n=4096, q=2^(59), Xs = ND.Uniform(-1,1,n), Xe=ND.DiscreteGaussian(3.2))
+         * LWE.estimate.rough(params)
+         *
+         * usvp                 :: rop: ≈2^223.1, red: ≈2^223.1, δ: 1.002500, β: 764, d: 7929, tag: usvp
+         * dual_hybrid          :: rop: ≈2^219.0, red: ≈2^219.0, guess: ≈2^209.6, β: 750, p: 3, ζ: 0, t: 120, β': 750, N: ≈2^155.3, m: ≈2^12.0
+         */
+
+        int32_t levelsAfterBootstrap =
+                depth - static_cast<int32_t>(FHECKKSRNS::GetBootstrapDepth(levelBudget, parameters.GetSecretKeyDist()));
+
+        if (levelsAfterBootstrap < 0) {
+            levelsAfterBootstrap = 0;
+        }
+
+        const auto cc = GenCryptoContext(parameters);
         cc->Enable(PKE);
         cc->Enable(KEYSWITCH);
         cc->Enable(LEVELEDSHE);
@@ -87,6 +106,7 @@ namespace hermesml {
         // Build context ----------------------------------------------------------------------------------------------
         auto ctx = HEContext();
         ctx.SetCc(cc);
+        ctx.SetScalingModSize(scalingModSize);
         ctx.SetMultiplicativeDepth(depth);
         ctx.SetLevelsAfterBootstrapping(levelsAfterBootstrap);
         ctx.SetNumSlots(numSlots);

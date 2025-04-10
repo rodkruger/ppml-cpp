@@ -33,4 +33,6 @@
 
 # Build directory
 build/**
+cmake-build-release/**
 cmake-build-debug/**
+cmake-build-ppml-cpp/**

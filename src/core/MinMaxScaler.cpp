@@ -1,7 +1,10 @@
 #include "core.h"
 
 namespace hermesml {
-    void MinMaxScaler::Scale(std::vector<std::vector<double> > &data) {
+    MinMaxScaler::MinMaxScaler(const int8_t alpha, const int8_t beta) : alpha(alpha), beta(beta) {
+    }
+
+    void MinMaxScaler::Scale(std::vector<std::vector<double> > &data) const {
         const auto numRows = data.size();
         const auto numCols = data[0].size();
 
@@ -20,7 +23,8 @@ namespace hermesml {
 
             for (size_t row = 0; row < numRows; ++row) {
                 if (maxVal - minVal != 0) {
-                    data[row][col] = (data[row][col] - minVal) / (maxVal - minVal);
+                    data[row][col] = this->alpha + (data[row][col] - minVal) * (
+                                         (this->beta - this->alpha) / (maxVal - minVal));
                 } else {
                     data[row][col] = 0.0;
                 }

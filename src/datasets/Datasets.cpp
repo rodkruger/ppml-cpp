@@ -6,62 +6,113 @@
 #include <string>
 
 namespace hermesml {
-    Dataset::Dataset(const std::string &filePath) {
-        if (!std::filesystem::exists(filePath)) {
-            throw std::runtime_error("File not found: " + filePath);
-        }
-
-        this->filePath = filePath;
+    Dataset::Dataset(const std::string &name, const DatasetRanges &range) {
+        this->name = name;
+        this->range = range;
+        this->contentPath = std::filesystem::current_path().string() + "/" + this->name + "/";
+        // this->contentPath = "/home/rkruger/Doutorado/Datasets/" + this->name + "/";
     }
 
-    std::vector<std::vector<double> > Dataset::GetFeatures() const {
-        return this->features;
+    std::string Dataset::GetContentPath() const {
+        return this->contentPath;
     }
 
-    std::vector<double> Dataset::GetLabels() const {
-        return this->labels;
+    std::string Dataset::GetName() const {
+        return this->name;
     }
 
-    std::vector<std::string> Dataset::Split(const std::string &line, const char delimiter) {
-        std::vector<std::string> tokens;
-        std::stringstream ss(line);
-        std::string token;
-        while (std::getline(ss, token, delimiter)) {
-            tokens.push_back(token);
-        }
-        return tokens;
-    }
+    std::vector<std::vector<double> > Dataset::ReadFeatures(const std::string &fileName) const {
+        const auto filePath = this->contentPath + fileName;
+        std::vector<std::vector<double> > data;
+        std::ifstream file(filePath);
 
-    void Dataset::Read() {
-        std::ifstream file(this->filePath);
         if (!file.is_open()) {
-            throw std::runtime_error("Unable to open file: " + this->filePath);
+            throw std::runtime_error("Could not open file: " + filePath);
         }
 
         std::string line;
-        bool isHeader = true;
         while (std::getline(file, line)) {
-            if (isHeader) {
-                // Skip the header line
-                isHeader = false;
-                continue;
+            std::vector<double> row;
+            std::stringstream ss(line);
+            std::string value;
+
+            while (std::getline(ss, value, ',')) {
+                row.emplace_back(std::stod(value));
             }
 
-            std::vector<std::string> tokens = Split(line, ',');
-            std::vector<double> featureRow;
-
-            // Convert features to double and add to feature vector
-            for (size_t i = 0; i < tokens.size() - 1; i++) {
-                featureRow.push_back(std::stod(tokens[i]));
-            }
-
-            // Add the features row
-            this->features.push_back(featureRow);
-
-            // Add the label as a double value as well
-            this->labels.push_back(std::stod(tokens.back()));
+            data.emplace_back(row);
         }
 
         file.close();
+
+        return data;
+    }
+
+    std::vector<double> Dataset::ReadLabels(const std::string &fileName) const {
+        const auto filePath = this->contentPath + fileName;
+        std::vector<double> data;
+        std::ifstream file(filePath);
+
+        if (!file.is_open()) {
+            throw std::runtime_error("Could not open file: " + filePath);
+        }
+
+        std::string line;
+        while (std::getline(file, line)) {
+            std::vector<double> row;
+            std::stringstream ss(line);
+            std::string value;
+
+            while (std::getline(ss, value, ',')) {
+                auto dValue = std::stod(value);
+
+                if (this->range == F11 && dValue == 0) {
+                    dValue = -1.0;
+                }
+
+                data.emplace_back(dValue);
+                break;
+            }
+        }
+
+        file.close();
+
+        return data;
+    }
+
+    std::vector<std::vector<double> > Dataset::GetTrainingFeatures() {
+        switch (this->range) {
+            case FM22: return this->ReadFeatures("training_features_range22.csv");
+            case F01: return this->ReadFeatures("training_features_range01.csv");
+            case F11: return this->ReadFeatures("training_features_range11.csv");
+            default: return {};
+        }
+    }
+
+    std::vector<double> Dataset::GetTrainingLabels() {
+        switch (this->range) {
+            case FM22: return this->ReadLabels("training_labels_range22.csv");
+            case F01: return this->ReadLabels("training_labels_range01.csv");
+            case F11: return this->ReadLabels("training_labels_range11.csv");
+            default: return {};
+        }
+    }
+
+    std::vector<std::vector<double> > Dataset::GetTestingFeatures() {
+        switch (this->range) {
+            case FM22: return this->ReadFeatures("testing_features_range22.csv");
+            case F01: return this->ReadFeatures("testing_features_range01.csv");
+            case F11: return this->ReadFeatures("testing_features_range11.csv");
+            default: return {};
+        }
+    }
+
+    std::vector<double> Dataset::GetTestingLabels() {
+        switch (this->range) {
+            case FM22: return this->ReadLabels("testing_labels_range22.csv");
+            case F01: return this->ReadLabels("testing_labels_range01.csv");
+            case F11: return this->ReadLabels("testing_labels_range11.csv");
+            default: return {};
+        }
     }
 }

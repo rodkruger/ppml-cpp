@@ -6,6 +6,7 @@
 #pragma once
 
 #include "context.h"
+#include "datasets.h"
 #include "spdlog/spdlog.h"
 
 namespace hermesml {
@@ -13,18 +14,24 @@ namespace hermesml {
 
     class BootstrapableCiphertext {
         Ciphertext<DCRTPoly> ciphertext;
-        uint8_t remainingLevels = 0;
+        int8_t remainingLevels = 0;
+        int32_t additionsExecuted = 0;
 
     public:
         explicit BootstrapableCiphertext();
 
-        explicit BootstrapableCiphertext(const Ciphertext<DCRTPoly> &ciphertext, uint8_t remainingLevels);
+        explicit BootstrapableCiphertext(const Ciphertext<DCRTPoly> &ciphertext, int8_t remainingLevels,
+                                         int32_t additionsExecuted = 0);
 
         [[nodiscard]] Ciphertext<DCRTPoly> GetCiphertext() const;
 
-        [[nodiscard]] uint8_t GetRemainingLevels() const;
+        [[nodiscard]] int8_t GetRemainingLevels() const;
 
-        void SetRemainingLevels(uint8_t pRemainingLevels);
+        void SetRemainingLevels(int8_t pRemainingLevels);
+
+        [[nodiscard]] int32_t GetAdditionsExecuted() const;
+
+        void SetRemainingLevels(int32_t additionsExecuted);
     };
 
     //-----------------------------------------------------------------------------------------------------------------
@@ -33,8 +40,9 @@ namespace hermesml {
         HEContext ctx;
         CryptoContext<DCRTPoly> cc;
 
-        static uint8_t ComputeRemainingLevels(const BootstrapableCiphertext &ciphertext1,
-                                              const BootstrapableCiphertext &ciphertext2);
+    protected:
+        static int8_t ComputeRemainingLevels(const BootstrapableCiphertext &ciphertext1,
+                                             const BootstrapableCiphertext &ciphertext2);
 
         //-----------------------------------------------------------------------------------------------------------------
 
@@ -72,8 +80,13 @@ namespace hermesml {
     //-----------------------------------------------------------------------------------------------------------------
 
     class MinMaxScaler {
+        int8_t alpha{0};
+        int8_t beta{1};
+
     public:
-        static void Scale(std::vector<std::vector<double> > &data);
+        explicit MinMaxScaler(int8_t alpha = 0, int8_t beta = 1);
+
+        void Scale(std::vector<std::vector<double> > &data) const;
     };
 
     //-----------------------------------------------------------------------------------------------------------------
@@ -90,6 +103,7 @@ namespace hermesml {
     class Experiment {
         std::string experimentId;
         std::string contentPath;
+        Dataset &dataset;
         std::shared_ptr<spdlog::logger> logger;
 
     protected:
@@ -98,11 +112,13 @@ namespace hermesml {
     public:
         virtual ~Experiment() = default;
 
-        explicit Experiment(std::string experimentId);
+        explicit Experiment(std::string experimentId, Dataset &dataset);
 
         [[nodiscard]] std::string GetExperimentId() const;
 
         [[nodiscard]] std::string GetContentPath() const;
+
+        [[nodiscard]] Dataset &GetDataset() const;
 
         void Info(const std::string &message) const;
 

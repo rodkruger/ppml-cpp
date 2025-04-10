@@ -20,12 +20,6 @@ project(hermesml CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Remove the flag below to improve debugging capabilities
-#set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
-
-# Use the configuration below for maximum speed
-set(CMAKE_CXX_FLAGS_DEBUG "-Ofast -g0")
-
 option(BUILD_STATIC "Set to ON to include static versions of the library" OFF)
 
 find_package(OpenFHE CONFIG REQUIRED)
@@ -40,7 +34,9 @@ else ()
     message(FATAL_ERROR "PACKAGE OpenFHE NOT FOUND")
 endif ()
 
-set(CMAKE_CXX_FLAGS ${OpenFHE_CXX_FLAGS})
+set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -g0 -march=native -mtune=native -flto=auto -ffunction-sections -fdata-sections -fopenmp -funroll-loops -falign-functions=32 -fomit-frame-pointer -fprefetch-loop-arrays -pipe")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
+# set(CMAKE_CXX_FLAGS ${OpenFHE_CXX_FLAGS})
 
 include_directories(${OPENMP_INCLUDES})
 include_directories(${OpenFHE_INCLUDE})
@@ -111,10 +107,16 @@ add_executable(CkksPerceptron
         src/experiments/CkksPerceptronExperiment.cpp
         src/datasets/BreastCancerDataset.cpp
         src/datasets/Datasets.cpp
+        src/datasets/DiabetesDataset.cpp
         src/hemath/Calculus.cpp
         src/hemath/Constants.cpp
         src/model/CkksPerceptron.cpp
-        src/validation/Holdout.cpp)
+        src/validation/Holdout.cpp
+        src/datasets/GliomaGradingDataset.cpp
+        src/datasets/DifferentiatedThyroidDataset.cpp
+        src/datasets/CirrhosisPatientDataset.cpp
+        src/datasets/LoanPredictionDataset.cpp
+        src/datasets/CreditCardFraudDataset.cpp)
 target_link_libraries(CkksPerceptron PRIVATE spdlog::spdlog)
 
 #add_executable( Draft src/Draft.cpp

@@ -1,0 +1,3 @@
+[2025-03-30 10:47:02] [info] Initiating experiment ckks_tanh_differentiated_thyroid
+[2025-03-30 10:47:02] [info] >>>>> CLIENT SIDE PROCESSING
+[2025-03-30 10:47:02] [info] Read dataset differentiated_thyroid

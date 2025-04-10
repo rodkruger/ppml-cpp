@@ -9,8 +9,8 @@ int main(int argc, const char *argv[]) {
     const auto publicKey = heContext.GetPublicKey();
     const auto privateKey = heContext.GetPrivateKey();
 
-    std::cout << "Multiplicative depth: " << heContext.GetMultiplicativeDepth() << std::endl;
-    std::cout << "Levels after bootstrapping: " << heContext.GetLevelsAfterBootstrapping() << std::endl;
+    std::cout << "Multiplicative depth: " << std::to_string(heContext.GetMultiplicativeDepth()) << std::endl;
+    std::cout << "Levels after bootstrapping: " << std::to_string(heContext.GetLevelsAfterBootstrapping()) << std::endl;
 
     const auto plaintext1 = cc->MakeCKKSPackedPlaintext(std::vector<double>{1});
     const auto plaintext2 = cc->MakeCKKSPackedPlaintext(std::vector<double>{1});
@@ -18,17 +18,18 @@ int main(int argc, const char *argv[]) {
     const auto etext1 = cc->Encrypt(publicKey, plaintext1);
     const auto etext2 = cc->Encrypt(publicKey, plaintext2);
 
-    uint16_t levelsLeft;
+    int8_t levelsLeft;
     Ciphertext<DCRTPoly> eresult;
     Plaintext dresult;
 
     // This multiplication can run forever without bootstrapping. The next result does not depend from the previous, so,
     // the multiplicative depth does not increase loop by loop.
     levelsLeft = heContext.GetMultiplicativeDepth();
-    for (int i = 0; i < 100; i++) {
+    for (auto i = 0; i < 100; i++) {
         eresult = cc->EvalMult(etext1, etext2);
         levelsLeft--;
-        std::cout << "\r" << i << ":EvalMult()" << " - " << levelsLeft << " levels remaining" << std::flush;
+        std::cout << "\r" << i << ":EvalMult()" << " - " << std::to_string(levelsLeft) << " levels remaining" <<
+                std::flush;
     }
 
     cc->Decrypt(privateKey, eresult, &dresult);
@@ -38,10 +39,11 @@ int main(int argc, const char *argv[]) {
     // round should be bootstrapping.
     eresult = etext2;
     levelsLeft = heContext.GetMultiplicativeDepth();
-    for (int i = 0; i < levelsLeft; i++) {
+    for (auto i = 0; i < heContext.GetMultiplicativeDepth(); i++) {
         eresult = cc->EvalMult(etext1, eresult);
         levelsLeft--;
-        std::cout << "\r" << i << ":EvalMult()" << " - " << levelsLeft << " levels remaining" << std::flush;
+        std::cout << "\r" << i << ":EvalMult()" << " - " << std::to_string(levelsLeft) << " levels remaining" <<
+                std::flush;
     }
 
     cc->Decrypt(privateKey, eresult, &dresult);
@@ -50,7 +52,7 @@ int main(int argc, const char *argv[]) {
     // The multiplication below can run forever, :)
     levelsLeft = heContext.GetMultiplicativeDepth();
     eresult = etext2;
-    for (int i = 0; i < 1000; i++) {
+    for (auto i = 0; i < 1000; i++) {
         if (levelsLeft == 1) {
             // The last level should execute a bootstrapping or the last arithmetic operation
             std::cout << std::endl << "    Bootstrapping" << std::endl;
@@ -60,7 +62,8 @@ int main(int argc, const char *argv[]) {
 
         eresult = cc->EvalMult(etext1, eresult);
         levelsLeft--;
-        std::cout << "\r" << i << ":EvalMult()" << " - " << levelsLeft << " levels remaining" << std::flush;
+        std::cout << "\r" << i << ":EvalMult()" << " - " << std::to_string(levelsLeft) << " levels remaining" <<
+                std::flush;
     }
 
     cc->Decrypt(privateKey, eresult, &dresult);
