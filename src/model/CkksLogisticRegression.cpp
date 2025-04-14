@@ -1,99 +1,45 @@
 #include "model.h"
 
 namespace hermesml {
-    CkksLogisticRegression::CkksLogisticRegression(const HEContext &ctx, const uint16_t n_features, const uint16_t epochs,
-                                   const Activation activation): EncryptedObject(ctx), calculus(Calculus(ctx)),
-                                                                 constants(Constants(ctx, n_features)),
-                                                                 activation(activation),
-                                                                 n_features(n_features),
-                                                                 epochs(epochs),
-                                                                 eWeights(this->constants.Zero()),
-                                                                 eBias(this->constants.Zero()) {
+    CkksLogisticRegression::CkksLogisticRegression(const HEContext &ctx, const uint16_t n_features,
+                                                   const uint16_t epochs,
+                                                   const ActivationFn activation,
+                                                   const ApproximationFn approx): EncryptedObject(ctx),
+        calculus(Calculus(ctx)),
+        constants(Constants(ctx, n_features)),
+        activation(activation),
+        approximation(approx),
+        n_features(n_features),
+        epochs(epochs),
+        eWeights(this->constants.Zero()),
+        eBias(this->constants.Zero()) {
     }
 
     BootstrapableCiphertext CkksLogisticRegression::GetLearningRate() const {
-        double lr;
-
-        switch (this->activation) {
-            case TANH:
-                lr = 0.005;
-                break;
-            case SIGMOID:
-                lr = 0.005;
-                break;
-            case IDENTITY:
-                lr = 0.005;
-                break;
-            default:
-                lr = 0.005;
-        }
-
+        constexpr auto lr = 0.005;
         return this->EncryptCKKS(std::vector(this->n_features, lr));
     }
 
-    BootstrapableCiphertext CkksLogisticRegression::Identity(const BootstrapableCiphertext &x) const {
-        // Linear activation function
-        return this->EvalAdd(x, this->constants.C05());
-    }
+    BootstrapableCiphertext CkksLogisticRegression::Activation(const BootstrapableCiphertext &x) const {
+        switch (this->activation) {
+            case SIGMOID:
+                switch (this->approximation) {
+                    case CHEBYSHEV: return this->calculus.SigmoidChebyshev(x);
+                    case TAYLOR: return this->calculus.SigmoidTaylor(x);
+                    case LEAST_SQUARES: return this->calculus.SigmoidLeastSquares(x);
+                    default: return this->calculus.SigmoidChebyshev(x);
+                }
 
-    BootstrapableCiphertext CkksLogisticRegression::Sigmoid(const BootstrapableCiphertext &x) const {
-        /* Least Squares method for sigmoid approximation */
-        /* return 0.5 + x*0.21689 - x**3*0.0081934 + x**5*0.00016588 */
-
-        /*
-        const auto x_squared = this->EvalMult(x, x);
-        const auto x_cubed = this->EvalMult(x_squared, x);
-        const auto x_fived = this->EvalMult(x_squared, x_cubed);
-        const auto term1 = this->EvalMult(x, this->constants.C021689());
-        const auto term2 = this->EvalMult(x_cubed, this->constants.C00081934());
-        const auto term3 = this->EvalMult(x_fived, this->constants.C000016588());
-        const auto result = this->EvalAdd(
-            this->EvalSub(
-                this->EvalAdd(this->constants.C05(), term1), term2
-            ),
-            term3
-        );
-        return result;
-        */
-
-        /* Sigmoid by Chebyshev Approximation */
-        constexpr auto levels = 3;
-        const auto decLevels = x.GetRemainingLevels() - levels;
-
-        const auto b = this->
-                EvalBootstrap(BootstrapableCiphertext(x.GetCiphertext(), static_cast<int8_t>(decLevels),
-                                                      x.GetAdditionsExecuted()));
-
-        const auto c = this->GetCc()->EvalLogistic(b.GetCiphertext(), -1.0, 1.0, 5);
-
-        return BootstrapableCiphertext(c, b.GetRemainingLevels(), b.GetAdditionsExecuted());
-    }
-
-    BootstrapableCiphertext CkksLogisticRegression::Tanh(const BootstrapableCiphertext &x) const {
-        /* Taylor expansion method for tanh approximation */
-        /* return x - x**3*0.333333 + x**5*0.133333 */
-        /*
-        const auto x_squared = this->EvalMult(x, x);
-        const auto x_cubed = this->EvalMult(x_squared, x);
-        const auto x_fived = this->EvalMult(x_squared, x_cubed);
-        const auto term1 = this->EvalMult(x_cubed, this->constants.C0333333());
-        const auto term2 = this->EvalMult(x_fived, this->constants.C0133333());
-        return this->EvalSub(x, this->EvalAdd(term1, term2));
-        */
-
-        /* Tanh by Chebyshev Approximation */
-        const int decLevels = x.GetRemainingLevels() - 3;
-
-        const auto b = this->
-                EvalBootstrap(BootstrapableCiphertext(x.GetCiphertext(), static_cast<int8_t>(decLevels),
-                                                      x.GetAdditionsExecuted()));
-
-        const auto c = this->GetCc()->EvalChebyshevFunction(
-            [](const double x1) { return tanh(x1); }, b.GetCiphertext(),
-            -1, 1,
-            5);
-
-        return BootstrapableCiphertext(c, b.GetRemainingLevels(), b.GetAdditionsExecuted());
+            case TANH:
+                switch (this->approximation) {
+                    case CHEBYSHEV: return this->calculus.TanhChebyshev(x);
+                    case TAYLOR: return this->calculus.TanhTaylor(x);
+                    case LEAST_SQUARES: return this->calculus.TanhLeastSquares(x);
+                    default: return this->calculus.TanhChebyshev(x);
+                }
+            default:
+                return this->calculus.TanhChebyshev(x);
+        }
     }
 
     void CkksLogisticRegression::InitWeights() {
@@ -119,7 +65,7 @@ namespace hermesml {
     }
 
     void CkksLogisticRegression::Fit(const std::vector<BootstrapableCiphertext> &x,
-                             const std::vector<BootstrapableCiphertext> &y) {
+                                     const std::vector<BootstrapableCiphertext> &y) {
         if (x.size() != y.size()) {
             throw std::runtime_error(
                 "The size of x must be equal to the size of y. (" + std::to_string(x.size()) + " vs " +
@@ -154,7 +100,10 @@ namespace hermesml {
                 this->eBias = this->EvalAdd(this->eBias, eDelta);
 
                 /* Use only for debugging purpose
-                std::cout << "label: " << std::flush;
+                std::cout << "Features: " << std::flush;
+                this->Snoop(eFeatures, this->n_features);
+
+                std::cout << "Label: " << std::flush;
                 this->Snoop(y[i], this->n_features);
 
                 std::cout << "eActivation: " << std::flush;
@@ -175,16 +124,16 @@ namespace hermesml {
                 std::cout << "this->eBias: " << std::flush;
                 this->Snoop(this->eBias, this->n_features);
 
-                std::string key;
-                std::cout << "Press any key to continue: ";
-                std::cin >> key;
+                // std::string key;
+                // std::cout << "Press any key to continue: ";
+                // std::cin >> key;
                 /* */
             }
         }
     }
 
     void CkksLogisticRegression::Fit(const std::string &eTrainingFeaturesFilePath,
-                             const std::string &eTrainingLabelsFilePath) {
+                                     const std::string &eTrainingLabelsFilePath) {
         const auto eLr = this->GetLearningRate();
 
         // Initialize weights and bias
@@ -257,22 +206,7 @@ namespace hermesml {
         const auto linearDot = this->EvalMult(this->eWeights, x);
         const auto sumLinearDot = this->EvalSum(linearDot);
         const auto sumLinearDotBias = this->EvalAdd(sumLinearDot, this->eBias);
-
-        BootstrapableCiphertext activation;
-        switch (this->activation) {
-            case SIGMOID:
-                activation = this->Sigmoid(sumLinearDotBias);
-                break;
-            case TANH:
-                activation = this->Tanh(sumLinearDotBias);
-                break;
-            case IDENTITY:
-                activation = this->Identity(sumLinearDotBias);
-                break;
-            default:
-                activation = this->Tanh(sumLinearDotBias);
-                break;
-        }
+        return this->Activation(sumLinearDotBias);
 
         /* Use only for debugging purposes
         std::cout << "eFeatures: " << std::flush;
@@ -291,13 +225,12 @@ namespace hermesml {
         this->Snoop(sumLinearDotBias, this->n_features);
 
         std::cout << "activation: " << std::flush;
-        this->Snoop(activation, this->n_features);
+        this->Snoop(lActivation, this->n_features);
         /* */
-
-        return activation;
     }
 
-    std::vector<BootstrapableCiphertext> CkksLogisticRegression::PredictAll(const std::vector<BootstrapableCiphertext> &x) {
+    std::vector<BootstrapableCiphertext> CkksLogisticRegression::PredictAll(
+        const std::vector<BootstrapableCiphertext> &x) {
         std::vector<BootstrapableCiphertext> predictions(x.size());
 
         for (size_t i = 0; i < x.size(); ++i) {
@@ -307,7 +240,8 @@ namespace hermesml {
         return predictions;
     }
 
-    std::vector<BootstrapableCiphertext> CkksLogisticRegression::PredictAll(const std::string &eTestingFeaturesFilePath) {
+    std::vector<BootstrapableCiphertext>
+    CkksLogisticRegression::PredictAll(const std::string &eTestingFeaturesFilePath) {
         std::vector<BootstrapableCiphertext> predictions{};
 
         std::ifstream eFeaturesStream(eTestingFeaturesFilePath, std::ios::binary);

@@ -11,7 +11,7 @@
 
 namespace hermesml {
     enum DatasetRanges {
-        FM22, F11, F01
+        FM88, FM22, FM11, F01
     };
 
     class Dataset {

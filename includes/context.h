@@ -10,11 +10,11 @@ namespace hermesml {
         CryptoContext<DCRTPoly> cc;
         PublicKey<DCRTPoly> publicKey;
         PrivateKey<DCRTPoly> privateKey;
-        uint32_t scalingModSize = 0;
-        int8_t multiplicativeDepth = 0;
-        uint16_t numSlots = 0;
-        int8_t levelsAfterBootstrapping = 0;
-        int8_t earlyBootstrapping = 0;
+        int32_t scalingModSize = 0;
+        int32_t multiplicativeDepth = 0;
+        uint32_t numSlots = 0;
+        uint32_t levelsAfterBootstrapping = 0;
+        int32_t earlyBootstrapping = 0;
 
     public:
         [[nodiscard]] CryptoContext<DCRTPoly> GetCc() const;
@@ -29,32 +29,33 @@ namespace hermesml {
 
         void SetPrivateKey(const PrivateKey<DCRTPoly> &privateKey);
 
-        [[nodiscard]] uint16_t GetScalingModSize() const;
+        [[nodiscard]] int32_t GetScalingModSize() const;
 
-        void SetScalingModSize(uint16_t scalingModSize);
+        void SetScalingModSize(int32_t scalingModSize);
 
-        [[nodiscard]] int8_t GetMultiplicativeDepth() const;
+        [[nodiscard]] int32_t GetMultiplicativeDepth() const;
 
-        void SetMultiplicativeDepth(int8_t multiplicativeDepth);
+        void SetMultiplicativeDepth(int32_t multiplicativeDepth);
 
-        [[nodiscard]] uint16_t GetNumSlots() const;
+        [[nodiscard]] uint32_t GetNumSlots() const;
 
-        void SetNumSlots(uint16_t numSlots);
+        void SetNumSlots(uint32_t numSlots);
 
-        [[nodiscard]] int8_t GetLevelsAfterBootstrapping() const;
+        [[nodiscard]] uint32_t GetLevelsAfterBootstrapping() const;
 
-        void SetLevelsAfterBootstrapping(int8_t levelsAfterBootstrapping);
+        void SetLevelsAfterBootstrapping(uint32_t levelsAfterBootstrapping);
 
-        [[nodiscard]] int8_t GetEarlyBootstrapping() const;
+        [[nodiscard]] int32_t GetEarlyBootstrapping() const;
 
-        void SetEarlyBootstrapping(int8_t earlyBootstrapping);
+        void SetEarlyBootstrapping(int32_t earlyBootstrapping);
     };
 
     class HEContextFactory {
-    public:
-        [[nodiscard]] static HEContext bgvHeContext();
+    private:
+        [[nodiscard]] static uint32_t NextPowerOfTwo(uint32_t n);
 
-        [[nodiscard]] static HEContext ckksHeContext();
+    public:
+        [[nodiscard]] static HEContext ckksHeContext(uint32_t n_features);
     };
 }
 

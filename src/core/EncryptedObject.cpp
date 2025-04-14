@@ -6,8 +6,8 @@ namespace hermesml {
         this->cc = this->ctx.GetCc();
     }
 
-    int8_t EncryptedObject::ComputeRemainingLevels(const BootstrapableCiphertext &ciphertext1,
-                                                   const BootstrapableCiphertext &ciphertext2) {
+    int32_t EncryptedObject::ComputeRemainingLevels(const BootstrapableCiphertext &ciphertext1,
+                                                    const BootstrapableCiphertext &ciphertext2) {
         auto remainingLevels = ciphertext1.GetRemainingLevels();
         if (ciphertext2.GetRemainingLevels() < remainingLevels) {
             remainingLevels = ciphertext2.GetRemainingLevels();
@@ -73,11 +73,16 @@ namespace hermesml {
             BootstrapableCiphertext(c, ComputeRemainingLevels(ciphertext1, ciphertext2), additionsExecuted + 1));
     }
 
+    Ciphertext<DCRTPoly> EncryptedObject::SafeRescaling(const Ciphertext<DCRTPoly> &ciphertext) const {
+        /* deprecated. nothing to do! */
+        return ciphertext;
+    }
+
     BootstrapableCiphertext EncryptedObject::EvalMult(const BootstrapableCiphertext &ciphertext1,
                                                       const BootstrapableCiphertext &ciphertext2) const {
-        const auto ciphertext = this->GetCc()->EvalMult(ciphertext1.GetCiphertext(), ciphertext2.GetCiphertext());
+        const auto ciphertext = this->GetCc()->EvalMult(ciphertext1.GetCiphertext(),
+                                                        ciphertext2.GetCiphertext());
         const auto additionsExecuted = ciphertext1.GetAdditionsExecuted() + ciphertext2.GetAdditionsExecuted();
-
         const int decLevels = ComputeRemainingLevels(ciphertext1, ciphertext2) - 1;
 
         return this->EvalBootstrap(
@@ -86,16 +91,10 @@ namespace hermesml {
 
     BootstrapableCiphertext EncryptedObject::EvalBootstrap(const BootstrapableCiphertext &ciphertext) const {
         if ((ciphertext.GetRemainingLevels() - this->GetCtx().GetEarlyBootstrapping()) <= 1) {
-            return BootstrapableCiphertext(this->GetCc()->EvalBootstrap(ciphertext.GetCiphertext()),
+            const auto ciphertext2 = this->GetCc()->EvalBootstrap(ciphertext.GetCiphertext());
+            return BootstrapableCiphertext(this->SafeRescaling(ciphertext2),
                                            this->GetCtx().GetLevelsAfterBootstrapping());
         }
-
-        /*
-        if (ciphertext.GetAdditionsExecuted() >= 100) {
-            return BootstrapableCiphertext(this->GetCc()->EvalBootstrap(ciphertext.GetCiphertext()),
-                                           this->GetCtx().GetLevelsAfterBootstrapping());
-        }
-        */
 
         return ciphertext;
     }

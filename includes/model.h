@@ -10,6 +10,10 @@
 #include "hemath.h"
 
 namespace hermesml {
+    enum ActivationFn { TANH, SIGMOID };
+
+    enum ApproximationFn { CHEBYSHEV, TAYLOR, LEAST_SQUARES };
+
     class MlModel {
     public:
         virtual void Fit(const std::vector<BootstrapableCiphertext> &x,
@@ -22,10 +26,8 @@ namespace hermesml {
 
     class CkksLogisticRegression : public EncryptedObject, public MlModel {
     public:
-        enum Activation { TANH, SIGMOID, IDENTITY };
-
         explicit CkksLogisticRegression(const HEContext &ctx, uint16_t n_features, uint16_t epochs,
-                                Activation activation = TANH);
+                                        ActivationFn activation = TANH, ApproximationFn approx = CHEBYSHEV);
 
         [[nodiscard]] BootstrapableCiphertext GetLearningRate() const;
 
@@ -44,7 +46,8 @@ namespace hermesml {
         Calculus calculus;
         Constants constants;
 
-        Activation activation;
+        ActivationFn activation;
+        ApproximationFn approximation;
         uint16_t n_features;
         uint16_t epochs;
         BootstrapableCiphertext eWeights;
@@ -52,11 +55,7 @@ namespace hermesml {
 
         void InitWeights();
 
-        [[nodiscard]] BootstrapableCiphertext Identity(const BootstrapableCiphertext &x) const;
-
-        [[nodiscard]] BootstrapableCiphertext Sigmoid(const BootstrapableCiphertext &x) const;
-
-        [[nodiscard]] BootstrapableCiphertext Tanh(const BootstrapableCiphertext &x) const;
+        [[nodiscard]] BootstrapableCiphertext Activation(const BootstrapableCiphertext &x) const;
     };
 }
 

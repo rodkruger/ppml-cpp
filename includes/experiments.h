@@ -6,7 +6,8 @@
 
 namespace hermesml {
     struct CkksLogisticRegressionExperimentParams {
-        CkksLogisticRegression::Activation activation;
+        ActivationFn activation;
+        ApproximationFn approximation;
         uint16_t epochs;
         int8_t earlyBootstrapping;
         int8_t scalingAlpha;
@@ -29,8 +30,8 @@ namespace hermesml {
 
     public:
         explicit CkksLogisticRegressionExperiment(const std::string &experimentId,
-                                          Dataset &dataset,
-                                          const CkksLogisticRegressionExperimentParams &params);
+                                                  Dataset &dataset,
+                                                  const CkksLogisticRegressionExperimentParams &params);
 
         void Run() override;
 

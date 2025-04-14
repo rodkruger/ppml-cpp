@@ -14,24 +14,22 @@ namespace hermesml {
 
     class BootstrapableCiphertext {
         Ciphertext<DCRTPoly> ciphertext;
-        int8_t remainingLevels = 0;
+        int32_t remainingLevels = 0;
         int32_t additionsExecuted = 0;
 
     public:
         explicit BootstrapableCiphertext();
 
-        explicit BootstrapableCiphertext(const Ciphertext<DCRTPoly> &ciphertext, int8_t remainingLevels,
+        explicit BootstrapableCiphertext(const Ciphertext<DCRTPoly> &ciphertext, int32_t remainingLevels,
                                          int32_t additionsExecuted = 0);
 
-        [[nodiscard]] Ciphertext<DCRTPoly> GetCiphertext() const;
+        [[nodiscard]] const Ciphertext<DCRTPoly> &GetCiphertext() const;
 
-        [[nodiscard]] int8_t GetRemainingLevels() const;
+        [[nodiscard]] int32_t GetRemainingLevels() const;
 
-        void SetRemainingLevels(int8_t pRemainingLevels);
+        void SetRemainingLevels(int32_t pRemainingLevels);
 
         [[nodiscard]] int32_t GetAdditionsExecuted() const;
-
-        void SetRemainingLevels(int32_t additionsExecuted);
     };
 
     //-----------------------------------------------------------------------------------------------------------------
@@ -41,8 +39,10 @@ namespace hermesml {
         CryptoContext<DCRTPoly> cc;
 
     protected:
-        static int8_t ComputeRemainingLevels(const BootstrapableCiphertext &ciphertext1,
-                                             const BootstrapableCiphertext &ciphertext2);
+        static int32_t ComputeRemainingLevels(const BootstrapableCiphertext &ciphertext1,
+                                              const BootstrapableCiphertext &ciphertext2);
+
+        [[nodiscard]] Ciphertext<DCRTPoly> SafeRescaling(const Ciphertext<DCRTPoly> &ciphertext) const;
 
         //-----------------------------------------------------------------------------------------------------------------
 

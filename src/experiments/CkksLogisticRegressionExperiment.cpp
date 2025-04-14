@@ -5,8 +5,9 @@
 
 namespace hermesml {
     CkksLogisticRegressionExperiment::CkksLogisticRegressionExperiment(const std::string &experimentId,
-                                                       Dataset &dataset,
-                                                       const CkksLogisticRegressionExperimentParams &params) : Experiment(
+                                                                       Dataset &dataset,
+                                                                       const CkksLogisticRegressionExperimentParams &
+                                                                       params) : Experiment(
             experimentId, dataset),
         params(params) {
     }
@@ -39,10 +40,12 @@ namespace hermesml {
         const auto trainingLabels = this->GetDataset().GetTrainingLabels();
         const auto testingFeatures = this->GetDataset().GetTestingFeatures();
         const auto testingLabels = this->GetDataset().GetTestingLabels();
+        const auto n_features = trainingFeatures[0].size();
 
         this->Info("Total samples: " + std::to_string(trainingFeatures.size() + testingFeatures.size()));
         this->Info("Training length: " + std::to_string(trainingFeatures.size()));
         this->Info("Testing length: " + std::to_string(testingFeatures.size()));
+        this->Info("Number of features: " + std::to_string(n_features));
 
         if (trainingFeatures.size() != trainingLabels.size()) {
             throw std::runtime_error("Wrong number of training features and labels provided!");
@@ -58,7 +61,7 @@ namespace hermesml {
 
         this->Info("Generate crypto context");
 
-        auto ckksCtx = HEContextFactory::ckksHeContext();
+        auto ckksCtx = HEContextFactory::ckksHeContext(n_features);
         ckksCtx.SetEarlyBootstrapping(this->params.earlyBootstrapping);
 
         auto ckksClient = Client(ckksCtx);
@@ -66,11 +69,13 @@ namespace hermesml {
 
         this->Info("Scheme: CKKS");
         this->Info("Activation: " + std::to_string(this->params.activation));
+        this->Info("Approximation: " + std::to_string(this->params.approximation));
         this->Info("Ring dimension: " + std::to_string(cc->GetRingDimension()));
         this->Info("Scaling Modulus Size: " + std::to_string(ckksCtx.GetScalingModSize()));
         this->Info("Modulus: " + cc->GetModulus().ToString());
         this->Info("Multiplicative depth: " + std::to_string(ckksCtx.GetMultiplicativeDepth()));
         this->Info("Early Boostrapping: " + std::to_string(ckksCtx.GetEarlyBootstrapping()));
+        this->Info("Number of Slots: " + std::to_string(ckksCtx.GetNumSlots()));
 
         //-----------------------------------------------------------------------------------------------------------------
 
@@ -105,7 +110,8 @@ namespace hermesml {
 
         this->Info(">>>>> SERVER SIDE PROCESSING");
 
-        auto clf = CkksLogisticRegression(ckksCtx, trainingFeatures[0].size(), this->params.epochs, this->params.activation);
+        auto clf = CkksLogisticRegression(ckksCtx, trainingFeatures[0].size(), this->params.epochs,
+                                          this->params.activation, this->params.approximation);
 
         // Step 04 - Train the model
 
@@ -150,11 +156,11 @@ namespace hermesml {
 
             double pPredictedLabel = 0.0;
             switch (this->params.activation) {
-                case CkksLogisticRegression::TANH:
+                case TANH:
                     pPredictedLabel = pPrediction > 0.0 ? 1.0 : 0.0;
                     break;
 
-                case CkksLogisticRegression::SIGMOID:
+                case SIGMOID:
                     pPredictedLabel = pPrediction > 0.5 ? 1.0 : 0.0;
                     break;
 
@@ -241,10 +247,12 @@ namespace hermesml {
         const auto trainingLabels = this->GetDataset().GetTrainingLabels();
         const auto testingFeatures = this->GetDataset().GetTestingFeatures();
         const auto testingLabels = this->GetDataset().GetTestingLabels();
+        const auto n_features = trainingFeatures[0].size();
 
         this->Info("Total samples: " + std::to_string(trainingFeatures.size() + testingFeatures.size()));
         this->Info("Training length: " + std::to_string(trainingFeatures.size()));
         this->Info("Testing length: " + std::to_string(testingFeatures.size()));
+        this->Info("Number of features: " + std::to_string(n_features));
 
         if (trainingFeatures.size() != trainingLabels.size()) {
             throw std::runtime_error("Wrong number of training features and labels provided!");
@@ -260,7 +268,7 @@ namespace hermesml {
 
         this->Info("Generate crypto context");
 
-        auto ckksCtx = HEContextFactory::ckksHeContext();
+        auto ckksCtx = HEContextFactory::ckksHeContext(n_features);
         ckksCtx.SetEarlyBootstrapping(this->params.earlyBootstrapping);
 
         auto ckksClient = Client(ckksCtx);
@@ -273,6 +281,7 @@ namespace hermesml {
         this->Info("Modulus: " + cc->GetModulus().ToString());
         this->Info("Multiplicative depth: " + std::to_string(ckksCtx.GetMultiplicativeDepth()));
         this->Info("Early Boostrapping: " + std::to_string(ckksCtx.GetEarlyBootstrapping()));
+        this->Info("Number of Slots: " + std::to_string(ckksCtx.GetNumSlots()));
 
         //-----------------------------------------------------------------------------------------------------------------
 
@@ -304,7 +313,8 @@ namespace hermesml {
 
         this->Info(">>>>> SERVER SIDE PROCESSING");
 
-        auto clf = CkksLogisticRegression(ckksCtx, trainingFeatures[0].size(), this->params.epochs, this->params.activation);
+        auto clf = CkksLogisticRegression(ckksCtx, trainingFeatures[0].size(), this->params.epochs,
+                                          this->params.activation);
 
         // Step 04 - Train the model
 
@@ -349,11 +359,11 @@ namespace hermesml {
 
             double pPredictedLabel = 0.0;
             switch (this->params.activation) {
-                case CkksLogisticRegression::TANH:
+                case TANH:
                     pPredictedLabel = pPrediction > 0.0 ? 1.0 : 0.0;
                     break;
 
-                case CkksLogisticRegression::SIGMOID:
+                case SIGMOID:
                     pPredictedLabel = pPrediction > 0.5 ? 1.0 : 0.0;
                     break;
 
