@@ -4,7 +4,7 @@
 using namespace hermesml;
 
 int main() {
-    constexpr auto epochs = 1;
+    constexpr auto epochs = 10;
 
     std::vector<std::unique_ptr<Dataset> > datasets11;
     datasets11.emplace_back(std::make_unique<BreastCancerDataset>(FM11));
