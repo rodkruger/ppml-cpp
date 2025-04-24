@@ -99,5 +99,40 @@ add_executable(CkksLogisticRegression
         src/datasets/DifferentiatedThyroidDataset.cpp
         src/datasets/CirrhosisPatientDataset.cpp
         src/datasets/LoanPredictionDataset.cpp
-        src/datasets/CreditCardFraudDataset.cpp)
+        src/datasets/CreditCardFraudDataset.cpp
+        src/model/MlModel.cpp)
 target_link_libraries(CkksLogisticRegression PRIVATE spdlog::spdlog)
+
+add_executable(CkksNeuralNetwork
+        src/examples/CkksNeuralNetwork.cpp
+        includes/client.h
+        includes/context.h
+        includes/core.h
+        includes/datasets.h
+        includes/experiments.h
+        includes/hemath.h
+        includes/model.h
+        includes/validation.h
+        src/client/Client.cpp
+        src/context/HEContextFactory.cpp
+        src/context/HEContext.cpp
+        src/core/BootstrapableCiphertext.cpp
+        src/core/Experiment.cpp
+        src/core/EncryptedObject.cpp
+        src/core/MinMaxScaler.cpp
+        src/core/Quantizer.cpp
+        src/experiments/CkksNeuralNetworkExperiment.cpp
+        src/datasets/BreastCancerDataset.cpp
+        src/datasets/Datasets.cpp
+        src/datasets/DiabetesDataset.cpp
+        src/hemath/Calculus.cpp
+        src/hemath/Constants.cpp
+        src/model/CkksNeuralNetwork.cpp
+        src/validation/Holdout.cpp
+        src/datasets/GliomaGradingDataset.cpp
+        src/datasets/DifferentiatedThyroidDataset.cpp
+        src/datasets/CirrhosisPatientDataset.cpp
+        src/datasets/LoanPredictionDataset.cpp
+        src/datasets/CreditCardFraudDataset.cpp
+        src/model/MlModel.cpp)
+target_link_libraries(CkksNeuralNetwork PRIVATE spdlog::spdlog)

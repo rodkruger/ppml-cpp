@@ -2,9 +2,9 @@
 
 namespace hermesml {
     CkksLogisticRegression::CkksLogisticRegression(const HEContext &ctx, const uint16_t n_features,
-                                                   const uint16_t epochs,
+                                                   const uint16_t epochs, const uint32_t seed,
                                                    const ActivationFn activation,
-                                                   const ApproximationFn approx): EncryptedObject(ctx),
+                                                   const ApproximationFn approx): EncryptedObject(ctx), MlModel(seed),
         calculus(Calculus(ctx)),
         constants(Constants(ctx, n_features)),
         activation(activation),
@@ -22,23 +22,8 @@ namespace hermesml {
 
     BootstrapableCiphertext CkksLogisticRegression::Activation(const BootstrapableCiphertext &x) const {
         switch (this->activation) {
-            case SIGMOID:
-                switch (this->approximation) {
-                    case CHEBYSHEV: return this->calculus.SigmoidChebyshev(x);
-                    case TAYLOR: return this->calculus.SigmoidTaylor(x);
-                    case LEAST_SQUARES: return this->calculus.SigmoidLeastSquares(x);
-                    default: return this->calculus.SigmoidChebyshev(x);
-                }
-
-            case TANH:
-                switch (this->approximation) {
-                    case CHEBYSHEV: return this->calculus.TanhChebyshev(x);
-                    case TAYLOR: return this->calculus.TanhTaylor(x);
-                    case LEAST_SQUARES: return this->calculus.TanhLeastSquares(x);
-                    default: return this->calculus.TanhChebyshev(x);
-                }
-            default:
-                return this->calculus.TanhChebyshev(x);
+            case SIGMOID: return this->calculus.Sigmoid(x, this->approximation);
+            default: return this->calculus.Tanh(x, this->approximation);
         }
     }
 

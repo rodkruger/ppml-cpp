@@ -89,4 +89,36 @@ namespace hermesml {
 
         out.close();
     }
+
+    void Client::SerializeToFile(const std::string &filename, const std::vector<BootstrapableCiphertext> &vec) const {
+        std::ofstream outFile(filename, std::ios::binary);
+
+        if (!outFile.is_open())
+            throw std::runtime_error("Failed to open file for serialization: " + filename);
+
+        for (auto &row: vec) {
+            Serial::Serialize(row.GetCiphertext(), outFile, SerType::BINARY);
+        }
+
+        outFile.close();
+    }
+
+    std::vector<BootstrapableCiphertext> Client::DeserializeFromFile(const std::string &filename) const {
+        std::ifstream inFile(filename, std::ios::binary);
+
+        if (!inFile.is_open())
+            throw std::runtime_error("Failed to open file for deserialization: " + filename);
+
+        std::vector<BootstrapableCiphertext> result;
+
+        while (inFile.peek() != EOF) {
+            Ciphertext<DCRTPoly> eFeatures;
+            Serial::Deserialize(eFeatures, inFile, SerType::BINARY);
+            const auto b = BootstrapableCiphertext(eFeatures, this->GetCtx().GetMultiplicativeDepth());
+            result.emplace_back(b);
+        }
+
+        inFile.close();
+        return result;
+    }
 }

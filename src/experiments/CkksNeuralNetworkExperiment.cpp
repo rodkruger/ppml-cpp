@@ -3,20 +3,24 @@
 #include "experiments.h"
 #include "model.h"
 
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
 namespace hermesml {
-    CkksLogisticRegressionExperiment::CkksLogisticRegressionExperiment(const std::string &experimentId,
-                                                                       Dataset &dataset,
-                                                                       const CkksExperimentParams &
-                                                                       params) : Experiment(
-            experimentId, dataset),
-        params(params) {
+    CkksNeuralNetworkExperiment::CkksNeuralNetworkExperiment(const std::string &experimentId,
+                                                             Dataset &dataset,
+                                                             const CkksExperimentParams &
+                                                             params) : Experiment(
+                                                                           experimentId, dataset),
+                                                                       params(params) {
     }
 
-    void CkksLogisticRegressionExperiment::Run() {
+    void CkksNeuralNetworkExperiment::Run() {
         RunMemory();
     }
 
-    void CkksLogisticRegressionExperiment::RunMemory() {
+    void CkksNeuralNetworkExperiment::RunMemory() {
         std::chrono::time_point<std::chrono::system_clock> start, end;
 
         const auto predictionsPath = std::filesystem::current_path() / "Predictions" / this->GetDataset().GetName() /
@@ -81,17 +85,15 @@ namespace hermesml {
 
         // Step 03 - Encrypt training data
 
-        this->Info("Encrypt training data");
-
         start = std::chrono::high_resolution_clock::now();
 
-        auto eTrainingData = ckksClient.EncryptCKKS(trainingFeatures);
-        auto eTrainingLabels = ckksClient.EncryptCKKS(trainingLabels, trainingFeatures[0].size());
+        std::vector<BootstrapableCiphertext> eTrainingData, eTrainingLabels, eTestingData, eTestingLabels;
 
-        this->Info("Encrypt testing data");
-
-        auto eTestingData = ckksClient.EncryptCKKS(testingFeatures);
-        auto eTestingLabels = ckksClient.EncryptCKKS(testingLabels, testingFeatures[0].size());
+        this->Info("Encrypting training data");
+        eTrainingData = ckksClient.EncryptCKKS(trainingFeatures);
+        eTrainingLabels = ckksClient.EncryptCKKS(trainingLabels, trainingFeatures[0].size());
+        eTestingData = ckksClient.EncryptCKKS(testingFeatures);
+        eTestingLabels = ckksClient.EncryptCKKS(testingLabels, testingFeatures[0].size());
 
         if (eTrainingData.size() != eTrainingLabels.size()) {
             throw std::runtime_error("Wrong number of encrypted training features and labels provided!");
@@ -110,8 +112,9 @@ namespace hermesml {
 
         this->Info(">>>>> SERVER SIDE PROCESSING");
 
-        auto clf = CkksLogisticRegression(ckksCtx, trainingFeatures[0].size(), this->params.epochs, 42,
-                                          this->params.activation, this->params.approximation);
+        std::vector<size_t> layers = {n_features, 20, 10, 1};
+        auto clf = CkksNeuralNetwork(ckksCtx, n_features, params.epochs, layers, 42, params.activation,
+                                     params.approximation);
 
         // Step 04 - Train the model
 
@@ -223,7 +226,7 @@ namespace hermesml {
         this->Info("Experiment " + this->GetExperimentId() + " completed!");
     }
 
-    void CkksLogisticRegressionExperiment::RunHardDisk() {
+    void CkksNeuralNetworkExperiment::RunHardDisk() {
         std::chrono::time_point<std::chrono::system_clock> start, end;
 
         const auto predictionsPath = std::filesystem::current_path() / "Predictions" / this->GetDataset().GetName() /
@@ -313,8 +316,9 @@ namespace hermesml {
 
         this->Info(">>>>> SERVER SIDE PROCESSING");
 
-        auto clf = CkksLogisticRegression(ckksCtx, trainingFeatures[0].size(), this->params.epochs,
-                                          this->params.activation);
+        std::vector<size_t> layers = {2, 3, 1};
+        auto clf = CkksNeuralNetwork(ckksCtx, n_features, params.epochs, layers, 42, params.activation,
+                                     params.approximation);
 
         // Step 04 - Train the model
 

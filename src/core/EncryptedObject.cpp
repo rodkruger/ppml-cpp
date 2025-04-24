@@ -33,10 +33,24 @@ namespace hermesml {
 
     BootstrapableCiphertext EncryptedObject::EncryptCKKS(const std::vector<double> &plaintext) const {
         const auto packed = this->GetCc()->MakeCKKSPackedPlaintext(plaintext);
-        auto bCiphertext = BootstrapableCiphertext(this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), packed),
-                                                   this->GetCtx().GetMultiplicativeDepth());
-        bCiphertext.SetRemainingLevels(this->GetCtx().GetMultiplicativeDepth());
+        const auto bCiphertext = BootstrapableCiphertext(this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), packed),
+                                                         this->GetCtx().GetMultiplicativeDepth());
         return bCiphertext;
+    }
+
+    std::vector<BootstrapableCiphertext> EncryptedObject::EncryptCKKS(
+        const std::vector<std::vector<double> > &plaintext) const {
+        std::vector<BootstrapableCiphertext> bCiphertexts;
+
+        for (auto &row: plaintext) {
+            const auto packed = this->GetCc()->MakeCKKSPackedPlaintext(row);
+            const auto bCiphertext = BootstrapableCiphertext(
+                this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), packed),
+                this->GetCtx().GetMultiplicativeDepth());
+            bCiphertexts.emplace_back(bCiphertext);
+        }
+
+        return bCiphertexts;
     }
 
     std::vector<double> EncryptedObject::UnpackValues(const Plaintext &plaintext, const uint16_t n_features) {
@@ -107,5 +121,21 @@ namespace hermesml {
 
     int16_t EncryptedObject::GetScalingFactor() {
         return 1;
+    }
+
+    BootstrapableCiphertext EncryptedObject::WeightedSum(
+        const BootstrapableCiphertext &weights,
+        const BootstrapableCiphertext &features,
+        const BootstrapableCiphertext &bias) const {
+        const auto linearDot = this->EvalMult(features, weights);
+        this->Snoop(linearDot, 30);
+
+        const auto sumLinearDot = this->EvalSum(linearDot);
+        this->Snoop(sumLinearDot, 30);
+
+        const auto z = this->EvalAdd(sumLinearDot, bias);
+        this->Snoop(z, 30);
+
+        return z;
     }
 }

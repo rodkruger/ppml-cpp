@@ -13,7 +13,7 @@ int main() {
     datasets11.emplace_back(std::make_unique<DifferentiatedThyroidDataset>(FM11));
     datasets11.emplace_back(std::make_unique<CirrhosisPatientDataset>(FM11));
 
-    CkksLogisticRegressionExperimentParams params{};
+    CkksExperimentParams params{};
 
     for (auto i = 1; i <= epochs; i++) {
         for (auto j = 0; j < datasets11.size(); j++) {

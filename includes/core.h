@@ -57,6 +57,9 @@ namespace hermesml {
 
         [[nodiscard]] BootstrapableCiphertext EncryptCKKS(const std::vector<double> &plaintext) const;
 
+        [[nodiscard]] std::vector<BootstrapableCiphertext> EncryptCKKS(
+            const std::vector<std::vector<double> > &plaintext) const;
+
         [[nodiscard]] static std::vector<double> UnpackValues(const Plaintext &plaintext, uint16_t n_features);
 
         [[nodiscard]] BootstrapableCiphertext EvalAdd(const BootstrapableCiphertext &ciphertext1,
@@ -75,6 +78,11 @@ namespace hermesml {
         void Snoop(const BootstrapableCiphertext &ciphertext, uint16_t n_features) const;
 
         [[nodiscard]] static int16_t GetScalingFactor();
+
+        [[nodiscard]] BootstrapableCiphertext WeightedSum(
+            const BootstrapableCiphertext &weights,
+            const BootstrapableCiphertext &features,
+            const BootstrapableCiphertext &bias) const;
     };
 
     //-----------------------------------------------------------------------------------------------------------------

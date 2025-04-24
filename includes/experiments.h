@@ -5,7 +5,7 @@
 #include "model.h"
 
 namespace hermesml {
-    struct CkksLogisticRegressionExperimentParams {
+    struct CkksExperimentParams {
         ActivationFn activation;
         ApproximationFn approximation;
         uint16_t epochs;
@@ -15,7 +15,7 @@ namespace hermesml {
     };
 
     class CkksLogisticRegressionExperiment : public Experiment {
-        CkksLogisticRegressionExperimentParams params;
+        CkksExperimentParams params;
 
         size_t datasetLength{};
         double trainingRatio{0.7};
@@ -31,7 +31,33 @@ namespace hermesml {
     public:
         explicit CkksLogisticRegressionExperiment(const std::string &experimentId,
                                                   Dataset &dataset,
-                                                  const CkksLogisticRegressionExperimentParams &params);
+                                                  const CkksExperimentParams &params);
+
+        void Run() override;
+
+        void RunMemory();
+
+        void RunHardDisk();
+    };
+
+    class CkksNeuralNetworkExperiment : public Experiment {
+        CkksExperimentParams params;
+
+        size_t datasetLength{};
+        double trainingRatio{0.7};
+        size_t trainingLength{};
+        size_t testingLength{};
+        size_t ringDimension{};
+        int8_t multiplicativeDepth{};
+
+        std::chrono::duration<double> encryptingTime{};
+        std::chrono::duration<double> trainingTime{};
+        std::chrono::duration<double> testingTime{};
+
+    public:
+        explicit CkksNeuralNetworkExperiment(const std::string &experimentId,
+                                             Dataset &dataset,
+                                             const CkksExperimentParams &params);
 
         void Run() override;
 

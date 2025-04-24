@@ -109,4 +109,80 @@ namespace hermesml {
         c = this->SafeRescaling(c);
         return BootstrapableCiphertext(c, b.GetRemainingLevels(), b.GetAdditionsExecuted());
     }
+
+    BootstrapableCiphertext Calculus::Sigmoid(const BootstrapableCiphertext &x,
+                                              const ApproximationFn approximation) const {
+        switch (approximation) {
+            case CHEBYSHEV: return this->SigmoidChebyshev(x);
+            case TAYLOR: return this->SigmoidTaylor(x);
+            case LEAST_SQUARES: return this->SigmoidLeastSquares(x);
+            default: return this->SigmoidChebyshev(x);
+        }
+    }
+
+    BootstrapableCiphertext Calculus::SigmoidDerivative(const BootstrapableCiphertext &x,
+                                                        const ApproximationFn approximation) const {
+        BootstrapableCiphertext s;
+
+        switch (approximation) {
+            case CHEBYSHEV:
+                s = this->SigmoidChebyshev(x);
+                break;
+            case TAYLOR:
+                s = this->SigmoidTaylor(x);
+                break;
+            case LEAST_SQUARES:
+                s = this->SigmoidLeastSquares(x);
+                break;
+        }
+
+        const auto term1 = this->EvalSub(this->constants.One(), s);
+        const auto d = this->EvalMult(term1, s);
+        return d;
+    }
+
+    BootstrapableCiphertext Calculus::Tanh(const BootstrapableCiphertext &x,
+                                           const ApproximationFn approximation) const {
+        switch (approximation) {
+            case CHEBYSHEV: return this->TanhChebyshev(x);
+            case TAYLOR: return this->TanhTaylor(x);
+            case LEAST_SQUARES: return this->TanhLeastSquares(x);
+            default: return this->TanhChebyshev(x);
+        }
+    }
+
+    BootstrapableCiphertext Calculus::TanhDerivative(const BootstrapableCiphertext &x,
+                                                     const ApproximationFn approximation) const {
+        BootstrapableCiphertext s;
+
+        switch (approximation) {
+            case CHEBYSHEV:
+                s = this->TanhChebyshev(x);
+                break;
+            case TAYLOR:
+                s = this->TanhTaylor(x);
+                break;
+            case LEAST_SQUARES:
+                s = this->TanhLeastSquares(x);
+                break;
+        }
+
+        const auto term1 = this->EvalSub(this->constants.One(), s);
+        const auto d = this->EvalMult(term1, s);
+        return d;
+    }
+
+    std::vector<std::vector<double> > Calculus::Transpose(const std::vector<std::vector<double> > &mat) {
+        const size_t rows = mat.size();
+        const size_t cols = mat[0].size();
+        std::vector transposed(cols, std::vector<double>(rows));
+
+        for (size_t i = 0; i < rows; ++i) {
+            for (size_t j = 0; j < cols; ++j) {
+                transposed[j][i] = mat[i][j];
+            }
+        }
+
+        return transposed;
+    }
 }

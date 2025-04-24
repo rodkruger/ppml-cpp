@@ -9,11 +9,13 @@
 #include "context.h"
 #include "core.h"
 
-#define TAYLOR_SQRT_PRECISION 3
-
 using namespace lbcrypto;
 
 namespace hermesml {
+    enum ActivationFn { TANH, SIGMOID };
+
+    enum ApproximationFn { CHEBYSHEV, TAYLOR, LEAST_SQUARES };
+
     class Constants : EncryptedObject {
         int32_t n_features;
         BootstrapableCiphertext zero;
@@ -76,11 +78,7 @@ namespace hermesml {
     };
 
     class Calculus : EncryptedObject {
-    private:
         Constants constants;
-
-    public:
-        explicit Calculus(const HEContext &ctx);
 
         [[nodiscard]] BootstrapableCiphertext SigmoidTaylor(const BootstrapableCiphertext &x) const;
 
@@ -93,6 +91,23 @@ namespace hermesml {
         [[nodiscard]] BootstrapableCiphertext TanhLeastSquares(const BootstrapableCiphertext &x) const;
 
         [[nodiscard]] BootstrapableCiphertext TanhChebyshev(const BootstrapableCiphertext &x) const;
+
+    public:
+        explicit Calculus(const HEContext &ctx);
+
+        [[nodiscard]] BootstrapableCiphertext Sigmoid(const BootstrapableCiphertext &x,
+                                                      ApproximationFn approximation) const;
+
+        [[nodiscard]] BootstrapableCiphertext SigmoidDerivative(const BootstrapableCiphertext &x,
+                                                                ApproximationFn approximation) const;
+
+        [[nodiscard]] BootstrapableCiphertext Tanh(const BootstrapableCiphertext &x,
+                                                   ApproximationFn approximation) const;
+
+        [[nodiscard]] BootstrapableCiphertext TanhDerivative(const BootstrapableCiphertext &x,
+                                                             ApproximationFn approximation) const;
+
+        [[nodiscard]] static std::vector<std::vector<double> > Transpose(const std::vector<std::vector<double> > &mat);
     };
 
     class CalculusQuant : EncryptedObject {
