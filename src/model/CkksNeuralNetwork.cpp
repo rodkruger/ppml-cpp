@@ -388,6 +388,7 @@ namespace hermesml {
 
                 std::vector<BootstrapableCiphertext> preActivation;
                 std::vector<BootstrapableCiphertext> activation;
+                auto eLayerInput = eFeatures;
 
                 // Forward --------------------------------------------------------------------------------------------
                 for (auto k = 0; k < this->eWeights.size() - 1; k++) {
@@ -397,14 +398,25 @@ namespace hermesml {
                     for (auto j = 0; j < eLayerUnits.size(); j++) {
                         const auto &eWeights = eLayerUnits[j];
                         const auto eBias = eLayerBiases[j];
-                        const auto z = this->WeightedSum(eWeights, eFeatures, eBias);
-                        const auto a = this->Activation(z);
-                        preActivation.emplace_back(z);
-                        activation.emplace_back(a);
+                        const auto a = this->WeightedSum(eWeights, eLayerInput, eBias);
+                        const auto z = this->Activation(a);
+                        preActivation.emplace_back(a);
+                        activation.emplace_back(z);
                     }
 
                     preActivations.emplace_back(preActivation);
                     activations.emplace_back(activation);
+
+                    std::vector<Ciphertext<DCRTPoly> > zLayerInput;
+                    auto minRemainingLevel = this->GetCtx().GetMultiplicativeDepth();
+                    for (const auto &c: activation) {
+                        zLayerInput.emplace_back(c.GetCiphertext());
+                        if (c.GetRemainingLevels() < minRemainingLevel) {
+                            minRemainingLevel = c.GetRemainingLevels();
+                        }
+                    }
+
+                    eLayerInput = BootstrapableCiphertext(this->GetCc()->EvalMerge(zLayerInput), minRemainingLevel);
                 }
 
                 // Output layer ---------------------------------------------------------------------------------------
