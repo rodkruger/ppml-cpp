@@ -127,14 +127,18 @@ namespace hermesml {
         const BootstrapableCiphertext &weights,
         const BootstrapableCiphertext &features,
         const BootstrapableCiphertext &bias) const {
+        /* Use only for debugging */
+        std::cout << "Features:" << std::flush;
+        this->Snoop(features, 30);
+        std::cout << "Weights:" << std::flush;
+        this->Snoop(weights, 30);
+        std::cout << "Bias:" << std::flush;
+        this->Snoop(bias, 30);
+        /* */
+
         const auto linearDot = this->EvalMult(features, weights);
-        this->Snoop(linearDot, 30);
-
         const auto sumLinearDot = this->EvalSum(linearDot);
-        this->Snoop(sumLinearDot, 30);
-
         const auto z = this->EvalAdd(sumLinearDot, bias);
-        this->Snoop(z, 30);
 
         return z;
     }

@@ -74,6 +74,13 @@ namespace hermesml {
         cc->EvalSumKeyGen(keys.secretKey);
         cc->EvalBootstrapKeyGen(keys.secretKey, numSlots);
 
+        std::vector<int> rotationIndices;
+        for (int i = 1; i < numSlots; i++) {
+            rotationIndices.push_back(i);
+            rotationIndices.push_back(-i);
+        }
+        cc->EvalRotateKeyGen(keys.secretKey, rotationIndices);
+
         // Build context ----------------------------------------------------------------------------------------------
         auto ctx = HEContext();
         ctx.SetCc(cc);

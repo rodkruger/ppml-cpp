@@ -61,7 +61,8 @@ namespace hermesml {
         */
 
 
-        const std::vector<std::vector<std::vector<double> > > weights = {
+        /*
+        const auto weights = {
             {
                 {
                     0.04967142, -0.01382643, 0.06476885, 0.15230299, -0.02341534,
@@ -352,7 +353,7 @@ namespace hermesml {
             }
         };
 
-
+        // Transpose the weights, as CKKS does not support arithmetic under transposed matrixes
         for (const auto &w: weights) {
             std::vector<BootstrapableCiphertext> eW;
 
@@ -365,7 +366,50 @@ namespace hermesml {
         }
 
         for (const auto &b: biases) {
-            this->eBias.emplace_back(this->EncryptCKKS(b));
+            std::vector<BootstrapableCiphertext> eB;
+            for (const auto &b_i: b) {
+                eB.emplace_back(this->EncryptCKKS(std::vector{b_i}));
+            }
+            this->eBias.emplace_back(eB);
+        }
+        */
+
+        const std::vector<std::vector<std::vector<double> > > weights =
+        {
+            {
+                {0.5, -0.3, 0.8},
+                {-0.2, 0.4, 0.1}
+            },
+            {
+                {1.2, -0.7},
+                {0.5, 0.9}
+            },
+            {
+                {0.9, -1.1}
+            }
+        };
+
+        for (const auto &w: weights) {
+            std::vector<BootstrapableCiphertext> eW;
+            for (const auto &w_i: w) {
+                eW.emplace_back(this->EncryptCKKS(std::vector{w_i}));
+            }
+            this->eWeights.emplace_back(eW);
+        }
+
+        const std::vector<std::vector<double> > biases =
+        {
+            {0.1, -0.05},
+            {0.2, -0.1},
+            {-0.3}
+        };
+
+        for (const auto &b: biases) {
+            std::vector<BootstrapableCiphertext> eB;
+            for (const auto &b_i: b) {
+                eB.emplace_back(this->EncryptCKKS(std::vector{b_i}));
+            }
+            this->eBias.emplace_back(eB);
         }
     }
 
@@ -378,89 +422,61 @@ namespace hermesml {
         }
 
         const auto eLearningRate = this->GetLearningRate();
-        std::vector<std::vector<BootstrapableCiphertext> > preActivations;
-        std::vector<std::vector<BootstrapableCiphertext> > activations;
 
-        for (int epoch = 0; epoch < this->epochs; ++epoch) {
+        for (int epoch = 0; epoch < this->epochs; epoch++) {
             for (size_t i = 0; i < x.size(); i++) {
-                const auto &eFeatures = x[i];
-                const auto &eLabel = y[i];
+                const auto &bLayerInput = x[i];
+                const auto &eTrue = y[i];
 
-                std::vector<BootstrapableCiphertext> preActivation;
-                std::vector<BootstrapableCiphertext> activation;
-                auto eLayerInput = eFeatures;
+                this->preActivations.clear();
+                this->activations.clear();
 
                 // Forward --------------------------------------------------------------------------------------------
-                for (auto k = 0; k < this->eWeights.size() - 1; k++) {
-                    const auto &eLayerUnits = this->eWeights[k];
-                    const auto &eLayerBiases = this->eBias[k];
+                const auto ePred = this->Predict(bLayerInput);
+                // -------------------------------------------------------------------------------------------- Forward
 
-                    for (auto j = 0; j < eLayerUnits.size(); j++) {
-                        const auto &eWeights = eLayerUnits[j];
-                        const auto eBias = eLayerBiases[j];
-                        const auto a = this->WeightedSum(eWeights, eLayerInput, eBias);
-                        const auto z = this->Activation(a);
-                        preActivation.emplace_back(a);
-                        activation.emplace_back(z);
-                    }
-
-                    preActivations.emplace_back(preActivation);
-                    activations.emplace_back(activation);
-
-                    std::vector<Ciphertext<DCRTPoly> > zLayerInput;
-                    auto minRemainingLevel = this->GetCtx().GetMultiplicativeDepth();
-                    for (const auto &c: activation) {
-                        zLayerInput.emplace_back(c.GetCiphertext());
-                        if (c.GetRemainingLevels() < minRemainingLevel) {
-                            minRemainingLevel = c.GetRemainingLevels();
-                        }
-                    }
-
-                    eLayerInput = BootstrapableCiphertext(this->GetCc()->EvalMerge(zLayerInput), minRemainingLevel);
-                }
-
-                // Output layer ---------------------------------------------------------------------------------------
-                // Compute the activation of the output layer!
+                // Output ---------------------------------------------------------------------------------------------
+                const auto ePreAct = this->preActivations.back()[0]; // Only 1 Neuron supported
+                const auto eZL = this->ActivationDerivative(ePreAct);
+                const auto eLoss = this->EvalSub(ePred, eTrue);
+                auto eDeltaL = this->EvalMult(eLoss, eZL);
+                // --------------------------------------------------------------------------------------------- Output
 
                 // Backward -------------------------------------------------------------------------------------------
-                std::vector<std::vector<Ciphertext<DCRTPoly> > > deltas;
+                for (auto k = static_cast<int32_t>(this->eWeights.size() - 1); k >= 0; k--) {
+                    const auto preActivations = this->preActivations[k];
+                    const auto activations = this->activations[k];
+                    const auto &eWeights = this->eWeights[k];
 
-                Ciphertext<DCRTPoly> delta = cc_->EvalMult(cc_->EvalSub(y_enc, output[0]),
-                                                           sigmoid_derivative_approx(pre_activations.back()[0]));
-                deltas.push_back({delta});
+                    std::vector<BootstrapableCiphertext> localDeltas;
 
-                for (int l = static_cast<int>(layer_sizes_.size()) - 2; l >= 1; --l) {
-                    std::vector<Ciphertext<DCRTPoly> > delta_next;
+                    for (auto j = 0; j < activations.size(); j++) {
+                        const auto eDeltaProp = this->EvalMult(eDeltaL, eWeights[j]);
+                        const auto eLocalZL = this->ActivationDerivative(preActivations[j]);
+                        const auto eLocalDelta = this->EvalMult(eDeltaProp, eLocalZL);
+                        localDeltas.emplace_back(eLocalDelta);
 
-                    for (size_t i = 0; i < layer_sizes_[l]; ++i) {
-                        Ciphertext<DCRTPoly> err = cc_->EvalMult(deltas.back()[0], weights_[l][i][0]);
-                        for (size_t j = 1; j < layer_sizes_[l + 1]; ++j) {
-                            err = cc_->EvalAdd(err, cc_->EvalMult(deltas.back()[0], weights_[l][i][j]));
+                        BootstrapableCiphertext ePreviousActivation;
+                        if (k > 0) {
+                            ePreviousActivation = this->activations[k - 1][j];
+                        } else {
+                            ePreviousActivation = bLayerInput;
                         }
-                        auto deriv = activation_derivative_approx(pre_activations[l - 1][i]);
-                        delta_next.push_back(cc_->EvalMult(err, deriv));
+
+                        const auto eGradWJ = this->EvalMult(eLocalDelta, ePreviousActivation);
+                        const auto eScaledGradWJ = this->EvalMult(eGradWJ, eLearningRate);
+                        this->eWeights[k][j] = this->EvalSub(this->eWeights[k][j], eScaledGradWJ);
+
+                        const auto eScaledGradBJ = this->EvalMult(eLocalDelta, eLearningRate);
+                        this->eBias[k][j] = this->EvalSub(this->eBias[k][j], eScaledGradBJ);
                     }
 
-                    deltas.push_back(delta_next);
-                }
-
-                std::reverse(deltas.begin(), deltas.end());
-
-                // Gradient step
-                for (size_t l = 0; l < weights_.size(); ++l) {
-                    for (size_t i = 0; i < weights_[l].size(); ++i) {
-                        for (size_t j = 0; j < weights_[l][i].size(); ++j) {
-                            auto grad = cc_->EvalMult(activations[l][i], deltas[l][j]);
-                            weights_[l][i][j] = cc_->EvalAdd(weights_[l][i][j],
-                                                             cc_->EvalMult(grad, learning_rate_));
-                        }
-                    }
-
-                    for (size_t j = 0; j < biases_[l].size(); ++j) {
-                        biases_[l][j] = cc_->EvalAdd(biases_[l][j],
-                                                     cc_->EvalMult(deltas[l][j], learning_rate_));
+                    eDeltaL = this->constants.Zero();
+                    for (const auto &localDelta: localDeltas) {
+                        eDeltaL = this->EvalAdd(eDeltaL, localDelta);
                     }
                 }
+                // ------------------------------------------------------------------------------------------- Backward
             }
         }
     }
@@ -470,7 +486,75 @@ namespace hermesml {
     }
 
     BootstrapableCiphertext CkksNeuralNetwork::Predict(const BootstrapableCiphertext &x) {
-        return x; // review
+        BootstrapableCiphertext bLayerInput = x;
+
+        // Forward ----------------------------------------------------------------------------------------------------
+        for (auto k = 0; k < this->eWeights.size(); k++) {
+            const auto &eLayerUnits = this->eWeights[k];
+            const auto &eLayerBiases = this->eBias[k];
+
+            std::vector<BootstrapableCiphertext> preActivationLayer;
+            std::vector<BootstrapableCiphertext> activationLayer;
+
+            for (auto j = 0; j < eLayerUnits.size(); j++) {
+                const auto &eWeights = eLayerUnits[j];
+                const auto eBias = eLayerBiases[j];
+                const auto a = this->WeightedSum(eWeights, bLayerInput, eBias);
+                const auto z = this->Activation(a);
+                preActivationLayer.emplace_back(a);
+                activationLayer.emplace_back(z);
+
+                /* Use for debugging only
+                std::cout << "a = " << std::flush;
+                this->Snoop(a, n_features);
+                std::cout << "z = " << std::flush;
+                this->Snoop(z, n_features);
+                */
+            }
+
+            this->preActivations.emplace_back(preActivationLayer);
+            this->activations.emplace_back(activationLayer);
+
+            std::vector<Ciphertext<DCRTPoly> > layerInput;
+            auto minRemainingLevel = this->GetCtx().GetMultiplicativeDepth();
+            for (const auto &c: activationLayer) {
+                layerInput.emplace_back(c.GetCiphertext());
+                if (c.GetRemainingLevels() < minRemainingLevel) {
+                    minRemainingLevel = c.GetRemainingLevels();
+                }
+            }
+
+            const auto mergedActivations = this->GetCc()->EvalMerge(layerInput);
+            bLayerInput = BootstrapableCiphertext(mergedActivations, minRemainingLevel);
+        } // -------------------------------------------------------------------------------------------------- Forward
+
+        /* Use for debugging only */
+        std::cout << "Pre-Activations" << std::endl;
+        for (auto z = 0; z < this->preActivations.size(); z++) {
+            std::cout << "Layer " << z << std::endl;
+            for (auto z_i = 0; z_i < this->preActivations[z].size(); z_i++) {
+                std::cout << z_i << " = " << std::flush;
+                this->Snoop(this->preActivations[z][z_i], n_features);
+            }
+        }
+
+        std::cout << "Activations" << std::endl;
+        for (auto z = 0; z < this->activations.size(); z++) {
+            std::cout << "Layer " << z << std::endl;
+            for (auto z_i = 0; z_i < this->activations[z].size(); z_i++) {
+                std::cout << z_i << " = " << std::flush;
+                this->Snoop(this->activations[z][z_i], this->n_features);
+            }
+        }
+        /* */
+
+        const auto ePred = this->activations.back()[0]; // Only 1 Neuron supported
+
+        /* Use for debugging only */
+        // this->Snoop(ePred, n_features);
+        /* */
+
+        return ePred;
     }
 
     std::vector<BootstrapableCiphertext> CkksNeuralNetwork::PredictAll(

@@ -63,11 +63,15 @@ namespace hermesml {
                 EvalBootstrap(BootstrapableCiphertext(x.GetCiphertext(), static_cast<int8_t>(decLevels),
                                                       x.GetAdditionsExecuted()));
 
+        this->Snoop(b, 4);
+
         auto c = this->GetCc()->EvalChebyshevFunction(
             [](const double x1) { return tanh(x1); }, b.GetCiphertext(),
             -6, 6,
             5);
         c = this->SafeRescaling(c);
+
+        this->Snoop(BootstrapableCiphertext(c, 30), 4);
 
         return BootstrapableCiphertext(c, b.GetRemainingLevels(), b.GetAdditionsExecuted());
     }
@@ -167,8 +171,8 @@ namespace hermesml {
                 break;
         }
 
-        const auto term1 = this->EvalSub(this->constants.One(), s);
-        const auto d = this->EvalMult(term1, s);
+        const auto tanh_squared = this->EvalMult(s, s);
+        const auto d = this->EvalSub(this->constants.One(), tanh_squared);
         return d;
     }
 
