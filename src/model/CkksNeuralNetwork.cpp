@@ -528,7 +528,7 @@ namespace hermesml {
             bLayerInput = BootstrapableCiphertext(mergedActivations, minRemainingLevel);
         } // -------------------------------------------------------------------------------------------------- Forward
 
-        /* Use for debugging only */
+        /* Use for debugging only
         std::cout << "Pre-Activations" << std::endl;
         for (auto z = 0; z < this->preActivations.size(); z++) {
             std::cout << "Layer " << z << std::endl;
