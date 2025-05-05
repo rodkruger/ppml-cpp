@@ -57,7 +57,7 @@ namespace hermesml {
     }
 
     BootstrapableCiphertext Calculus::TanhChebyshev(const BootstrapableCiphertext &x) const {
-        const int decLevels = x.GetRemainingLevels() - 7;
+        const int decLevels = x.GetRemainingLevels() - 4;
 
         const auto b = this->
                 EvalBootstrap(BootstrapableCiphertext(x.GetCiphertext(), static_cast<int8_t>(decLevels),
@@ -66,7 +66,7 @@ namespace hermesml {
         auto c = this->GetCc()->EvalChebyshevFunction(
             [](const double x1) { return tanh(x1); }, b.GetCiphertext(),
             -6, 6,
-            59);
+            5);
         c = this->SafeRescaling(c);
 
         return BootstrapableCiphertext(c, b.GetRemainingLevels(), b.GetAdditionsExecuted());
