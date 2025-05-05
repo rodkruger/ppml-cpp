@@ -17,7 +17,6 @@ namespace hermesml {
     enum ApproximationFn { CHEBYSHEV, TAYLOR, LEAST_SQUARES };
 
     class Constants : EncryptedObject {
-        int32_t n_features;
         BootstrapableCiphertext zero;
         BootstrapableCiphertext one;
         BootstrapableCiphertext two;
@@ -38,7 +37,7 @@ namespace hermesml {
         BootstrapableCiphertext c0_0000011959;
 
     public:
-        explicit Constants(const HEContext &ctx, int32_t n_features);
+        explicit Constants(const HEContext &ctx);
 
         [[nodiscard]] BootstrapableCiphertext Zero() const;
 

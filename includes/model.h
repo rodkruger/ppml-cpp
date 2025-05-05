@@ -91,8 +91,8 @@ namespace hermesml {
         uint16_t epochs;
         std::vector<std::vector<BootstrapableCiphertext> > eWeights;
         std::vector<std::vector<BootstrapableCiphertext> > eBias;
-        std::vector<std::vector<BootstrapableCiphertext> > preActivations;
-        std::vector<std::vector<BootstrapableCiphertext> > activations;
+        std::vector<BootstrapableCiphertext> ePreActivations;
+        std::vector<BootstrapableCiphertext> eActivations;
 
         void InitWeights();
 

@@ -29,19 +29,19 @@ namespace hermesml {
         this->privateKey = privateKey;
     }
 
-    int32_t HEContext::GetScalingModSize() const {
+    uint32_t HEContext::GetScalingModSize() const {
         return this->scalingModSize;
     }
 
-    void HEContext::SetScalingModSize(const int32_t scalingModSize) {
+    void HEContext::SetScalingModSize(const uint32_t scalingModSize) {
         this->scalingModSize = scalingModSize;
     }
 
-    int32_t HEContext::GetMultiplicativeDepth() const {
+    uint32_t HEContext::GetMultiplicativeDepth() const {
         return this->multiplicativeDepth;
     }
 
-    void HEContext::SetMultiplicativeDepth(const int32_t multiplicativeDepth) {
+    void HEContext::SetMultiplicativeDepth(const uint32_t multiplicativeDepth) {
         this->multiplicativeDepth = multiplicativeDepth;
     }
 
@@ -61,11 +61,19 @@ namespace hermesml {
         this->levelsAfterBootstrapping = levelsAfterBootstrapping;
     }
 
-    int32_t HEContext::GetEarlyBootstrapping() const {
+    uint32_t HEContext::GetEarlyBootstrapping() const {
         return this->earlyBootstrapping;
     }
 
-    void HEContext::SetEarlyBootstrapping(const int32_t earlyBootstrapping) {
+    void HEContext::SetEarlyBootstrapping(const uint32_t earlyBootstrapping) {
         this->earlyBootstrapping = earlyBootstrapping;
+    }
+
+    uint32_t HEContext::GetNumFeatures() const {
+        return this->numFeatures;
+    }
+
+    void HEContext::SetNumFeatures(const uint32_t numFeatures) {
+        this->numFeatures = numFeatures;
     }
 }

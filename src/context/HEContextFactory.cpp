@@ -90,6 +90,7 @@ namespace hermesml {
         ctx.SetNumSlots(numSlots);
         ctx.SetPublicKey(keys.publicKey);
         ctx.SetPrivateKey(keys.secretKey);
+        ctx.SetNumFeatures(n_features);
 
         return ctx;
     }

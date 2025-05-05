@@ -6,7 +6,7 @@ namespace hermesml {
                                                    const ActivationFn activation,
                                                    const ApproximationFn approx): EncryptedObject(ctx), MlModel(seed),
         calculus(Calculus(ctx)),
-        constants(Constants(ctx, n_features)),
+        constants(Constants(ctx)),
         activation(activation),
         approximation(approx),
         n_features(n_features),

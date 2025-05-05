@@ -10,11 +10,12 @@ namespace hermesml {
         CryptoContext<DCRTPoly> cc;
         PublicKey<DCRTPoly> publicKey;
         PrivateKey<DCRTPoly> privateKey;
-        int32_t scalingModSize = 0;
-        int32_t multiplicativeDepth = 0;
+        uint32_t scalingModSize = 0;
+        uint32_t multiplicativeDepth = 0;
         uint32_t numSlots = 0;
         uint32_t levelsAfterBootstrapping = 0;
-        int32_t earlyBootstrapping = 0;
+        uint32_t earlyBootstrapping = 0;
+        uint32_t numFeatures = 0;
 
     public:
         [[nodiscard]] CryptoContext<DCRTPoly> GetCc() const;
@@ -29,13 +30,13 @@ namespace hermesml {
 
         void SetPrivateKey(const PrivateKey<DCRTPoly> &privateKey);
 
-        [[nodiscard]] int32_t GetScalingModSize() const;
+        [[nodiscard]] uint32_t GetScalingModSize() const;
 
-        void SetScalingModSize(int32_t scalingModSize);
+        void SetScalingModSize(uint32_t scalingModSize);
 
-        [[nodiscard]] int32_t GetMultiplicativeDepth() const;
+        [[nodiscard]] uint32_t GetMultiplicativeDepth() const;
 
-        void SetMultiplicativeDepth(int32_t multiplicativeDepth);
+        void SetMultiplicativeDepth(uint32_t multiplicativeDepth);
 
         [[nodiscard]] uint32_t GetNumSlots() const;
 
@@ -45,9 +46,13 @@ namespace hermesml {
 
         void SetLevelsAfterBootstrapping(uint32_t levelsAfterBootstrapping);
 
-        [[nodiscard]] int32_t GetEarlyBootstrapping() const;
+        [[nodiscard]] uint32_t GetEarlyBootstrapping() const;
 
-        void SetEarlyBootstrapping(int32_t earlyBootstrapping);
+        void SetEarlyBootstrapping(uint32_t earlyBootstrapping);
+
+        [[nodiscard]] uint32_t GetNumFeatures() const;
+
+        void SetNumFeatures(uint32_t numFeatures);
     };
 
     class HEContextFactory {

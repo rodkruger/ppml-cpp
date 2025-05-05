@@ -10,7 +10,8 @@ namespace hermesml {
         for (auto row: data) {
             const auto pValue = this->GetCc()->MakePackedPlaintext({row});
             const auto eRow = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), pValue);
-            const auto bCiphertext = BootstrapableCiphertext(eRow, this->GetCtx().GetMultiplicativeDepth());
+            const auto bCiphertext = BootstrapableCiphertext(
+                eRow, static_cast<int32_t>(this->GetCtx().GetMultiplicativeDepth()));
             eData.emplace_back(bCiphertext);
         }
 
@@ -23,7 +24,8 @@ namespace hermesml {
         for (auto &row: data) {
             const auto pValue = this->GetCc()->MakePackedPlaintext(row);
             const auto eRow = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), pValue);
-            const auto bCiphertext = BootstrapableCiphertext(eRow, this->GetCtx().GetMultiplicativeDepth());
+            const auto bCiphertext = BootstrapableCiphertext(
+                eRow, static_cast<int32_t>(this->GetCtx().GetMultiplicativeDepth()));
             eData.emplace_back(bCiphertext);
         }
 
@@ -36,7 +38,8 @@ namespace hermesml {
         for (auto &row: data) {
             const auto pValue = this->GetCc()->MakeCKKSPackedPlaintext(row);
             const auto eRow = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), pValue);
-            const auto bCiphertext = BootstrapableCiphertext(eRow, this->GetCtx().GetMultiplicativeDepth());
+            const auto bCiphertext = BootstrapableCiphertext(
+                eRow, static_cast<int32_t>(this->GetCtx().GetMultiplicativeDepth()));
             eData.emplace_back(bCiphertext);
         }
 
@@ -50,7 +53,8 @@ namespace hermesml {
         for (auto &row: data) {
             const auto pValue = this->GetCc()->MakeCKKSPackedPlaintext(std::vector(n_features, row));
             const auto eRow = this->GetCc()->Encrypt(this->GetCtx().GetPublicKey(), pValue);
-            const auto bCiphertext = BootstrapableCiphertext(eRow, this->GetCtx().GetMultiplicativeDepth());
+            const auto bCiphertext = BootstrapableCiphertext(
+                eRow, static_cast<int32_t>(this->GetCtx().GetMultiplicativeDepth()));
             eData.emplace_back(bCiphertext);
         }
 
@@ -114,7 +118,8 @@ namespace hermesml {
         while (inFile.peek() != EOF) {
             Ciphertext<DCRTPoly> eFeatures;
             Serial::Deserialize(eFeatures, inFile, SerType::BINARY);
-            const auto b = BootstrapableCiphertext(eFeatures, this->GetCtx().GetMultiplicativeDepth());
+            const auto b = BootstrapableCiphertext(
+                eFeatures, static_cast<int32_t>(this->GetCtx().GetMultiplicativeDepth()));
             result.emplace_back(b);
         }
 

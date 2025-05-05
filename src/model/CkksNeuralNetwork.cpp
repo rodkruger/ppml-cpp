@@ -6,7 +6,7 @@ namespace hermesml {
                                          const ActivationFn activation,
                                          const ApproximationFn approx): EncryptedObject(ctx), MlModel(seed),
                                                                         calculus(Calculus(ctx)),
-                                                                        constants(Constants(ctx, n_features)),
+                                                                        constants(Constants(ctx)),
                                                                         activation(activation),
                                                                         approximation(approx),
                                                                         layerSizes(sizes),
@@ -423,58 +423,114 @@ namespace hermesml {
 
         const auto eLearningRate = this->GetLearningRate();
 
+        this->epochs = 1;
+
         for (int epoch = 0; epoch < this->epochs; epoch++) {
             for (size_t i = 0; i < x.size(); i++) {
-                const auto &bLayerInput = x[i];
+                const auto &eInput = x[i];
                 const auto &eTrue = y[i];
 
-                this->preActivations.clear();
-                this->activations.clear();
+                this->ePreActivations.clear();
+                this->eActivations.clear();
 
                 // Forward --------------------------------------------------------------------------------------------
-                const auto ePred = this->Predict(bLayerInput);
+                const auto ePred = this->Predict(eInput);
                 // -------------------------------------------------------------------------------------------- Forward
 
-                // Output ---------------------------------------------------------------------------------------------
-                const auto ePreAct = this->preActivations.back()[0]; // Only 1 Neuron supported
-                const auto eZL = this->ActivationDerivative(ePreAct);
-                const auto eLoss = this->EvalSub(ePred, eTrue);
-                auto eDeltaL = this->EvalMult(eLoss, eZL);
-                // --------------------------------------------------------------------------------------------- Output
-
                 // Backward -------------------------------------------------------------------------------------------
-                for (auto k = static_cast<int32_t>(this->eWeights.size() - 1); k >= 0; k--) {
-                    const auto preActivations = this->preActivations[k];
-                    const auto activations = this->activations[k];
-                    const auto &eWeights = this->eWeights[k];
+                std::vector<std::vector<BootstrapableCiphertext> > eScaledGradWeights;
+                std::vector<std::vector<BootstrapableCiphertext> > eScaledGradBias;
+                std::vector<std::vector<BootstrapableCiphertext> > eLosses;
+                std::vector<std::vector<BootstrapableCiphertext> > eDeltaLs;
 
-                    std::vector<BootstrapableCiphertext> localDeltas;
+                auto ePreAct = this->ePreActivations.back();
+                auto eZL = this->ActivationDerivative(ePreAct);
+                auto eLoss = this->EvalFlatten(this->EvalSub(ePred, eTrue)); // Only 1 Neuron supported
+                auto eDeltaL = this->EvalFlatten(this->EvalMult(eLoss, eZL)); // Only 1 Neuron supported
 
-                    for (auto j = 0; j < activations.size(); j++) {
-                        const auto eDeltaProp = this->EvalMult(eDeltaL, eWeights[j]);
-                        const auto eLocalZL = this->ActivationDerivative(preActivations[j]);
-                        const auto eLocalDelta = this->EvalMult(eDeltaProp, eLocalZL);
-                        localDeltas.emplace_back(eLocalDelta);
+                eLosses.emplace_back(std::vector({eLoss}));
+                eDeltaLs.emplace_back(std::vector({eDeltaL}));
 
-                        BootstrapableCiphertext ePreviousActivation;
-                        if (k > 0) {
-                            ePreviousActivation = this->activations[k - 1][j];
-                        } else {
-                            ePreviousActivation = bLayerInput;
+                // Update the weights of the last layer ---------------------------------------------------------------
+                ePreAct = this->eActivations[this->eActivations.size() - 2];
+                auto eGradWK = this->EvalMult(eDeltaL, ePreAct);
+                auto eScaledGradWK = this->EvalMult(eGradWK, eLearningRate);
+                eScaledGradWeights.emplace_back(std::vector({eScaledGradWK}));
+
+                auto eScaledGradBiasK = this->EvalMult(eDeltaL, eLearningRate);
+                eScaledGradBias.emplace_back(std::vector({eScaledGradBiasK}));
+
+                // Update the weights of the remaining layers ---------------------------------------------------------
+                for (auto k = static_cast<int32_t>(this->eWeights.size() - 2); k >= 0; k--) {
+                    const auto &eLayerWeights = this->eWeights[k + 1];
+                    const auto &ePreDeltaL = eDeltaLs.back();
+
+                    auto eLocalLoss = this->constants.Zero();
+                    for (auto l = 0; l < eLayerWeights.size(); l++) {
+                        // ePreDeltaL[1] * eLayerWeights[1] + ePreDeltaL[2] * eLayerWeights[2] ... ePreDeltaL[l] * eLayerWeights[l]
+                        const auto z = this->EvalMult(eLayerWeights[l], ePreDeltaL[l]);
+                        eLocalLoss = this->EvalAdd(eLocalLoss, z);
+
+                        /* Use only for debugging purpose
+                        this->Snoop(eLayerWeights[l]);
+                        this->Snoop(ePreDeltaL[l]);
+                        this->Snoop(z);
+                        /* */
+                    }
+
+                    auto eAct = this->eActivations[k];
+                    auto eLocalZl = this->EvalSub(this->constants.One(), this->EvalMult(eAct, eAct));
+
+                    std::vector<BootstrapableCiphertext> eLocalScaledGradWeights;
+                    std::vector<BootstrapableCiphertext> eLocalScaledGradBias;
+                    std::vector<BootstrapableCiphertext> eLocalLosses;
+                    std::vector<BootstrapableCiphertext> eLocalDeltaLs;
+
+                    if (k > 0) {
+                        ePreAct = this->eActivations[k - 1];
+                    } else {
+                        ePreAct = eInput;
+                    }
+
+                    for (auto n = 0; n < this->eWeights[k].size(); n++) {
+                        auto eLocalLoss2 = eLocalLoss;
+                        if (n > 0) {
+                            eLocalLoss2 = this->EvalRotate(eLocalLoss2, 1);
                         }
+                        eLocalLoss2 = this->EvalFlatten(eLocalLoss2);
 
-                        const auto eGradWJ = this->EvalMult(eLocalDelta, ePreviousActivation);
-                        const auto eScaledGradWJ = this->EvalMult(eGradWJ, eLearningRate);
-                        this->eWeights[k][j] = this->EvalSub(this->eWeights[k][j], eScaledGradWJ);
+                        auto eLocalZl2 = eLocalZl;
+                        if (n > 0) {
+                            eLocalZl2 = this->EvalRotate(eLocalZl2, 1);
+                        }
+                        eLocalZl2 = this->EvalFlatten(eLocalZl2);
 
-                        const auto eScaledGradBJ = this->EvalMult(eLocalDelta, eLearningRate);
-                        this->eBias[k][j] = this->EvalSub(this->eBias[k][j], eScaledGradBJ);
+                        eDeltaL = this->EvalMult(eLocalLoss2, eLocalZl2);
+                        eDeltaL = this->EvalFlatten(eDeltaL);
+                        eLocalDeltaLs.emplace_back(eDeltaL);
+
+                        eGradWK = this->EvalMult(eDeltaL, ePreAct);
+                        eScaledGradWK = this->EvalMult(eGradWK, eLearningRate);
+                        eLocalScaledGradWeights.emplace_back(eScaledGradWK);
+
+                        eScaledGradBiasK = this->EvalMult(eDeltaL, eLearningRate);
+                        eLocalScaledGradBias.emplace_back(eScaledGradBiasK);
+
+                        /*
+                        std::cout << "===========================================" << std::endl;
+                        this->Snoop(eAct);
+                        this->Snoop(eLoss);
+                        this->Snoop(eZL);
+                        this->Snoop(ePreAct);
+                        this->Snoop(eGradWK);
+                        this->Snoop(eScaledGradWK);
+                        this->Snoop(eScaledGradBiasK);
+                        /* */
                     }
 
-                    eDeltaL = this->constants.Zero();
-                    for (const auto &localDelta: localDeltas) {
-                        eDeltaL = this->EvalAdd(eDeltaL, localDelta);
-                    }
+                    eScaledGradWeights.emplace_back(eLocalScaledGradWeights);
+                    eScaledGradBias.emplace_back(eLocalScaledGradBias);
+                    eDeltaLs.emplace_back(eLocalDeltaLs);
                 }
                 // ------------------------------------------------------------------------------------------- Backward
             }
@@ -509,46 +565,29 @@ namespace hermesml {
                 this->Snoop(a, n_features);
                 std::cout << "z = " << std::flush;
                 this->Snoop(z, n_features);
-                */
+                /* */
             }
 
-            this->preActivations.emplace_back(preActivationLayer);
-            this->activations.emplace_back(activationLayer);
-
-            std::vector<Ciphertext<DCRTPoly> > layerInput;
-            auto minRemainingLevel = this->GetCtx().GetMultiplicativeDepth();
-            for (const auto &c: activationLayer) {
-                layerInput.emplace_back(c.GetCiphertext());
-                if (c.GetRemainingLevels() < minRemainingLevel) {
-                    minRemainingLevel = c.GetRemainingLevels();
-                }
-            }
-
-            const auto mergedActivations = this->GetCc()->EvalMerge(layerInput);
-            bLayerInput = BootstrapableCiphertext(mergedActivations, minRemainingLevel);
+            this->ePreActivations.emplace_back(this->EvalMerge(preActivationLayer));
+            this->eActivations.emplace_back(this->EvalMerge(activationLayer));
+            bLayerInput = this->EvalMerge(activationLayer);
         } // -------------------------------------------------------------------------------------------------- Forward
 
         /* Use for debugging only
         std::cout << "Pre-Activations" << std::endl;
-        for (auto z = 0; z < this->preActivations.size(); z++) {
+        for (auto z = 0; z < this->ePreActivations.size(); z++) {
             std::cout << "Layer " << z << std::endl;
-            for (auto z_i = 0; z_i < this->preActivations[z].size(); z_i++) {
-                std::cout << z_i << " = " << std::flush;
-                this->Snoop(this->preActivations[z][z_i], n_features);
-            }
+            this->Snoop(this->ePreActivations[z], n_features);
         }
 
         std::cout << "Activations" << std::endl;
-        for (auto z = 0; z < this->activations.size(); z++) {
+        for (auto z = 0; z < this->eActivations.size(); z++) {
             std::cout << "Layer " << z << std::endl;
-            for (auto z_i = 0; z_i < this->activations[z].size(); z_i++) {
-                std::cout << z_i << " = " << std::flush;
-                this->Snoop(this->activations[z][z_i], this->n_features);
-            }
+            this->Snoop(this->eActivations[z], this->n_features);
         }
         /* */
 
-        const auto ePred = this->activations.back()[0]; // Only 1 Neuron supported
+        auto ePred = this->eActivations.back();
 
         /* Use for debugging only */
         // this->Snoop(ePred, n_features);

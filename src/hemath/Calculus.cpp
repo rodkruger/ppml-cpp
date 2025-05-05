@@ -1,7 +1,7 @@
 #include "hemath.h"
 
 namespace hermesml {
-    Calculus::Calculus(const HEContext &ctx) : EncryptedObject(ctx), constants(Constants(ctx, 1)) {
+    Calculus::Calculus(const HEContext &ctx) : EncryptedObject(ctx), constants(Constants(ctx)) {
     }
 
     BootstrapableCiphertext Calculus::SigmoidChebyshev(const BootstrapableCiphertext &x) const {
@@ -57,21 +57,17 @@ namespace hermesml {
     }
 
     BootstrapableCiphertext Calculus::TanhChebyshev(const BootstrapableCiphertext &x) const {
-        const int decLevels = x.GetRemainingLevels() - 4;
+        const int decLevels = x.GetRemainingLevels() - 7;
 
         const auto b = this->
                 EvalBootstrap(BootstrapableCiphertext(x.GetCiphertext(), static_cast<int8_t>(decLevels),
                                                       x.GetAdditionsExecuted()));
 
-        this->Snoop(b, 4);
-
         auto c = this->GetCc()->EvalChebyshevFunction(
             [](const double x1) { return tanh(x1); }, b.GetCiphertext(),
             -6, 6,
-            5);
+            59);
         c = this->SafeRescaling(c);
-
-        this->Snoop(BootstrapableCiphertext(c, 30), 4);
 
         return BootstrapableCiphertext(c, b.GetRemainingLevels(), b.GetAdditionsExecuted());
     }
