@@ -14,24 +14,22 @@ namespace hermesml {
 
     class BootstrapableCiphertext {
         Ciphertext<DCRTPoly> ciphertext;
-        int8_t remainingLevels = 0;
+        int32_t remainingLevels = 0;
         int32_t additionsExecuted = 0;
 
     public:
         explicit BootstrapableCiphertext();
 
-        explicit BootstrapableCiphertext(const Ciphertext<DCRTPoly> &ciphertext, int8_t remainingLevels,
+        explicit BootstrapableCiphertext(const Ciphertext<DCRTPoly> &ciphertext, int32_t remainingLevels,
                                          int32_t additionsExecuted = 0);
 
-        [[nodiscard]] Ciphertext<DCRTPoly> GetCiphertext() const;
+        [[nodiscard]] const Ciphertext<DCRTPoly> &GetCiphertext() const;
 
-        [[nodiscard]] int8_t GetRemainingLevels() const;
+        [[nodiscard]] int32_t GetRemainingLevels() const;
 
-        void SetRemainingLevels(int8_t pRemainingLevels);
+        void SetRemainingLevels(int32_t pRemainingLevels);
 
         [[nodiscard]] int32_t GetAdditionsExecuted() const;
-
-        void SetRemainingLevels(int32_t additionsExecuted);
     };
 
     //-----------------------------------------------------------------------------------------------------------------
@@ -41,8 +39,10 @@ namespace hermesml {
         CryptoContext<DCRTPoly> cc;
 
     protected:
-        static int8_t ComputeRemainingLevels(const BootstrapableCiphertext &ciphertext1,
-                                             const BootstrapableCiphertext &ciphertext2);
+        static int32_t ComputeRemainingLevels(const BootstrapableCiphertext &ciphertext1,
+                                              const BootstrapableCiphertext &ciphertext2);
+
+        [[nodiscard]] Ciphertext<DCRTPoly> SafeRescaling(const Ciphertext<DCRTPoly> &ciphertext) const;
 
         //-----------------------------------------------------------------------------------------------------------------
 
@@ -57,7 +57,10 @@ namespace hermesml {
 
         [[nodiscard]] BootstrapableCiphertext EncryptCKKS(const std::vector<double> &plaintext) const;
 
-        [[nodiscard]] static std::vector<double> UnpackValues(const Plaintext &plaintext, uint16_t n_features);
+        [[nodiscard]] std::vector<BootstrapableCiphertext> EncryptCKKS(
+            const std::vector<std::vector<double> > &plaintext) const;
+
+        [[nodiscard]] std::vector<double> UnpackValues(const Plaintext &plaintext) const;
 
         [[nodiscard]] BootstrapableCiphertext EvalAdd(const BootstrapableCiphertext &ciphertext1,
                                                       const BootstrapableCiphertext &ciphertext2) const;
@@ -72,9 +75,21 @@ namespace hermesml {
 
         [[nodiscard]] BootstrapableCiphertext EvalBootstrap(const BootstrapableCiphertext &ciphertext) const;
 
-        void Snoop(const BootstrapableCiphertext &ciphertext, uint16_t n_features) const;
+        void Snoop(const BootstrapableCiphertext &ciphertext) const;
 
         [[nodiscard]] static int16_t GetScalingFactor();
+
+        [[nodiscard]] BootstrapableCiphertext WeightedSum(
+            const BootstrapableCiphertext &weights,
+            const BootstrapableCiphertext &features,
+            const BootstrapableCiphertext &bias) const;
+
+        [[nodiscard]] BootstrapableCiphertext EvalMerge(const std::vector<BootstrapableCiphertext> &ciphertexts) const;
+
+        [[nodiscard]] BootstrapableCiphertext EvalFlatten(const BootstrapableCiphertext &ciphertext) const;
+
+        [[nodiscard]] BootstrapableCiphertext
+        EvalRotate(const BootstrapableCiphertext &ciphertext, int32_t index) const;
     };
 
     //-----------------------------------------------------------------------------------------------------------------

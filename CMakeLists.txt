@@ -36,7 +36,6 @@ endif ()
 
 set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -g0 -march=native -mtune=native -flto=auto -ffunction-sections -fdata-sections -fopenmp -funroll-loops -falign-functions=32 -fomit-frame-pointer -fprefetch-loop-arrays -pipe")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
-# set(CMAKE_CXX_FLAGS ${OpenFHE_CXX_FLAGS})
 
 include_directories(${OPENMP_INCLUDES})
 include_directories(${OpenFHE_INCLUDE})
@@ -66,31 +65,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(spdlog)
 
-### Additional libraries
-# TFHE
-# include_directories(/usr/local/include)
-# include_directories(/usr/local/lib)
-# link_directories(/usr/local/lib)
-
 ### ADD YOUR EXECUTABLE(s) HERE
 ### add_executable( EXECUTABLE-NAME SOURCES )
 ###
-### EXAMPLE:
-### add_executable( test demo-simple-example.cpp )
 
-# add_executable( Demo src/demo-simple-example.cpp )
-
-add_executable(CkksBootstrapping
-        src/examples/CkksBootstrapping.cpp
-        src/context/HEContextFactory.cpp
-        src/context/HEContext.cpp)
-
-add_executable(CkksPerceptron
-        src/examples/CkksPerceptron.cpp
+add_executable(CkksLogisticRegression
+        src/examples/CkksLogisticRegression.cpp
         includes/client.h
         includes/context.h
         includes/core.h
-        includes/csv.hpp
         includes/datasets.h
         includes/experiments.h
         includes/hemath.h
@@ -104,43 +87,52 @@ add_executable(CkksPerceptron
         src/core/EncryptedObject.cpp
         src/core/MinMaxScaler.cpp
         src/core/Quantizer.cpp
-        src/experiments/CkksPerceptronExperiment.cpp
+        src/experiments/CkksLogisticRegressionExperiment.cpp
         src/datasets/BreastCancerDataset.cpp
         src/datasets/Datasets.cpp
         src/datasets/DiabetesDataset.cpp
         src/hemath/Calculus.cpp
         src/hemath/Constants.cpp
-        src/model/CkksPerceptron.cpp
+        src/model/CkksLogisticRegression.cpp
         src/validation/Holdout.cpp
         src/datasets/GliomaGradingDataset.cpp
         src/datasets/DifferentiatedThyroidDataset.cpp
         src/datasets/CirrhosisPatientDataset.cpp
         src/datasets/LoanPredictionDataset.cpp
-        src/datasets/CreditCardFraudDataset.cpp)
-target_link_libraries(CkksPerceptron PRIVATE spdlog::spdlog)
+        src/datasets/CreditCardFraudDataset.cpp
+        src/model/MlModel.cpp)
+target_link_libraries(CkksLogisticRegression PRIVATE spdlog::spdlog)
 
-#add_executable( Draft src/Draft.cpp
-#        src/core/EncryptedObject.cpp
-#        src/math/Constants.cpp
-#        src/client/Client.cpp
-#        src/context/HEContextFactory.cpp
-#        src/context/HEContext.cpp)
-#target_link_libraries(Draft PRIVATE tfhe-spqlios-fma)
-
-#add_executable( CkksLogisticRegression
-#        src/examples/CkksLogisticRegression.cpp
-#        includes/client.h
-#        includes/context.h
-#        includes/core.h
-#        includes/csv.hpp
-#        includes/hemath.h
-#        includes/model.h
-#        src/math/Calculus.cpp
-#        src/core/EncryptedObject.cpp
-#        src/math/Constants.cpp
-#        src/client/Client.cpp
-#        src/context/HEContextFactory.cpp
-#        src/context/HEContext.cpp
-#        src/core/MinMaxScaler.cpp
-#        src/core/Quantizer.cpp
-#        src/model/CkksLogisticRegression.cpp)
+add_executable(CkksNeuralNetwork
+        src/examples/CkksNeuralNetwork.cpp
+        includes/client.h
+        includes/context.h
+        includes/core.h
+        includes/datasets.h
+        includes/experiments.h
+        includes/hemath.h
+        includes/model.h
+        includes/validation.h
+        src/client/Client.cpp
+        src/context/HEContextFactory.cpp
+        src/context/HEContext.cpp
+        src/core/BootstrapableCiphertext.cpp
+        src/core/Experiment.cpp
+        src/core/EncryptedObject.cpp
+        src/core/MinMaxScaler.cpp
+        src/core/Quantizer.cpp
+        src/experiments/CkksNeuralNetworkExperiment.cpp
+        src/datasets/BreastCancerDataset.cpp
+        src/datasets/Datasets.cpp
+        src/datasets/DiabetesDataset.cpp
+        src/hemath/Calculus.cpp
+        src/hemath/Constants.cpp
+        src/model/CkksNeuralNetwork.cpp
+        src/validation/Holdout.cpp
+        src/datasets/GliomaGradingDataset.cpp
+        src/datasets/DifferentiatedThyroidDataset.cpp
+        src/datasets/CirrhosisPatientDataset.cpp
+        src/datasets/LoanPredictionDataset.cpp
+        src/datasets/CreditCardFraudDataset.cpp
+        src/model/MlModel.cpp)
+target_link_libraries(CkksNeuralNetwork PRIVATE spdlog::spdlog)

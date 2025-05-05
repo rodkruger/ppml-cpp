@@ -3,19 +3,24 @@
 #include "experiments.h"
 #include "model.h"
 
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
 namespace hermesml {
-    CkksPerceptronExperiment::CkksPerceptronExperiment(const std::string &experimentId,
-                                                       Dataset &dataset,
-                                                       const CkksPerceptronExperimentParams &params) : Experiment(
-            experimentId, dataset),
-        params(params) {
+    CkksNeuralNetworkExperiment::CkksNeuralNetworkExperiment(const std::string &experimentId,
+                                                             Dataset &dataset,
+                                                             const CkksExperimentParams &
+                                                             params) : Experiment(
+                                                                           experimentId, dataset),
+                                                                       params(params) {
     }
 
-    void CkksPerceptronExperiment::Run() {
+    void CkksNeuralNetworkExperiment::Run() {
         RunMemory();
     }
 
-    void CkksPerceptronExperiment::RunMemory() {
+    void CkksNeuralNetworkExperiment::RunMemory() {
         std::chrono::time_point<std::chrono::system_clock> start, end;
 
         const auto predictionsPath = std::filesystem::current_path() / "Predictions" / this->GetDataset().GetName() /
@@ -40,9 +45,19 @@ namespace hermesml {
         const auto testingFeatures = this->GetDataset().GetTestingFeatures();
         const auto testingLabels = this->GetDataset().GetTestingLabels();
 
+        /* Use it only for debugging purpose
+        const std::vector<std::vector<double> > trainingFeatures = {{1.0, 2.0, 3.0}};
+        const std::vector<double> trainingLabels = {1.0};
+        const std::vector<std::vector<double> > testingFeatures = {{1.0, 2.0, 3.0}};
+        const std::vector<double> testingLabels = {1.0};
+        /* */
+
+        const auto n_features = trainingFeatures[0].size();
+
         this->Info("Total samples: " + std::to_string(trainingFeatures.size() + testingFeatures.size()));
         this->Info("Training length: " + std::to_string(trainingFeatures.size()));
         this->Info("Testing length: " + std::to_string(testingFeatures.size()));
+        this->Info("Number of features: " + std::to_string(n_features));
 
         if (trainingFeatures.size() != trainingLabels.size()) {
             throw std::runtime_error("Wrong number of training features and labels provided!");
@@ -58,7 +73,7 @@ namespace hermesml {
 
         this->Info("Generate crypto context");
 
-        auto ckksCtx = HEContextFactory::ckksHeContext();
+        auto ckksCtx = HEContextFactory::ckksHeContext(n_features);
         ckksCtx.SetEarlyBootstrapping(this->params.earlyBootstrapping);
 
         auto ckksClient = Client(ckksCtx);
@@ -66,27 +81,27 @@ namespace hermesml {
 
         this->Info("Scheme: CKKS");
         this->Info("Activation: " + std::to_string(this->params.activation));
+        this->Info("Approximation: " + std::to_string(this->params.approximation));
         this->Info("Ring dimension: " + std::to_string(cc->GetRingDimension()));
         this->Info("Scaling Modulus Size: " + std::to_string(ckksCtx.GetScalingModSize()));
         this->Info("Modulus: " + cc->GetModulus().ToString());
         this->Info("Multiplicative depth: " + std::to_string(ckksCtx.GetMultiplicativeDepth()));
         this->Info("Early Boostrapping: " + std::to_string(ckksCtx.GetEarlyBootstrapping()));
+        this->Info("Number of Slots: " + std::to_string(ckksCtx.GetNumSlots()));
 
         //-----------------------------------------------------------------------------------------------------------------
 
         // Step 03 - Encrypt training data
 
-        this->Info("Encrypt training data");
-
         start = std::chrono::high_resolution_clock::now();
 
-        auto eTrainingData = ckksClient.EncryptCKKS(trainingFeatures);
-        auto eTrainingLabels = ckksClient.EncryptCKKS(trainingLabels, trainingFeatures[0].size());
+        std::vector<BootstrapableCiphertext> eTrainingData, eTrainingLabels, eTestingData, eTestingLabels;
 
-        this->Info("Encrypt testing data");
-
-        auto eTestingData = ckksClient.EncryptCKKS(testingFeatures);
-        auto eTestingLabels = ckksClient.EncryptCKKS(testingLabels, testingFeatures[0].size());
+        this->Info("Encrypting training data");
+        eTrainingData = ckksClient.EncryptCKKS(trainingFeatures);
+        eTrainingLabels = ckksClient.EncryptCKKS(trainingLabels, trainingFeatures[0].size());
+        eTestingData = ckksClient.EncryptCKKS(testingFeatures);
+        eTestingLabels = ckksClient.EncryptCKKS(testingLabels, testingFeatures[0].size());
 
         if (eTrainingData.size() != eTrainingLabels.size()) {
             throw std::runtime_error("Wrong number of encrypted training features and labels provided!");
@@ -105,7 +120,9 @@ namespace hermesml {
 
         this->Info(">>>>> SERVER SIDE PROCESSING");
 
-        auto clf = CkksPerceptron(ckksCtx, trainingFeatures[0].size(), this->params.epochs, this->params.activation);
+        std::vector<size_t> layers = {n_features, 5, 2, 1};
+        auto clf = CkksNeuralNetwork(ckksCtx, n_features, params.epochs, layers, 42, params.activation,
+                                     params.approximation);
 
         // Step 04 - Train the model
 
@@ -150,11 +167,11 @@ namespace hermesml {
 
             double pPredictedLabel = 0.0;
             switch (this->params.activation) {
-                case CkksPerceptron::TANH:
+                case TANH:
                     pPredictedLabel = pPrediction > 0.0 ? 1.0 : 0.0;
                     break;
 
-                case CkksPerceptron::SIGMOID:
+                case SIGMOID:
                     pPredictedLabel = pPrediction > 0.5 ? 1.0 : 0.0;
                     break;
 
@@ -217,7 +234,7 @@ namespace hermesml {
         this->Info("Experiment " + this->GetExperimentId() + " completed!");
     }
 
-    void CkksPerceptronExperiment::RunHardDisk() {
+    void CkksNeuralNetworkExperiment::RunHardDisk() {
         std::chrono::time_point<std::chrono::system_clock> start, end;
 
         const auto predictionsPath = std::filesystem::current_path() / "Predictions" / this->GetDataset().GetName() /
@@ -241,10 +258,12 @@ namespace hermesml {
         const auto trainingLabels = this->GetDataset().GetTrainingLabels();
         const auto testingFeatures = this->GetDataset().GetTestingFeatures();
         const auto testingLabels = this->GetDataset().GetTestingLabels();
+        const auto n_features = trainingFeatures[0].size();
 
         this->Info("Total samples: " + std::to_string(trainingFeatures.size() + testingFeatures.size()));
         this->Info("Training length: " + std::to_string(trainingFeatures.size()));
         this->Info("Testing length: " + std::to_string(testingFeatures.size()));
+        this->Info("Number of features: " + std::to_string(n_features));
 
         if (trainingFeatures.size() != trainingLabels.size()) {
             throw std::runtime_error("Wrong number of training features and labels provided!");
@@ -260,7 +279,7 @@ namespace hermesml {
 
         this->Info("Generate crypto context");
 
-        auto ckksCtx = HEContextFactory::ckksHeContext();
+        auto ckksCtx = HEContextFactory::ckksHeContext(n_features);
         ckksCtx.SetEarlyBootstrapping(this->params.earlyBootstrapping);
 
         auto ckksClient = Client(ckksCtx);
@@ -273,6 +292,7 @@ namespace hermesml {
         this->Info("Modulus: " + cc->GetModulus().ToString());
         this->Info("Multiplicative depth: " + std::to_string(ckksCtx.GetMultiplicativeDepth()));
         this->Info("Early Boostrapping: " + std::to_string(ckksCtx.GetEarlyBootstrapping()));
+        this->Info("Number of Slots: " + std::to_string(ckksCtx.GetNumSlots()));
 
         //-----------------------------------------------------------------------------------------------------------------
 
@@ -304,7 +324,9 @@ namespace hermesml {
 
         this->Info(">>>>> SERVER SIDE PROCESSING");
 
-        auto clf = CkksPerceptron(ckksCtx, trainingFeatures[0].size(), this->params.epochs, this->params.activation);
+        std::vector<size_t> layers = {2, 3, 1};
+        auto clf = CkksNeuralNetwork(ckksCtx, n_features, params.epochs, layers, 42, params.activation,
+                                     params.approximation);
 
         // Step 04 - Train the model
 
@@ -349,11 +371,11 @@ namespace hermesml {
 
             double pPredictedLabel = 0.0;
             switch (this->params.activation) {
-                case CkksPerceptron::TANH:
+                case TANH:
                     pPredictedLabel = pPrediction > 0.0 ? 1.0 : 0.0;
                     break;
 
-                case CkksPerceptron::SIGMOID:
+                case SIGMOID:
                     pPredictedLabel = pPrediction > 0.5 ? 1.0 : 0.0;
                     break;
 

@@ -29,43 +29,51 @@ namespace hermesml {
         this->privateKey = privateKey;
     }
 
-    uint16_t HEContext::GetScalingModSize() const {
+    uint32_t HEContext::GetScalingModSize() const {
         return this->scalingModSize;
     }
 
-    void HEContext::SetScalingModSize(const uint16_t scalingModSize) {
+    void HEContext::SetScalingModSize(const uint32_t scalingModSize) {
         this->scalingModSize = scalingModSize;
     }
 
-    int8_t HEContext::GetMultiplicativeDepth() const {
+    uint32_t HEContext::GetMultiplicativeDepth() const {
         return this->multiplicativeDepth;
     }
 
-    void HEContext::SetMultiplicativeDepth(const int8_t multiplicativeDepth) {
+    void HEContext::SetMultiplicativeDepth(const uint32_t multiplicativeDepth) {
         this->multiplicativeDepth = multiplicativeDepth;
     }
 
-    uint16_t HEContext::GetNumSlots() const {
+    uint32_t HEContext::GetNumSlots() const {
         return this->numSlots;
     }
 
-    void HEContext::SetNumSlots(const uint16_t numSlots) {
+    void HEContext::SetNumSlots(const uint32_t numSlots) {
         this->numSlots = numSlots;
     }
 
-    int8_t HEContext::GetLevelsAfterBootstrapping() const {
+    uint32_t HEContext::GetLevelsAfterBootstrapping() const {
         return this->levelsAfterBootstrapping;
     }
 
-    void HEContext::SetLevelsAfterBootstrapping(const int8_t levelsAfterBootstrapping) {
+    void HEContext::SetLevelsAfterBootstrapping(const uint32_t levelsAfterBootstrapping) {
         this->levelsAfterBootstrapping = levelsAfterBootstrapping;
     }
 
-    int8_t HEContext::GetEarlyBootstrapping() const {
+    uint32_t HEContext::GetEarlyBootstrapping() const {
         return this->earlyBootstrapping;
     }
 
-    void HEContext::SetEarlyBootstrapping(const int8_t earlyBootstrapping) {
+    void HEContext::SetEarlyBootstrapping(const uint32_t earlyBootstrapping) {
         this->earlyBootstrapping = earlyBootstrapping;
+    }
+
+    uint32_t HEContext::GetNumFeatures() const {
+        return this->numFeatures;
+    }
+
+    void HEContext::SetNumFeatures(const uint32_t numFeatures) {
+        this->numFeatures = numFeatures;
     }
 }

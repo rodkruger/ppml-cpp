@@ -5,65 +5,43 @@
 #include "context.h"
 
 namespace hermesml {
-    HEContext HEContextFactory::bgvHeContext() {
-        constexpr auto multiplicativeDepth = 10; // 10-20
+    uint32_t HEContextFactory::NextPowerOfTwo(const uint32_t n) {
+        auto i = n;
 
-        auto parameters = CCParams<CryptoContextBGVRNS>();
-        parameters.SetSecurityLevel(HEStd_128_classic);
-        parameters.SetPlaintextModulus(537133057); // m = 1 / (q - 1) => Número primo
-        parameters.SetMultiplicativeDepth(multiplicativeDepth);
-        parameters.SetMaxRelinSkDeg(3);
+        if (i == 0)
+            return 1;
 
-        // Crypto Contexts
-        const auto cc = GenCryptoContext(parameters);
-        cc->Enable(PKE);
-        cc->Enable(KEYSWITCH);
-        cc->Enable(LEVELEDSHE);
-        cc->Enable(ADVANCEDSHE);
-        cc->Enable(FHE);
+        i--;
+        i |= i >> 1;
+        i |= i >> 2;
+        i |= i >> 4;
+        i |= i >> 8;
+        i |= i >> 16;
+        i++;
 
-        // Bootstrapping is not yet implemented by openfhe for BGV scheme ---------------------------------------------
-        // cc->EvalBootstrapSetup(levelBudget);
-
-        // Key generation ---------------------------------------------------------------------------------------------
-        const auto keys = cc->KeyGen();
-
-        cc->EvalMultKeyGen(keys.secretKey);
-        cc->EvalSumKeyGen(keys.secretKey);
-
-        // Bootstrapping is not yet implemented by openfhe for BGV scheme ---------------------------------------------
-        // auto numSlots = cc->GetRingDimension() / 2;
-        // cc->EvalBootstrapKeyGen(keys.secretKey, numSlots);
-
-        // Build context ----------------------------------------------------------------------------------------------
-        auto ctx = HEContext();
-        ctx.SetCc(cc);
-        ctx.SetMultiplicativeDepth(multiplicativeDepth);
-        ctx.SetNumSlots(cc->GetRingDimension());
-        ctx.SetPublicKey(keys.publicKey);
-        ctx.SetPrivateKey(keys.secretKey);
-
-        return ctx;
+        return i;
     }
 
-    HEContext HEContextFactory::ckksHeContext() {
+    HEContext HEContextFactory::ckksHeContext(const uint32_t n_features) {
         const std::vector<uint32_t> levelBudget = {1, 1};
         const std::vector<uint32_t> bsgsDim = {0, 0};
-        constexpr int32_t ringDimension = 2048;
-        constexpr int32_t scalingModSize = 56;
-        constexpr int32_t depth = 30;
-        // constexpr int32_t numSlots = ringDimension / 2;
-        constexpr int32_t numSlots = 32; // Adjust according to the number of features
+        constexpr auto ringDimension = 2048;
+        constexpr auto scalingModSize = 56;
+        const auto numSlots = NextPowerOfTwo(n_features);
 
         auto parameters = CCParams<CryptoContextCKKSRNS>();
         parameters.SetSecurityLevel(HEStd_NotSet);
         parameters.SetRingDim(ringDimension);
         parameters.SetScalingModSize(scalingModSize);
-        parameters.SetMultiplicativeDepth(depth);
         parameters.SetKeySwitchTechnique(HYBRID);
         parameters.SetScalingTechnique(FLEXIBLEAUTO);
         parameters.SetSecretKeyDist(UNIFORM_TERNARY);
         parameters.SetBatchSize(numSlots);
+
+        constexpr uint32_t depth = 30;
+        const uint32_t levelsAfterBootstrap = depth - FHECKKSRNS::GetBootstrapDepth(
+                                                  levelBudget, parameters.GetSecretKeyDist());
+        parameters.SetMultiplicativeDepth(depth);
 
         /* https://github.com/malb/lattice-estimator
          *
@@ -79,13 +57,6 @@ namespace hermesml {
          * usvp                 :: rop: ≈2^223.1, red: ≈2^223.1, δ: 1.002500, β: 764, d: 7929, tag: usvp
          * dual_hybrid          :: rop: ≈2^219.0, red: ≈2^219.0, guess: ≈2^209.6, β: 750, p: 3, ζ: 0, t: 120, β': 750, N: ≈2^155.3, m: ≈2^12.0
          */
-
-        int32_t levelsAfterBootstrap =
-                depth - static_cast<int32_t>(FHECKKSRNS::GetBootstrapDepth(levelBudget, parameters.GetSecretKeyDist()));
-
-        if (levelsAfterBootstrap < 0) {
-            levelsAfterBootstrap = 0;
-        }
 
         const auto cc = GenCryptoContext(parameters);
         cc->Enable(PKE);
@@ -103,6 +74,13 @@ namespace hermesml {
         cc->EvalSumKeyGen(keys.secretKey);
         cc->EvalBootstrapKeyGen(keys.secretKey, numSlots);
 
+        std::vector<int> rotationIndices;
+        for (int i = 1; i < numSlots; i++) {
+            rotationIndices.push_back(i);
+            rotationIndices.push_back(-i);
+        }
+        cc->EvalRotateKeyGen(keys.secretKey, rotationIndices);
+
         // Build context ----------------------------------------------------------------------------------------------
         auto ctx = HEContext();
         ctx.SetCc(cc);
@@ -112,6 +90,7 @@ namespace hermesml {
         ctx.SetNumSlots(numSlots);
         ctx.SetPublicKey(keys.publicKey);
         ctx.SetPrivateKey(keys.secretKey);
+        ctx.SetNumFeatures(n_features);
 
         return ctx;
     }
