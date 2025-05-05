@@ -40,16 +40,17 @@ namespace hermesml {
         // Step 01 - read and normalize data
         this->Info("Read dataset " + this->GetDataset().GetName());;
 
-        /*
         const auto trainingFeatures = this->GetDataset().GetTrainingFeatures();
         const auto trainingLabels = this->GetDataset().GetTrainingLabels();
         const auto testingFeatures = this->GetDataset().GetTestingFeatures();
         const auto testingLabels = this->GetDataset().GetTestingLabels();
-        */
+
+        /* Use it only for debugging purpose
         const std::vector<std::vector<double> > trainingFeatures = {{1.0, 2.0, 3.0}};
         const std::vector<double> trainingLabels = {1.0};
         const std::vector<std::vector<double> > testingFeatures = {{1.0, 2.0, 3.0}};
         const std::vector<double> testingLabels = {1.0};
+        /* */
 
         const auto n_features = trainingFeatures[0].size();
 
@@ -119,7 +120,7 @@ namespace hermesml {
 
         this->Info(">>>>> SERVER SIDE PROCESSING");
 
-        std::vector<size_t> layers = {n_features, 2, 2, 1};
+        std::vector<size_t> layers = {n_features, 5, 2, 1};
         auto clf = CkksNeuralNetwork(ckksCtx, n_features, params.epochs, layers, 42, params.activation,
                                      params.approximation);
 

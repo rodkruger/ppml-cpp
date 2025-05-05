@@ -60,9 +60,7 @@ namespace hermesml {
         }
         */
 
-
-        /*
-        const auto weights = {
+        const std::vector<std::vector<std::vector<double> > > weights = {
             {
                 {
                     0.04967142, -0.01382643, 0.06476885, 0.15230299, -0.02341534,
@@ -372,8 +370,8 @@ namespace hermesml {
             }
             this->eBias.emplace_back(eB);
         }
-        */
 
+        /*
         const std::vector<std::vector<std::vector<double> > > weights =
         {
             {
@@ -411,6 +409,7 @@ namespace hermesml {
             }
             this->eBias.emplace_back(eB);
         }
+        */
     }
 
     void CkksNeuralNetwork::Fit(const std::vector<BootstrapableCiphertext> &x,
@@ -423,15 +422,10 @@ namespace hermesml {
 
         const auto eLearningRate = this->GetLearningRate();
 
-        this->epochs = 1;
-
         for (int epoch = 0; epoch < this->epochs; epoch++) {
             for (size_t i = 0; i < x.size(); i++) {
                 const auto &eInput = x[i];
                 const auto &eTrue = y[i];
-
-                this->ePreActivations.clear();
-                this->eActivations.clear();
 
                 // Forward --------------------------------------------------------------------------------------------
                 const auto ePred = this->Predict(eInput);
@@ -543,6 +537,9 @@ namespace hermesml {
 
     BootstrapableCiphertext CkksNeuralNetwork::Predict(const BootstrapableCiphertext &x) {
         BootstrapableCiphertext bLayerInput = x;
+
+        this->ePreActivations.clear();
+        this->eActivations.clear();
 
         // Forward ----------------------------------------------------------------------------------------------------
         for (auto k = 0; k < this->eWeights.size(); k++) {
