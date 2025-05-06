@@ -105,10 +105,16 @@ namespace hermesml {
     }
 
     BootstrapableCiphertext EncryptedObject::EvalBootstrap(const BootstrapableCiphertext &ciphertext) const {
-        if ((ciphertext.GetRemainingLevels() - this->GetCtx().GetEarlyBootstrapping()) <= 1) {
+        const auto remainingLevels = ciphertext.GetRemainingLevels() - this->GetCtx().GetEarlyBootstrapping() - 1;
+
+        if (remainingLevels > this->GetCtx().GetMultiplicativeDepth()) {
+            std::cout << "WARNING: remaining levels is too high: " << remainingLevels << std::endl;
+        }
+
+        if (remainingLevels <= 5) {
             const auto ciphertext2 = this->GetCc()->EvalBootstrap(ciphertext.GetCiphertext());
             return BootstrapableCiphertext(this->SafeRescaling(ciphertext2),
-                                           static_cast<int32_t>(this->GetCtx().GetLevelsAfterBootstrapping()));
+                                           this->GetCtx().GetLevelsAfterBootstrapping());
         }
 
         return ciphertext;
