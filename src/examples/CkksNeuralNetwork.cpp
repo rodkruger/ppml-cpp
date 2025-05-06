@@ -26,7 +26,7 @@ int main(const int argc, char *argv[]) {
     }
 
     CkksExperimentParams params{};
-    datasets11.emplace_back(std::make_unique<DiabetesDataset>(FM11));
+    // datasets11.emplace_back(std::make_unique<DiabetesDataset>(FM11));
 
     for (auto i = 1; i <= epochs; i++) {
         for (auto j = 0; j < datasets11.size(); j++) {
