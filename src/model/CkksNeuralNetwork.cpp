@@ -35,7 +35,6 @@ namespace hermesml {
     }
 
     void CkksNeuralNetwork::InitWeights() {
-        /*
         std::mt19937 gen(this->GetSeed());
         std::normal_distribution dist(0.0, 0.1);
 
@@ -58,8 +57,8 @@ namespace hermesml {
             weights.push_back(weightMatrix);
             biases.push_back(biasVector);
         }
-        */
 
+        /*
         const std::vector<std::vector<std::vector<double> > > weights = {
             {
                 {
@@ -350,6 +349,7 @@ namespace hermesml {
                 {0}
             }
         };
+        */
 
         // Transpose the weights, as CKKS does not support arithmetic under transposed matrixes
         for (const auto &w: weights) {

@@ -156,9 +156,7 @@ namespace hermesml {
         }
 
         const auto mergedCiphertexts = this->GetCc()->EvalMerge(ciphertextsToMerge);
-        const auto b = BootstrapableCiphertext(mergedCiphertexts, minRemainingLevel - 1);
-
-        return b;
+        return this->EvalBootstrap(BootstrapableCiphertext(mergedCiphertexts, minRemainingLevel - 1));
     }
 
     BootstrapableCiphertext EncryptedObject::EvalFlatten(const BootstrapableCiphertext &ciphertext) const {

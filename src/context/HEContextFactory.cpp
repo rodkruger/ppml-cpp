@@ -27,8 +27,7 @@ namespace hermesml {
         const std::vector<uint32_t> bsgsDim = {0, 0};
         constexpr auto ringDimension = 2048;
         constexpr auto scalingModSize = 56;
-        // const auto numSlots = NextPowerOfTwo(n_features);
-        constexpr auto numSlots = ringDimension / 2;
+        const auto numSlots = NextPowerOfTwo(n_features);
 
         auto parameters = CCParams<CryptoContextCKKSRNS>();
         parameters.SetSecurityLevel(HEStd_NotSet);
