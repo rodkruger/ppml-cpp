@@ -111,7 +111,8 @@ namespace hermesml {
             std::cout << "WARNING: remaining levels is too high: " << remainingLevels << std::endl;
         }
 
-        if (remainingLevels <= 5) {
+        // Review this logic when possible
+        if (remainingLevels <= 4) {
             const auto ciphertext2 = this->GetCc()->EvalBootstrap(ciphertext.GetCiphertext());
             return BootstrapableCiphertext(this->SafeRescaling(ciphertext2),
                                            this->GetCtx().GetLevelsAfterBootstrapping());
@@ -153,7 +154,7 @@ namespace hermesml {
     BootstrapableCiphertext EncryptedObject::EvalMerge(
         const std::vector<BootstrapableCiphertext> &ciphertexts) const {
         std::vector<Ciphertext<DCRTPoly> > ciphertextsToMerge;
-        auto minRemainingLevel = static_cast<int32_t>(this->GetCtx().GetMultiplicativeDepth());
+        auto minRemainingLevel = this->GetCtx().GetMultiplicativeDepth();
         for (const auto &c: ciphertexts) {
             ciphertextsToMerge.emplace_back(c.GetCiphertext());
             if (c.GetRemainingLevels() < minRemainingLevel) {
