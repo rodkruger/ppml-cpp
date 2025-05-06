@@ -527,6 +527,17 @@ namespace hermesml {
                     eDeltaLs.emplace_back(eLocalDeltaLs);
                 }
                 // ------------------------------------------------------------------------------------------- Backward
+
+                // Gradient Descent -----------------------------------------------------------------------------------
+                for (auto k = static_cast<int32_t>(this->eWeights.size() - 1); k >= 0; k--) {
+                    const auto &eLayerUnits = this->eWeights[k];
+
+                    for (auto j = 0; j < eLayerUnits.size(); j++) {
+                        this->eWeights[k][j] = this->EvalSub(this->eWeights[k][j], eScaledGradWeights[k][j]);
+                        this->eBias[k][j] = this->EvalSub(this->eBias[k][j], eScaledGradBias[k][j]);
+                    }
+                }
+                // ----------------------------------------------------------------------------------- Gradient Descent
             }
         }
     }

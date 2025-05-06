@@ -3,8 +3,8 @@
 
 using namespace hermesml;
 
-int main(int argc, char *argv[]) {
-    constexpr auto epochs = 1;
+int main(const int argc, char *argv[]) {
+    constexpr auto epochs = 10;
 
     std::vector<std::unique_ptr<Dataset> > datasets11;
 
