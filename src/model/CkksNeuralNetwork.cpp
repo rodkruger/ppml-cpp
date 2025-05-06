@@ -487,19 +487,17 @@ namespace hermesml {
                     }
 
                     for (auto n = 0; n < this->eWeights[k].size(); n++) {
-                        auto eLocalLoss2 = eLocalLoss;
                         if (n > 0) {
-                            eLocalLoss2 = this->EvalRotate(eLocalLoss2, 1);
+                            eLocalLoss = this->EvalRotate(eLocalLoss, 1);
                         }
-                        eLocalLoss2 = this->EvalFlatten(eLocalLoss2);
+                        const auto eLocalLossFlat = this->EvalFlatten(eLocalLoss);
 
-                        auto eLocalZl2 = eLocalZl;
                         if (n > 0) {
-                            eLocalZl2 = this->EvalRotate(eLocalZl2, 1);
+                            eLocalZl = this->EvalRotate(eLocalZl, 1);
                         }
-                        eLocalZl2 = this->EvalFlatten(eLocalZl2);
+                        const auto eLocalZlFlat = this->EvalFlatten(eLocalZl);
 
-                        eDeltaL = this->EvalMult(eLocalLoss2, eLocalZl2);
+                        eDeltaL = this->EvalMult(eLocalLossFlat, eLocalZlFlat);
                         eDeltaL = this->EvalFlatten(eDeltaL);
                         eLocalDeltaLs.emplace_back(eDeltaL);
 

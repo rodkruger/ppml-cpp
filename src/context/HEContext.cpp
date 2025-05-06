@@ -37,11 +37,11 @@ namespace hermesml {
         this->scalingModSize = scalingModSize;
     }
 
-    uint32_t HEContext::GetMultiplicativeDepth() const {
+    int32_t HEContext::GetMultiplicativeDepth() const {
         return this->multiplicativeDepth;
     }
 
-    void HEContext::SetMultiplicativeDepth(const uint32_t multiplicativeDepth) {
+    void HEContext::SetMultiplicativeDepth(const int32_t multiplicativeDepth) {
         this->multiplicativeDepth = multiplicativeDepth;
     }
 

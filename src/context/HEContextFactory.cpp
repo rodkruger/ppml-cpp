@@ -38,9 +38,9 @@ namespace hermesml {
         parameters.SetSecretKeyDist(UNIFORM_TERNARY);
         parameters.SetBatchSize(numSlots);
 
-        constexpr uint32_t depth = 30;
-        const uint32_t levelsAfterBootstrap = depth - FHECKKSRNS::GetBootstrapDepth(
-                                                  levelBudget, parameters.GetSecretKeyDist());
+        constexpr int32_t depth = 30;
+        const int32_t levelsAfterBootstrap = depth - FHECKKSRNS::GetBootstrapDepth(
+                                                 levelBudget, parameters.GetSecretKeyDist());
         parameters.SetMultiplicativeDepth(depth);
 
         /* https://github.com/malb/lattice-estimator
@@ -86,7 +86,7 @@ namespace hermesml {
         ctx.SetCc(cc);
         ctx.SetScalingModSize(scalingModSize);
         ctx.SetMultiplicativeDepth(depth);
-        ctx.SetLevelsAfterBootstrapping(static_cast<int32_t>(levelsAfterBootstrap));
+        ctx.SetLevelsAfterBootstrapping(levelsAfterBootstrap);
         ctx.SetNumSlots(numSlots);
         ctx.SetPublicKey(keys.publicKey);
         ctx.SetPrivateKey(keys.secretKey);

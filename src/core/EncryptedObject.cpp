@@ -112,7 +112,7 @@ namespace hermesml {
         }
 
         // Review this logic when possible
-        if (remainingLevels <= 4) {
+        if (remainingLevels <= 1) {
             const auto ciphertext2 = this->GetCc()->EvalBootstrap(ciphertext.GetCiphertext());
             return BootstrapableCiphertext(this->SafeRescaling(ciphertext2),
                                            this->GetCtx().GetLevelsAfterBootstrapping());

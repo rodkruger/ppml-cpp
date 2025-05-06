@@ -11,7 +11,7 @@ namespace hermesml {
         PublicKey<DCRTPoly> publicKey;
         PrivateKey<DCRTPoly> privateKey;
         uint32_t scalingModSize = 0;
-        uint32_t multiplicativeDepth = 0;
+        int32_t multiplicativeDepth = 0;
         uint32_t numSlots = 0;
         int32_t levelsAfterBootstrapping = 0;
         int32_t earlyBootstrapping = 0;
@@ -34,9 +34,9 @@ namespace hermesml {
 
         void SetScalingModSize(uint32_t scalingModSize);
 
-        [[nodiscard]] uint32_t GetMultiplicativeDepth() const;
+        [[nodiscard]] int32_t GetMultiplicativeDepth() const;
 
-        void SetMultiplicativeDepth(uint32_t multiplicativeDepth);
+        void SetMultiplicativeDepth(int32_t multiplicativeDepth);
 
         [[nodiscard]] uint32_t GetNumSlots() const;
 
