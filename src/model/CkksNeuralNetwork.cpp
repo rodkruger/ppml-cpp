@@ -526,10 +526,13 @@ namespace hermesml {
                     eScaledGradBias.emplace_back(eLocalScaledGradBias);
                     eDeltaLs.emplace_back(eLocalDeltaLs);
                 }
+
+                std::reverse(eScaledGradWeights.begin(), eScaledGradWeights.end());
+                std::reverse(eScaledGradBias.begin(), eScaledGradBias.end());
                 // ------------------------------------------------------------------------------------------- Backward
 
                 // Gradient Descent -----------------------------------------------------------------------------------
-                for (auto k = static_cast<int32_t>(this->eWeights.size() - 1); k >= 0; k--) {
+                for (auto k = 0; k < this->eWeights.size(); k++) {
                     const auto &eLayerUnits = this->eWeights[k];
 
                     for (auto j = 0; j < eLayerUnits.size(); j++) {

@@ -13,8 +13,8 @@ namespace hermesml {
         uint32_t scalingModSize = 0;
         uint32_t multiplicativeDepth = 0;
         uint32_t numSlots = 0;
-        uint32_t levelsAfterBootstrapping = 0;
-        uint32_t earlyBootstrapping = 0;
+        int32_t levelsAfterBootstrapping = 0;
+        int32_t earlyBootstrapping = 0;
         uint32_t numFeatures = 0;
 
     public:
@@ -42,13 +42,13 @@ namespace hermesml {
 
         void SetNumSlots(uint32_t numSlots);
 
-        [[nodiscard]] uint32_t GetLevelsAfterBootstrapping() const;
+        [[nodiscard]] int32_t GetLevelsAfterBootstrapping() const;
 
-        void SetLevelsAfterBootstrapping(uint32_t levelsAfterBootstrapping);
+        void SetLevelsAfterBootstrapping(int32_t levelsAfterBootstrapping);
 
-        [[nodiscard]] uint32_t GetEarlyBootstrapping() const;
+        [[nodiscard]] int32_t GetEarlyBootstrapping() const;
 
-        void SetEarlyBootstrapping(uint32_t earlyBootstrapping);
+        void SetEarlyBootstrapping(int32_t earlyBootstrapping);
 
         [[nodiscard]] uint32_t GetNumFeatures() const;
 

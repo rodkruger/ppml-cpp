@@ -101,7 +101,7 @@ namespace hermesml {
         const int decLevels = ComputeRemainingLevels(ciphertext1, ciphertext2) - 1;
 
         return this->EvalBootstrap(
-            BootstrapableCiphertext(ciphertext, static_cast<int8_t>(decLevels), additionsExecuted));
+            BootstrapableCiphertext(ciphertext, decLevels, additionsExecuted));
     }
 
     BootstrapableCiphertext EncryptedObject::EvalBootstrap(const BootstrapableCiphertext &ciphertext) const {
@@ -156,7 +156,7 @@ namespace hermesml {
         }
 
         const auto mergedCiphertexts = this->GetCc()->EvalMerge(ciphertextsToMerge);
-        return this->EvalBootstrap(BootstrapableCiphertext(mergedCiphertexts, minRemainingLevel - 1));
+        return this->EvalBootstrap(BootstrapableCiphertext(mergedCiphertexts, minRemainingLevel));
     }
 
     BootstrapableCiphertext EncryptedObject::EvalFlatten(const BootstrapableCiphertext &ciphertext) const {

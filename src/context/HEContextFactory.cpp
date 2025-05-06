@@ -86,7 +86,7 @@ namespace hermesml {
         ctx.SetCc(cc);
         ctx.SetScalingModSize(scalingModSize);
         ctx.SetMultiplicativeDepth(depth);
-        ctx.SetLevelsAfterBootstrapping(levelsAfterBootstrap);
+        ctx.SetLevelsAfterBootstrapping(static_cast<int32_t>(levelsAfterBootstrap));
         ctx.SetNumSlots(numSlots);
         ctx.SetPublicKey(keys.publicKey);
         ctx.SetPrivateKey(keys.secretKey);
