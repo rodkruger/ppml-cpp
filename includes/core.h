@@ -122,12 +122,14 @@ namespace hermesml {
         std::shared_ptr<spdlog::logger> logger;
 
     protected:
-        [[nodiscard]] std::string BuildFilePath(const std::string &fileName) const;
+        [[nodiscard]] std::string BuildFilePath(const std::string &fileName);
 
     public:
         virtual ~Experiment() = default;
 
         explicit Experiment(std::string experimentId, Dataset &dataset);
+
+        void SetExperimentId(const std::string &experimentId);
 
         [[nodiscard]] std::string GetExperimentId() const;
 

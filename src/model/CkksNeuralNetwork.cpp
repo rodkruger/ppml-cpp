@@ -414,6 +414,13 @@ namespace hermesml {
 
     void CkksNeuralNetwork::Fit(const std::vector<BootstrapableCiphertext> &x,
                                 const std::vector<BootstrapableCiphertext> &y) {
+        for (int epoch = 0; epoch < this->epochs; epoch++) {
+            this->FitSingle(x, y);
+        }
+    }
+
+    void CkksNeuralNetwork::FitSingle(const std::vector<BootstrapableCiphertext> &x,
+                                      const std::vector<BootstrapableCiphertext> &y) {
         if (x.size() != y.size()) {
             throw std::runtime_error(
                 "The size of x must be equal to the size of y. (" + std::to_string(x.size()) + " vs " +
@@ -422,126 +429,125 @@ namespace hermesml {
 
         const auto eLearningRate = this->GetLearningRate();
 
-        for (int epoch = 0; epoch < this->epochs; epoch++) {
-            for (size_t i = 0; i < x.size(); i++) {
-                const auto &eInput = x[i];
-                const auto &eTrue = y[i];
+        for (size_t i = 0; i < x.size(); i++) {
+            const auto &eInput = x[i];
+            const auto &eTrue = y[i];
 
-                // Forward --------------------------------------------------------------------------------------------
-                const auto ePred = this->Predict(eInput);
-                // -------------------------------------------------------------------------------------------- Forward
+            // Forward ------------------------------------------------------------------------------------------------
+            const auto ePred = this->Predict(eInput);
+            // ------------------------------------------------------------------------------------------------ Forward
 
-                // Backward -------------------------------------------------------------------------------------------
-                std::vector<std::vector<BootstrapableCiphertext> > eScaledGradWeights;
-                std::vector<std::vector<BootstrapableCiphertext> > eScaledGradBias;
-                std::vector<std::vector<BootstrapableCiphertext> > eLosses;
-                std::vector<std::vector<BootstrapableCiphertext> > eDeltaLs;
+            // Backward -----------------------------------------------------------------------------------------------
+            std::vector<std::vector<BootstrapableCiphertext> > eScaledGradWeights;
+            std::vector<std::vector<BootstrapableCiphertext> > eScaledGradBias;
+            std::vector<std::vector<BootstrapableCiphertext> > eLosses;
+            std::vector<std::vector<BootstrapableCiphertext> > eDeltaLs;
 
-                auto ePreAct = this->ePreActivations.back();
-                auto eZL = this->ActivationDerivative(ePreAct);
-                auto eLoss = this->EvalFlatten(this->EvalSub(ePred, eTrue)); // Only 1 Neuron supported
-                auto eDeltaL = this->EvalFlatten(this->EvalMult(eLoss, eZL)); // Only 1 Neuron supported
+            auto ePreAct = this->ePreActivations.back();
+            auto eZL = this->ActivationDerivative(ePreAct);
+            auto eLoss = this->EvalFlatten(this->EvalSub(ePred, eTrue)); // Only 1 Neuron supported
+            auto eDeltaL = this->EvalFlatten(this->EvalMult(eLoss, eZL)); // Only 1 Neuron supported
 
-                eLosses.emplace_back(std::vector({eLoss}));
-                eDeltaLs.emplace_back(std::vector({eDeltaL}));
+            eLosses.emplace_back(std::vector({eLoss}));
+            eDeltaLs.emplace_back(std::vector({eDeltaL}));
 
-                // Update the weights of the last layer ---------------------------------------------------------------
-                ePreAct = this->eActivations[this->eActivations.size() - 2];
-                auto eGradWK = this->EvalMult(eDeltaL, ePreAct);
-                auto eScaledGradWK = this->EvalMult(eGradWK, eLearningRate);
-                eScaledGradWeights.emplace_back(std::vector({eScaledGradWK}));
+            // Update the weights of the last layer -------------------------------------------------------------------
+            ePreAct = this->eActivations[this->eActivations.size() - 2];
+            auto eGradWK = this->EvalMult(eDeltaL, ePreAct);
+            auto eScaledGradWK = this->EvalMult(eGradWK, eLearningRate);
+            eScaledGradWeights.emplace_back(std::vector({eScaledGradWK}));
 
-                auto eScaledGradBiasK = this->EvalMult(eDeltaL, eLearningRate);
-                eScaledGradBias.emplace_back(std::vector({eScaledGradBiasK}));
+            auto eScaledGradBiasK = this->EvalMult(eDeltaL, eLearningRate);
+            eScaledGradBias.emplace_back(std::vector({eScaledGradBiasK}));
 
-                // Update the weights of the remaining layers ---------------------------------------------------------
-                for (auto k = static_cast<int32_t>(this->eWeights.size() - 2); k >= 0; k--) {
-                    const auto &eLayerWeights = this->eWeights[k + 1];
-                    const auto &ePreDeltaL = eDeltaLs.back();
+            // Update the weights of the remaining layers -------------------------------------------------------------
+            for (auto k = static_cast<int32_t>(this->eWeights.size() - 2); k >= 0; k--) {
+                const auto &eLayerWeights = this->eWeights[k + 1];
+                const auto &ePreDeltaL = eDeltaLs.back();
 
-                    auto eLocalLoss = this->constants.Zero();
-                    for (auto l = 0; l < eLayerWeights.size(); l++) {
-                        // ePreDeltaL[1] * eLayerWeights[1] + ePreDeltaL[2] * eLayerWeights[2] ... ePreDeltaL[l] * eLayerWeights[l]
-                        const auto z = this->EvalMult(eLayerWeights[l], ePreDeltaL[l]);
-                        eLocalLoss = this->EvalAdd(eLocalLoss, z);
+                auto eLocalLoss = this->constants.Zero();
+                for (auto l = 0; l < eLayerWeights.size(); l++) {
+                    // ePreDeltaL[1] * eLayerWeights[1] + ePreDeltaL[2] * eLayerWeights[2] ... ePreDeltaL[l] * eLayerWeights[l]
+                    const auto z = this->EvalMult(eLayerWeights[l], ePreDeltaL[l]);
+                    eLocalLoss = this->EvalAdd(eLocalLoss, z);
 
-                        /* Use only for debugging purpose
-                        this->Snoop(eLayerWeights[l]);
-                        this->Snoop(ePreDeltaL[l]);
-                        this->Snoop(z);
-                        /* */
-                    }
-
-                    auto eAct = this->eActivations[k];
-                    auto eLocalZl = this->EvalSub(this->constants.One(), this->EvalMult(eAct, eAct));
-
-                    std::vector<BootstrapableCiphertext> eLocalScaledGradWeights;
-                    std::vector<BootstrapableCiphertext> eLocalScaledGradBias;
-                    std::vector<BootstrapableCiphertext> eLocalLosses;
-                    std::vector<BootstrapableCiphertext> eLocalDeltaLs;
-
-                    if (k > 0) {
-                        ePreAct = this->eActivations[k - 1];
-                    } else {
-                        ePreAct = eInput;
-                    }
-
-                    for (auto n = 0; n < this->eWeights[k].size(); n++) {
-                        if (n > 0) {
-                            eLocalLoss = this->EvalRotate(eLocalLoss, 1);
-                        }
-                        const auto eLocalLossFlat = this->EvalFlatten(eLocalLoss);
-
-                        if (n > 0) {
-                            eLocalZl = this->EvalRotate(eLocalZl, 1);
-                        }
-                        const auto eLocalZlFlat = this->EvalFlatten(eLocalZl);
-
-                        eDeltaL = this->EvalMult(eLocalLossFlat, eLocalZlFlat);
-                        eDeltaL = this->EvalFlatten(eDeltaL);
-                        eLocalDeltaLs.emplace_back(eDeltaL);
-
-                        eGradWK = this->EvalMult(eDeltaL, ePreAct);
-                        eScaledGradWK = this->EvalMult(eGradWK, eLearningRate);
-                        eLocalScaledGradWeights.emplace_back(eScaledGradWK);
-
-                        eScaledGradBiasK = this->EvalMult(eDeltaL, eLearningRate);
-                        eLocalScaledGradBias.emplace_back(eScaledGradBiasK);
-
-                        /*
-                        std::cout << "===========================================" << std::endl;
-                        this->Snoop(eAct);
-                        this->Snoop(eLoss);
-                        this->Snoop(eZL);
-                        this->Snoop(ePreAct);
-                        this->Snoop(eGradWK);
-                        this->Snoop(eScaledGradWK);
-                        this->Snoop(eScaledGradBiasK);
-                        /* */
-                    }
-
-                    eScaledGradWeights.emplace_back(eLocalScaledGradWeights);
-                    eScaledGradBias.emplace_back(eLocalScaledGradBias);
-                    eDeltaLs.emplace_back(eLocalDeltaLs);
+                    /* Use only for debugging purpose
+                    this->Snoop(eLayerWeights[l]);
+                    this->Snoop(ePreDeltaL[l]);
+                    this->Snoop(z);
+                    /* */
                 }
 
-                std::reverse(eScaledGradWeights.begin(), eScaledGradWeights.end());
-                std::reverse(eScaledGradBias.begin(), eScaledGradBias.end());
-                // ------------------------------------------------------------------------------------------- Backward
+                auto eAct = this->eActivations[k];
+                auto eLocalZl = this->EvalSub(this->constants.One(), this->EvalMult(eAct, eAct));
 
-                // Gradient Descent -----------------------------------------------------------------------------------
-                for (auto k = 0; k < this->eWeights.size(); k++) {
-                    const auto &eLayerUnits = this->eWeights[k];
+                std::vector<BootstrapableCiphertext> eLocalScaledGradWeights;
+                std::vector<BootstrapableCiphertext> eLocalScaledGradBias;
+                std::vector<BootstrapableCiphertext> eLocalLosses;
+                std::vector<BootstrapableCiphertext> eLocalDeltaLs;
 
-                    for (auto j = 0; j < eLayerUnits.size(); j++) {
-                        this->eWeights[k][j] = this->EvalSub(this->eWeights[k][j], eScaledGradWeights[k][j]);
-                        this->eBias[k][j] = this->EvalSub(this->eBias[k][j], eScaledGradBias[k][j]);
-                    }
+                if (k > 0) {
+                    ePreAct = this->eActivations[k - 1];
+                } else {
+                    ePreAct = eInput;
                 }
-                // ----------------------------------------------------------------------------------- Gradient Descent
+
+                for (auto n = 0; n < this->eWeights[k].size(); n++) {
+                    if (n > 0) {
+                        eLocalLoss = this->EvalRotate(eLocalLoss, 1);
+                    }
+                    const auto eLocalLossFlat = this->EvalFlatten(eLocalLoss);
+
+                    if (n > 0) {
+                        eLocalZl = this->EvalRotate(eLocalZl, 1);
+                    }
+                    const auto eLocalZlFlat = this->EvalFlatten(eLocalZl);
+
+                    eDeltaL = this->EvalMult(eLocalLossFlat, eLocalZlFlat);
+                    eDeltaL = this->EvalFlatten(eDeltaL);
+                    eLocalDeltaLs.emplace_back(eDeltaL);
+
+                    eGradWK = this->EvalMult(eDeltaL, ePreAct);
+                    eScaledGradWK = this->EvalMult(eGradWK, eLearningRate);
+                    eLocalScaledGradWeights.emplace_back(eScaledGradWK);
+
+                    eScaledGradBiasK = this->EvalMult(eDeltaL, eLearningRate);
+                    eLocalScaledGradBias.emplace_back(eScaledGradBiasK);
+
+                    /*
+                    std::cout << "===========================================" << std::endl;
+                    this->Snoop(eAct);
+                    this->Snoop(eLoss);
+                    this->Snoop(eZL);
+                    this->Snoop(ePreAct);
+                    this->Snoop(eGradWK);
+                    this->Snoop(eScaledGradWK);
+                    this->Snoop(eScaledGradBiasK);
+                    /* */
+                }
+
+                eScaledGradWeights.emplace_back(eLocalScaledGradWeights);
+                eScaledGradBias.emplace_back(eLocalScaledGradBias);
+                eDeltaLs.emplace_back(eLocalDeltaLs);
             }
+
+            std::reverse(eScaledGradWeights.begin(), eScaledGradWeights.end());
+            std::reverse(eScaledGradBias.begin(), eScaledGradBias.end());
+            // ----------------------------------------------------------------------------------------------- Backward
+
+            // Gradient Descent ---------------------------------------------------------------------------------------
+            for (auto k = 0; k < this->eWeights.size(); k++) {
+                const auto &eLayerUnits = this->eWeights[k];
+
+                for (auto j = 0; j < eLayerUnits.size(); j++) {
+                    this->eWeights[k][j] = this->EvalSub(this->eWeights[k][j], eScaledGradWeights[k][j]);
+                    this->eBias[k][j] = this->EvalSub(this->eBias[k][j], eScaledGradBias[k][j]);
+                }
+            }
+            // --------------------------------------------------------------------------------------- Gradient Descent
         }
     }
+
 
     void CkksNeuralNetwork::Fit(const std::string &eTrainingFeaturesFilePath,
                                 const std::string &eTrainingLabelsFilePath) {
