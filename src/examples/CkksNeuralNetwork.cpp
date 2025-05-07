@@ -26,13 +26,12 @@ int main(const int argc, char *argv[]) {
     }
 
     CkksExperimentParams params{};
-    // datasets11.emplace_back(std::make_unique<DiabetesDataset>(FM11));
 
-    for (auto i = 1; i <= epochs; i++) {
+    for (auto i = 10; i <= epochs; i++) {
         for (auto j = 0; j < datasets11.size(); j++) {
             params.epochs = i;
             params.earlyBootstrapping = 3;
-
+            /*
             params.activation = TANH;
             params.approximation = CHEBYSHEV;
             CkksNeuralNetworkExperiment("nn_ckks_tanh_chebyshev_" + std::to_string(params.epochs), *datasets11[j],
@@ -47,22 +46,24 @@ int main(const int argc, char *argv[]) {
             params.approximation = LEAST_SQUARES;
             CkksNeuralNetworkExperiment("nn_ckks_tanh_least_squares_" + std::to_string(params.epochs), *datasets11[j],
                                         params).Run();
-
+            */
             params.activation = SIGMOID;
             params.approximation = CHEBYSHEV;
             CkksNeuralNetworkExperiment("nn_ckks_sigmoid_chebyshev_" + std::to_string(params.epochs), *datasets11[j],
                                         params).Run();
-
+            /*
             params.activation = SIGMOID;
             params.approximation = TAYLOR;
             CkksNeuralNetworkExperiment("nn_ckks_sigmoid_taylor_" + std::to_string(params.epochs), *datasets11[j],
                                         params).Run();
+
 
             params.activation = SIGMOID;
             params.approximation = LEAST_SQUARES;
             CkksNeuralNetworkExperiment("nn_ckks_sigmoid_least_squares_" + std::to_string(params.epochs),
                                         *datasets11[j],
                                         params).Run();
+            */
         }
     }
 }

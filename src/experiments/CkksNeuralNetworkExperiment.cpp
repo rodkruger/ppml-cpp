@@ -120,7 +120,7 @@ namespace hermesml {
 
         this->Info(">>>>> SERVER SIDE PROCESSING");
 
-        std::vector<size_t> layers = {n_features, 5, 2, 1};
+        std::vector<size_t> layers = {n_features, 20, 10, 1};
         auto clf = CkksNeuralNetwork(ckksCtx, n_features, params.epochs, layers, 42, params.activation,
                                      params.approximation);
 
