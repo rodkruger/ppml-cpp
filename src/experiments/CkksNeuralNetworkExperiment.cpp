@@ -124,9 +124,10 @@ namespace hermesml {
                                      params.approximation);
 
         // Step 04 - Train the model
+        auto experimentId = this->GetExperimentId();
 
-        for (int e = 1; e < this->params.epochs; e++) {
-            this->SetExperimentId(this->GetExperimentId() + "_" + std::to_string(e));
+        for (int e = 1; e <= this->params.epochs; e++) {
+            this->SetExperimentId(experimentId + "_" + std::to_string(e));
 
             this->Info("Initiating experiment " + this->GetExperimentId());
             this->Info("Train model");
