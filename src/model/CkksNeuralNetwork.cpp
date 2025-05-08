@@ -16,7 +16,7 @@ namespace hermesml {
     }
 
     BootstrapableCiphertext CkksNeuralNetwork::GetLearningRate() const {
-        constexpr auto lr = 0.1;
+        constexpr auto lr = 0.05;
         return this->EncryptCKKS(std::vector(this->n_features, lr));
     }
 
