@@ -25,10 +25,11 @@ int main(const int argc, char *argv[]) {
 
     CkksExperimentParams params{};
 
-    params.epochs = 30;
+    params.epochs = 10;
     params.earlyBootstrapping = 3;
 
     for (auto j = 0; j < datasets11.size(); j++) {
+        /*
         params.activation = TANH;
         params.approximation = CHEBYSHEV;
         CkksNeuralNetworkExperiment("nn_ckks_tanh_chebyshev", *datasets11[j], params).Run();
@@ -40,7 +41,7 @@ int main(const int argc, char *argv[]) {
         params.activation = TANH;
         params.approximation = LEAST_SQUARES;
         CkksNeuralNetworkExperiment("nn_ckks_tanh_least_squares", *datasets11[j], params).Run();
-
+        */
         params.activation = SIGMOID;
         params.approximation = CHEBYSHEV;
         CkksNeuralNetworkExperiment("nn_ckks_sigmoid_chebyshev", *datasets11[j], params).Run();
