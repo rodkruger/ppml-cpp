@@ -22,7 +22,7 @@ namespace hermesml {
         size_t trainingLength{};
         size_t testingLength{};
         size_t ringDimension{};
-        int8_t multiplicativeDepth{};
+        int32_t multiplicativeDepth{};
 
         std::chrono::duration<double> encryptingTime{};
         std::chrono::duration<double> trainingTime{};
@@ -48,7 +48,7 @@ namespace hermesml {
         size_t trainingLength{};
         size_t testingLength{};
         size_t ringDimension{};
-        int8_t multiplicativeDepth{};
+        int32_t multiplicativeDepth{};
 
         std::chrono::duration<double> encryptingTime{};
         std::chrono::duration<double> trainingTime{};

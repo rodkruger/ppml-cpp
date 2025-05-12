@@ -36,7 +36,7 @@ namespace hermesml {
 
         this->Info(">>>>> CLIENT SIDE PROCESSING");
 
-        // Step 01 - read and normalize data
+        // Step 01 - Read and normalize data --------------------------------------------------------------------------
         this->Info("Read dataset " + this->GetDataset().GetName());;
 
         const auto trainingFeatures = this->GetDataset().GetTrainingFeatures();
@@ -66,10 +66,7 @@ namespace hermesml {
             throw std::runtime_error("Wrong number of testing features and labels provided!");
         }
 
-        //-----------------------------------------------------------------------------------------------------------------
-
-        // Step 02 - Generating keys and crypto context. Do not share it with anybody :)
-
+        // Step 02 - Generating keys and crypto context. Do not share it with anybody :) ------------------------------
         this->Info("Generate crypto context");
 
         auto ckksCtx = HEContextFactory::ckksHeContext(n_features);
@@ -88,10 +85,7 @@ namespace hermesml {
         this->Info("Early Boostrapping: " + std::to_string(ckksCtx.GetEarlyBootstrapping()));
         this->Info("Number of Slots: " + std::to_string(ckksCtx.GetNumSlots()));
 
-        //-----------------------------------------------------------------------------------------------------------------
-
-        // Step 03 - Encrypt training data
-
+        // Step 03 - Encrypt data -------------------------------------------------------------------------------------
         start = std::chrono::high_resolution_clock::now();
 
         std::vector<BootstrapableCiphertext> eTrainingData, eTrainingLabels, eTestingData, eTestingLabels;
@@ -115,20 +109,43 @@ namespace hermesml {
 
         this->Info("Elapsed time: " + std::to_string(this->encryptingTime.count()) + " ms");
 
-        // S E R V E R   S I D E   P R O C E S S I N G --------------------------------------------------------------------
-
+        // S E R V E R   S I D E   P R O C E S S I N G ----------------------------------------------------------------
         this->Info(">>>>> SERVER SIDE PROCESSING");
 
         std::vector<size_t> layers = {n_features, 10, 5, 1};
         auto clf = CkksNeuralNetwork(ckksCtx, n_features, params.epochs, layers, 42, params.activation,
                                      params.approximation);
 
-        // Step 04 - Train the model
+        // Step 04 - Train the model ----------------------------------------------------------------------------------
         auto experimentId = this->GetExperimentId();
 
         for (int e = 1; e <= this->params.epochs; e++) {
             this->SetExperimentId(experimentId + "_" + std::to_string(e));
 
+            auto predictionsFileName = this->BuildFilePath("predictions.csv");
+
+            if (std::filesystem::exists(predictionsFileName)) {
+                std::ifstream existingPredictionFile(predictionsFileName);
+                size_t lineCount = 0;
+                std::string line;
+
+                while (std::getline(existingPredictionFile, line)) {
+                    lineCount++;
+                }
+
+                if (lineCount == eTestingData.size()) {
+                    this->Info("Experiment " + this->GetExperimentId() + " is done. Skipped!");
+                    return;
+                }
+            }
+
+            std::ofstream predictionsFile(predictionsFileName);
+            if (!predictionsFile) {
+                this->Error("Could not open the file " + predictionsFileName + " for writing. Skipped!");
+                return;
+            }
+
+            // Step 04 - Train the model ------------------------------------------------------------------------------
             this->Info("Initiating experiment " + this->GetExperimentId());
             this->Info("Train model");
 
@@ -141,23 +158,8 @@ namespace hermesml {
 
             this->Info("Elapsed time: " + std::to_string(this->trainingTime.count()) + " ms");
 
-            // Step 05 - Test the model
-
+            // Step 05 - Test the model - -----------------------------------------------------------------------------
             this->Info("Test model");
-
-            // Open the file in write mode
-            auto predictionsFileName = this->BuildFilePath("predictions.csv");
-
-            if (std::filesystem::exists(predictionsFileName)) {
-                std::filesystem::remove(predictionsFileName);
-            }
-
-            std::ofstream predictionsFile(predictionsFileName);
-
-            if (!predictionsFile) {
-                this->Error("Could not open the file " + predictionsFileName + " for writing.\n");
-                return;
-            }
 
             start = std::chrono::high_resolution_clock::now();
 
@@ -178,10 +180,6 @@ namespace hermesml {
                     case SIGMOID:
                         pPredictedLabel = pPrediction > 0.5 ? 1.0 : 0.0;
                         break;
-
-                    default:
-                        pPredictedLabel = pPrediction > 0.5 ? 1.0 : 0.0;
-                        break;
                 }
 
                 const auto realLabel = testingLabels[i];
@@ -189,7 +187,6 @@ namespace hermesml {
                 predictionsFile << pPrediction << "," << realLabel << "," << pPredictedLabel << std::endl;
             }
 
-            // Close the file
             predictionsFile.close();
 
             end = std::chrono::high_resolution_clock::now();
