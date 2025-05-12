@@ -34,7 +34,6 @@ namespace hermesml {
             }
         }
 
-        this->Info("Initiating experiment " + this->GetExperimentId());
         this->Info(">>>>> CLIENT SIDE PROCESSING");
 
         // Step 01 - read and normalize data
@@ -120,118 +119,124 @@ namespace hermesml {
 
         this->Info(">>>>> SERVER SIDE PROCESSING");
 
-        std::vector<size_t> layers = {n_features, 5, 2, 1};
+        std::vector<size_t> layers = {n_features, 10, 5, 1};
         auto clf = CkksNeuralNetwork(ckksCtx, n_features, params.epochs, layers, 42, params.activation,
                                      params.approximation);
 
         // Step 04 - Train the model
+        auto experimentId = this->GetExperimentId();
 
-        this->Info("Train model");
+        for (int e = 1; e <= this->params.epochs; e++) {
+            this->SetExperimentId(experimentId + "_" + std::to_string(e));
 
-        start = std::chrono::high_resolution_clock::now();
+            this->Info("Initiating experiment " + this->GetExperimentId());
+            this->Info("Train model");
 
-        clf.Fit(eTrainingData, eTrainingLabels);
+            start = std::chrono::high_resolution_clock::now();
 
-        end = std::chrono::high_resolution_clock::now();
-        this->trainingTime = end - start;
+            clf.FitSingle(eTrainingData, eTrainingLabels);
 
-        this->Info("Elapsed time: " + std::to_string(this->trainingTime.count()) + " ms");
+            end = std::chrono::high_resolution_clock::now();
+            this->trainingTime += end - start;
 
-        // Step 05 - Test the model
+            this->Info("Elapsed time: " + std::to_string(this->trainingTime.count()) + " ms");
 
-        this->Info("Test model");
+            // Step 05 - Test the model
 
-        // Open the file in write mode
-        auto predictionsFileName = this->BuildFilePath("predictions.csv");
+            this->Info("Test model");
 
-        if (std::filesystem::exists(predictionsFileName)) {
-            std::filesystem::remove(predictionsFileName);
-        }
+            // Open the file in write mode
+            auto predictionsFileName = this->BuildFilePath("predictions.csv");
 
-        std::ofstream predictionsFile(predictionsFileName);
-
-        if (!predictionsFile) {
-            this->Error("Could not open the file " + predictionsFileName + " for writing.\n");
-            return;
-        }
-
-        start = std::chrono::high_resolution_clock::now();
-
-        Plaintext plain_label;
-
-        for (size_t i = 0; i < eTestingData.size(); i++) {
-            const auto &eFeatures = eTestingData[i];
-            const auto ePredictedLabel = clf.Predict(eFeatures).GetCiphertext();
-            cc->Decrypt(ckksCtx.GetPrivateKey(), ePredictedLabel, &plain_label);
-            const auto pPrediction = plain_label->GetCKKSPackedValue()[0].real();
-
-            double pPredictedLabel = 0.0;
-            switch (this->params.activation) {
-                case TANH:
-                    pPredictedLabel = pPrediction > 0.0 ? 1.0 : 0.0;
-                    break;
-
-                case SIGMOID:
-                    pPredictedLabel = pPrediction > 0.5 ? 1.0 : 0.0;
-                    break;
-
-                default:
-                    pPredictedLabel = pPrediction > 0.5 ? 1.0 : 0.0;
-                    break;
+            if (std::filesystem::exists(predictionsFileName)) {
+                std::filesystem::remove(predictionsFileName);
             }
 
-            const auto realLabel = testingLabels[i];
+            std::ofstream predictionsFile(predictionsFileName);
 
-            predictionsFile << pPrediction << "," << realLabel << "," << pPredictedLabel << std::endl;
+            if (!predictionsFile) {
+                this->Error("Could not open the file " + predictionsFileName + " for writing.\n");
+                return;
+            }
+
+            start = std::chrono::high_resolution_clock::now();
+
+            Plaintext plain_label;
+
+            for (size_t i = 0; i < eTestingData.size(); i++) {
+                const auto &eFeatures = eTestingData[i];
+                const auto ePredictedLabel = clf.Predict(eFeatures).GetCiphertext();
+                cc->Decrypt(ckksCtx.GetPrivateKey(), ePredictedLabel, &plain_label);
+                const auto pPrediction = plain_label->GetCKKSPackedValue()[0].real();
+
+                double pPredictedLabel = 0.0;
+                switch (this->params.activation) {
+                    case TANH:
+                        pPredictedLabel = pPrediction > 0.0 ? 1.0 : 0.0;
+                        break;
+
+                    case SIGMOID:
+                        pPredictedLabel = pPrediction > 0.5 ? 1.0 : 0.0;
+                        break;
+
+                    default:
+                        pPredictedLabel = pPrediction > 0.5 ? 1.0 : 0.0;
+                        break;
+                }
+
+                const auto realLabel = testingLabels[i];
+
+                predictionsFile << pPrediction << "," << realLabel << "," << pPredictedLabel << std::endl;
+            }
+
+            // Close the file
+            predictionsFile.close();
+
+            end = std::chrono::high_resolution_clock::now();
+            this->testingTime = end - start;
+
+            this->Info("Elapsed time: " + std::to_string(this->testingTime.count()) + " ms");
+
+            //---------------------------------------------------------------------------------------------------------
+
+            // Dump parameters into file
+
+            auto parametersFileName = this->BuildFilePath("parameters.csv");
+
+            if (std::filesystem::exists(parametersFileName)) {
+                std::filesystem::remove(parametersFileName);
+            }
+
+            std::ofstream parametersFile(parametersFileName);
+
+            if (!parametersFile) {
+                this->Error("Could not open the file " + predictionsFileName + " for writing.\n");
+                return;
+            }
+
+            this->datasetLength = trainingFeatures.size() + testingFeatures.size();
+            this->trainingLength = trainingFeatures.size();
+            this->testingLength = testingFeatures.size();
+            this->ringDimension = cc->GetRingDimension();
+            this->multiplicativeDepth = ckksCtx.GetMultiplicativeDepth();
+
+            // Write the data to the file
+            parametersFile << "epochs = " << this->params.epochs << std::endl;
+            parametersFile << "datasetLength = " << this->datasetLength << std::endl;
+            parametersFile << "trainingRatio = " << this->trainingRatio << std::endl;
+            parametersFile << "trainingLength = " << this->trainingLength << std::endl;
+            parametersFile << "testingLength = " << this->testingLength << std::endl;
+            parametersFile << "ringDimension = " << this->ringDimension << std::endl;
+            parametersFile << "multiplicativeDepth = " << std::to_string(this->multiplicativeDepth) << std::endl;
+            parametersFile << "encryptingTime = " << std::to_string(this->encryptingTime.count()) << std::endl;
+            parametersFile << "trainingTime = " << std::to_string(this->trainingTime.count()) << std::endl;
+            parametersFile << "testingTime = " << std::to_string(this->testingTime.count()) << std::endl;
+
+            // Close the file
+            parametersFile.close();
+
+            this->Info("Experiment " + this->GetExperimentId() + " completed!");
         }
-
-        // Close the file
-        predictionsFile.close();
-
-        end = std::chrono::high_resolution_clock::now();
-        this->testingTime = end - start;
-
-        this->Info("Elapsed time: " + std::to_string(this->testingTime.count()) + " ms");
-
-        //-------------------------------------------------------------------------------------------------------------
-
-        // Dump parameters into file
-
-        auto parametersFileName = this->BuildFilePath("parameters.csv");
-
-        if (std::filesystem::exists(parametersFileName)) {
-            std::filesystem::remove(parametersFileName);
-        }
-
-        std::ofstream parametersFile(parametersFileName);
-
-        if (!parametersFile) {
-            this->Error("Could not open the file " + predictionsFileName + " for writing.\n");
-            return;
-        }
-
-        this->datasetLength = trainingFeatures.size() + testingFeatures.size();
-        this->trainingLength = trainingFeatures.size();
-        this->testingLength = testingFeatures.size();
-        this->ringDimension = cc->GetRingDimension();
-        this->multiplicativeDepth = ckksCtx.GetMultiplicativeDepth();
-
-        // Write the data to the file
-        parametersFile << "epochs = " << this->params.epochs << std::endl;
-        parametersFile << "datasetLength = " << this->datasetLength << std::endl;
-        parametersFile << "trainingRatio = " << this->trainingRatio << std::endl;
-        parametersFile << "trainingLength = " << this->trainingLength << std::endl;
-        parametersFile << "testingLength = " << this->testingLength << std::endl;
-        parametersFile << "ringDimension = " << this->ringDimension << std::endl;
-        parametersFile << "multiplicativeDepth = " << std::to_string(this->multiplicativeDepth) << std::endl;
-        parametersFile << "encryptingTime = " << std::to_string(this->encryptingTime.count()) << std::endl;
-        parametersFile << "trainingTime = " << std::to_string(this->trainingTime.count()) << std::endl;
-        parametersFile << "testingTime = " << std::to_string(this->testingTime.count()) << std::endl;
-
-        // Close the file
-        parametersFile.close();
-
-        this->Info("Experiment " + this->GetExperimentId() + " completed!");
     }
 
     void CkksNeuralNetworkExperiment::RunHardDisk() {

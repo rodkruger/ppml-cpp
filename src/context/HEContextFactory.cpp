@@ -27,7 +27,8 @@ namespace hermesml {
         const std::vector<uint32_t> bsgsDim = {0, 0};
         constexpr auto ringDimension = 2048;
         constexpr auto scalingModSize = 56;
-        const auto numSlots = NextPowerOfTwo(n_features);
+        // const auto numSlots = NextPowerOfTwo(n_features);
+        constexpr auto numSlots = 32;
 
         auto parameters = CCParams<CryptoContextCKKSRNS>();
         parameters.SetSecurityLevel(HEStd_NotSet);
@@ -38,9 +39,9 @@ namespace hermesml {
         parameters.SetSecretKeyDist(UNIFORM_TERNARY);
         parameters.SetBatchSize(numSlots);
 
-        constexpr uint32_t depth = 30;
-        const uint32_t levelsAfterBootstrap = depth - FHECKKSRNS::GetBootstrapDepth(
-                                                  levelBudget, parameters.GetSecretKeyDist());
+        constexpr int32_t depth = 30;
+        const int32_t levelsAfterBootstrap = depth - FHECKKSRNS::GetBootstrapDepth(
+                                                 levelBudget, parameters.GetSecretKeyDist());
         parameters.SetMultiplicativeDepth(depth);
 
         /* https://github.com/malb/lattice-estimator

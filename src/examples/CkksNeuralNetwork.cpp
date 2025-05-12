@@ -3,9 +3,7 @@
 
 using namespace hermesml;
 
-int main(int argc, char *argv[]) {
-    constexpr auto epochs = 1;
-
+int main(const int argc, char *argv[]) {
     std::vector<std::unique_ptr<Dataset> > datasets11;
 
     std::map<std::string, std::function<std::unique_ptr<Dataset>()> > dataset_map = {
@@ -27,50 +25,33 @@ int main(int argc, char *argv[]) {
 
     CkksExperimentParams params{};
 
-    for (auto i = 1; i <= epochs; i++) {
-        for (auto j = 0; j < datasets11.size(); j++) {
-            params.activation = TANH;
-            params.approximation = CHEBYSHEV;
-            params.epochs = i;
-            params.earlyBootstrapping = 0;
-            CkksNeuralNetworkExperiment("nn_ckks_tanh_chebyshev_" + std::to_string(params.epochs), *datasets11[j],
-                                        params).Run();
+    params.epochs = 10;
+    params.earlyBootstrapping = 3;
 
-            params.activation = TANH;
-            params.approximation = TAYLOR;
-            params.epochs = i;
-            params.earlyBootstrapping = 0;
-            CkksNeuralNetworkExperiment("nn_ckks_tanh_taylor_" + std::to_string(params.epochs), *datasets11[j],
-                                        params).Run();
+    for (auto j = 0; j < datasets11.size(); j++) {
+        /*
+        params.activation = TANH;
+        params.approximation = CHEBYSHEV;
+        CkksNeuralNetworkExperiment("nn_ckks_tanh_chebyshev", *datasets11[j], params).Run();
 
-            params.activation = TANH;
-            params.approximation = LEAST_SQUARES;
-            params.epochs = i;
-            params.earlyBootstrapping = 0;
-            CkksNeuralNetworkExperiment("nn_ckks_tanh_least_squares_" + std::to_string(params.epochs), *datasets11[j],
-                                        params).Run();
+        params.activation = TANH;
+        params.approximation = TAYLOR;
+        CkksNeuralNetworkExperiment("nn_ckks_tanh_taylor", *datasets11[j], params).Run();
 
-            params.activation = SIGMOID;
-            params.approximation = CHEBYSHEV;
-            params.epochs = i;
-            params.earlyBootstrapping = 0;
-            CkksNeuralNetworkExperiment("nn_ckks_sigmoid_chebyshev_" + std::to_string(params.epochs), *datasets11[j],
-                                        params).Run();
+        params.activation = TANH;
+        params.approximation = LEAST_SQUARES;
+        CkksNeuralNetworkExperiment("nn_ckks_tanh_least_squares", *datasets11[j], params).Run();
+        */
+        params.activation = SIGMOID;
+        params.approximation = CHEBYSHEV;
+        CkksNeuralNetworkExperiment("nn_ckks_sigmoid_chebyshev", *datasets11[j], params).Run();
 
-            params.activation = SIGMOID;
-            params.approximation = TAYLOR;
-            params.epochs = i;
-            params.earlyBootstrapping = 0;
-            CkksNeuralNetworkExperiment("nn_ckks_sigmoid_taylor_" + std::to_string(params.epochs), *datasets11[j],
-                                        params).Run();
+        params.activation = SIGMOID;
+        params.approximation = TAYLOR;
+        CkksNeuralNetworkExperiment("nn_ckks_sigmoid_taylor", *datasets11[j], params).Run();
 
-            params.activation = SIGMOID;
-            params.approximation = LEAST_SQUARES;
-            params.epochs = i;
-            params.earlyBootstrapping = 0;
-            CkksNeuralNetworkExperiment("nn_ckks_sigmoid_least_squares_" + std::to_string(params.epochs),
-                                        *datasets11[j],
-                                        params).Run();
-        }
+        params.activation = SIGMOID;
+        params.approximation = LEAST_SQUARES;
+        CkksNeuralNetworkExperiment("nn_ckks_sigmoid_least_squares", *datasets11[j], params).Run();
     }
 }

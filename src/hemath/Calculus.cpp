@@ -9,7 +9,7 @@ namespace hermesml {
         const auto decLevels = x.GetRemainingLevels() - levels;
 
         const auto b = this->
-                EvalBootstrap(BootstrapableCiphertext(x.GetCiphertext(), static_cast<int8_t>(decLevels),
+                EvalBootstrap(BootstrapableCiphertext(x.GetCiphertext(), decLevels,
                                                       x.GetAdditionsExecuted()));
 
         auto c = this->GetCc()->EvalLogistic(b.GetCiphertext(), -6.0, 6.0, 5);
@@ -19,8 +19,8 @@ namespace hermesml {
     }
 
     BootstrapableCiphertext Calculus::SigmoidTaylor(const BootstrapableCiphertext &x) const {
-        const int decLevels = x.GetRemainingLevels() - 4;
-        const auto b = this->EvalBootstrap(BootstrapableCiphertext(x.GetCiphertext(), static_cast<int8_t>(decLevels),
+        const int32_t decLevels = x.GetRemainingLevels() - 4;
+        const auto b = this->EvalBootstrap(BootstrapableCiphertext(x.GetCiphertext(), decLevels,
                                                                    x.GetAdditionsExecuted()));
 
         const std::vector<double> coefficients = {
@@ -38,8 +38,8 @@ namespace hermesml {
     }
 
     BootstrapableCiphertext Calculus::SigmoidLeastSquares(const BootstrapableCiphertext &x) const {
-        const int decLevels = x.GetRemainingLevels() - 4;
-        const auto b = this->EvalBootstrap(BootstrapableCiphertext(x.GetCiphertext(), static_cast<int8_t>(decLevels),
+        const int32_t decLevels = x.GetRemainingLevels() - 4;
+        const auto b = this->EvalBootstrap(BootstrapableCiphertext(x.GetCiphertext(), decLevels,
                                                                    x.GetAdditionsExecuted()));
 
         const std::vector<double> coefficients = {
@@ -57,24 +57,24 @@ namespace hermesml {
     }
 
     BootstrapableCiphertext Calculus::TanhChebyshev(const BootstrapableCiphertext &x) const {
-        const int decLevels = x.GetRemainingLevels() - 7;
+        const int32_t decLevels = x.GetRemainingLevels() - 4;
 
         const auto b = this->
-                EvalBootstrap(BootstrapableCiphertext(x.GetCiphertext(), static_cast<int8_t>(decLevels),
+                EvalBootstrap(BootstrapableCiphertext(x.GetCiphertext(), decLevels,
                                                       x.GetAdditionsExecuted()));
 
         auto c = this->GetCc()->EvalChebyshevFunction(
             [](const double x1) { return tanh(x1); }, b.GetCiphertext(),
             -6, 6,
-            59);
+            5);
         c = this->SafeRescaling(c);
 
         return BootstrapableCiphertext(c, b.GetRemainingLevels(), b.GetAdditionsExecuted());
     }
 
     BootstrapableCiphertext Calculus::TanhTaylor(const BootstrapableCiphertext &x) const {
-        const int decLevels = x.GetRemainingLevels() - 4;
-        const auto b = this->EvalBootstrap(BootstrapableCiphertext(x.GetCiphertext(), static_cast<int8_t>(decLevels),
+        const int32_t decLevels = x.GetRemainingLevels() - 4;
+        const auto b = this->EvalBootstrap(BootstrapableCiphertext(x.GetCiphertext(), decLevels,
                                                                    x.GetAdditionsExecuted()));
 
         const std::vector<double> coefficients = {
@@ -92,8 +92,8 @@ namespace hermesml {
     }
 
     BootstrapableCiphertext Calculus::TanhLeastSquares(const BootstrapableCiphertext &x) const {
-        const int decLevels = x.GetRemainingLevels() - 4;
-        const auto b = this->EvalBootstrap(BootstrapableCiphertext(x.GetCiphertext(), static_cast<int8_t>(decLevels),
+        const int32_t decLevels = x.GetRemainingLevels() - 4;
+        const auto b = this->EvalBootstrap(BootstrapableCiphertext(x.GetCiphertext(), decLevels,
                                                                    x.GetAdditionsExecuted()));
 
         const std::vector<double> coefficients = {
