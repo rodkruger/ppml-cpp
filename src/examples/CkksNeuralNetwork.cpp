@@ -23,34 +23,43 @@ int main(const int argc, char *argv[]) {
         }
     }
 
+    if (datasets11.empty()) {
+        datasets11.emplace_back(dataset_map["diabetes"]());
+        datasets11.emplace_back(dataset_map["breast"]());
+        datasets11.emplace_back(dataset_map["glioma"]());
+        datasets11.emplace_back(dataset_map["thyroid"]());
+        datasets11.emplace_back(dataset_map["cirrhosis"]());
+    }
+
+    struct {
+        ActivationFn activation;
+        ApproximationFn approximation;
+        std::string name;
+    } experiments[] = {
+                {TANH, CHEBYSHEV, "nn_ckks_tanh_chebyshev"},
+                {TANH, TAYLOR, "nn_ckks_tanh_taylor"},
+                {TANH, LEAST_SQUARES, "nn_ckks_tanh_least_squares"},
+                {SIGMOID, CHEBYSHEV, "nn_ckks_sigmoid_chebyshev"},
+                {SIGMOID, TAYLOR, "nn_ckks_sigmoid_taylor"},
+                {SIGMOID, LEAST_SQUARES, "nn_ckks_sigmoid_least_squares"}
+            };
+
     CkksExperimentParams params{};
 
-    params.epochs = 10;
+    params.epochs = 30;
     params.earlyBootstrapping = 3;
 
     for (auto j = 0; j < datasets11.size(); j++) {
-        params.activation = TANH;
-        params.approximation = CHEBYSHEV;
-        CkksNeuralNetworkExperiment("nn_ckks_tanh_chebyshev", *datasets11[j], params).Run();
+        for (const auto &[activation, approximation, name]: experiments) {
+            params.activation = activation;
+            params.approximation = approximation;
 
-        params.activation = TANH;
-        params.approximation = TAYLOR;
-        CkksNeuralNetworkExperiment("nn_ckks_tanh_taylor", *datasets11[j], params).Run();
-
-        params.activation = TANH;
-        params.approximation = LEAST_SQUARES;
-        CkksNeuralNetworkExperiment("nn_ckks_tanh_least_squares", *datasets11[j], params).Run();
-
-        params.activation = SIGMOID;
-        params.approximation = CHEBYSHEV;
-        CkksNeuralNetworkExperiment("nn_ckks_sigmoid_chebyshev", *datasets11[j], params).Run();
-
-        params.activation = SIGMOID;
-        params.approximation = TAYLOR;
-        CkksNeuralNetworkExperiment("nn_ckks_sigmoid_taylor", *datasets11[j], params).Run();
-
-        params.activation = SIGMOID;
-        params.approximation = LEAST_SQUARES;
-        CkksNeuralNetworkExperiment("nn_ckks_sigmoid_least_squares", *datasets11[j], params).Run();
+            try {
+                CkksNeuralNetworkExperiment(name, *datasets11[j], params).Run();
+            } catch (const OpenFHEException &e) {
+                std::cerr << "[OpenFHEException] " << name << " failed on dataset " << j
+                        << ": " << e.what() << std::endl;
+            }
+        }
     }
 }
