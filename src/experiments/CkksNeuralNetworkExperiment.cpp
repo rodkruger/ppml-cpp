@@ -135,7 +135,7 @@ namespace hermesml {
 
                 if (lineCount == eTestingData.size()) {
                     this->Info("Experiment " + this->GetExperimentId() + " is done. Skipped!");
-                    return;
+                    break;
                 }
             }
 
