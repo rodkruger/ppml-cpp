@@ -101,14 +101,21 @@ namespace hermesml {
         const int decLevels = ComputeRemainingLevels(ciphertext1, ciphertext2) - 1;
 
         return this->EvalBootstrap(
-            BootstrapableCiphertext(ciphertext, static_cast<int8_t>(decLevels), additionsExecuted));
+            BootstrapableCiphertext(ciphertext, decLevels, additionsExecuted));
     }
 
     BootstrapableCiphertext EncryptedObject::EvalBootstrap(const BootstrapableCiphertext &ciphertext) const {
-        if ((ciphertext.GetRemainingLevels() - this->GetCtx().GetEarlyBootstrapping()) <= 1) {
+        const auto remainingLevels = ciphertext.GetRemainingLevels() - this->GetCtx().GetEarlyBootstrapping() - 1;
+
+        if (remainingLevels > this->GetCtx().GetMultiplicativeDepth()) {
+            std::cout << "WARNING: remaining levels is too high: " << remainingLevels << std::endl;
+        }
+
+        // Review this logic when possible
+        if (remainingLevels <= 1) {
             const auto ciphertext2 = this->GetCc()->EvalBootstrap(ciphertext.GetCiphertext());
             return BootstrapableCiphertext(this->SafeRescaling(ciphertext2),
-                                           static_cast<int32_t>(this->GetCtx().GetLevelsAfterBootstrapping()));
+                                           this->GetCtx().GetLevelsAfterBootstrapping());
         }
 
         return ciphertext;
@@ -147,7 +154,7 @@ namespace hermesml {
     BootstrapableCiphertext EncryptedObject::EvalMerge(
         const std::vector<BootstrapableCiphertext> &ciphertexts) const {
         std::vector<Ciphertext<DCRTPoly> > ciphertextsToMerge;
-        auto minRemainingLevel = static_cast<int32_t>(this->GetCtx().GetMultiplicativeDepth());
+        auto minRemainingLevel = this->GetCtx().GetMultiplicativeDepth();
         for (const auto &c: ciphertexts) {
             ciphertextsToMerge.emplace_back(c.GetCiphertext());
             if (c.GetRemainingLevels() < minRemainingLevel) {
@@ -156,9 +163,7 @@ namespace hermesml {
         }
 
         const auto mergedCiphertexts = this->GetCc()->EvalMerge(ciphertextsToMerge);
-        const auto b = BootstrapableCiphertext(mergedCiphertexts, minRemainingLevel - 1);
-
-        return b;
+        return this->EvalBootstrap(BootstrapableCiphertext(mergedCiphertexts, minRemainingLevel - 1));
     }
 
     BootstrapableCiphertext EncryptedObject::EvalFlatten(const BootstrapableCiphertext &ciphertext) const {

@@ -17,20 +17,25 @@ namespace hermesml {
 
         spdlog::set_default_logger(this->logger);
         spdlog::flush_on(spdlog::level::info);
+    }
 
-        this->contentPath = std::filesystem::current_path().string() + "/Predictions/" + dataset.GetName() + "/" + this->experimentId + "/";
+    std::string Experiment::BuildFilePath(const std::string &fileName) {
+        this->contentPath = std::filesystem::current_path().string() + "/Predictions/" + this->dataset.GetName() + "/" +
+                            this->experimentId + "/";
 
         if (!std::filesystem::exists(this->contentPath)) {
             std::filesystem::create_directories(this->contentPath);
         }
-    }
 
-    std::string Experiment::BuildFilePath(const std::string &fileName) const {
         return this->contentPath + fileName;
     }
 
     Dataset &Experiment::GetDataset() const {
         return this->dataset;
+    }
+
+    void Experiment::SetExperimentId(const std::string &experimentId) {
+        this->experimentId = experimentId;
     }
 
     std::string Experiment::GetExperimentId() const {

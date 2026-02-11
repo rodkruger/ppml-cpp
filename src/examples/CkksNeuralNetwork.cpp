@@ -3,9 +3,7 @@
 
 using namespace hermesml;
 
-int main(int argc, char *argv[]) {
-    constexpr auto epochs = 1;
-
+int main(const int argc, char *argv[]) {
     std::vector<std::unique_ptr<Dataset> > datasets11;
 
     std::map<std::string, std::function<std::unique_ptr<Dataset>()> > dataset_map = {
@@ -25,52 +23,43 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    if (datasets11.empty()) {
+        datasets11.emplace_back(dataset_map["diabetes"]());
+        datasets11.emplace_back(dataset_map["breast"]());
+        datasets11.emplace_back(dataset_map["glioma"]());
+        datasets11.emplace_back(dataset_map["thyroid"]());
+        datasets11.emplace_back(dataset_map["cirrhosis"]());
+    }
+
+    struct {
+        ActivationFn activation;
+        ApproximationFn approximation;
+        std::string name;
+    } experiments[] = {
+                {TANH, CHEBYSHEV, "nn_ckks_tanh_chebyshev"},
+                {TANH, TAYLOR, "nn_ckks_tanh_taylor"},
+                {TANH, LEAST_SQUARES, "nn_ckks_tanh_least_squares"},
+                {SIGMOID, CHEBYSHEV, "nn_ckks_sigmoid_chebyshev"},
+                {SIGMOID, TAYLOR, "nn_ckks_sigmoid_taylor"},
+                {SIGMOID, LEAST_SQUARES, "nn_ckks_sigmoid_least_squares"}
+            };
+
     CkksExperimentParams params{};
 
-    for (auto i = 1; i <= epochs; i++) {
-        for (auto j = 0; j < datasets11.size(); j++) {
-            params.activation = TANH;
-            params.approximation = CHEBYSHEV;
-            params.epochs = i;
-            params.earlyBootstrapping = 0;
-            CkksNeuralNetworkExperiment("nn_ckks_tanh_chebyshev_" + std::to_string(params.epochs), *datasets11[j],
-                                        params).Run();
+    params.epochs = 30;
+    params.earlyBootstrapping = 3;
 
-            params.activation = TANH;
-            params.approximation = TAYLOR;
-            params.epochs = i;
-            params.earlyBootstrapping = 0;
-            CkksNeuralNetworkExperiment("nn_ckks_tanh_taylor_" + std::to_string(params.epochs), *datasets11[j],
-                                        params).Run();
+    for (auto j = 0; j < datasets11.size(); j++) {
+        for (const auto &[activation, approximation, name]: experiments) {
+            params.activation = activation;
+            params.approximation = approximation;
 
-            params.activation = TANH;
-            params.approximation = LEAST_SQUARES;
-            params.epochs = i;
-            params.earlyBootstrapping = 0;
-            CkksNeuralNetworkExperiment("nn_ckks_tanh_least_squares_" + std::to_string(params.epochs), *datasets11[j],
-                                        params).Run();
-
-            params.activation = SIGMOID;
-            params.approximation = CHEBYSHEV;
-            params.epochs = i;
-            params.earlyBootstrapping = 0;
-            CkksNeuralNetworkExperiment("nn_ckks_sigmoid_chebyshev_" + std::to_string(params.epochs), *datasets11[j],
-                                        params).Run();
-
-            params.activation = SIGMOID;
-            params.approximation = TAYLOR;
-            params.epochs = i;
-            params.earlyBootstrapping = 0;
-            CkksNeuralNetworkExperiment("nn_ckks_sigmoid_taylor_" + std::to_string(params.epochs), *datasets11[j],
-                                        params).Run();
-
-            params.activation = SIGMOID;
-            params.approximation = LEAST_SQUARES;
-            params.epochs = i;
-            params.earlyBootstrapping = 0;
-            CkksNeuralNetworkExperiment("nn_ckks_sigmoid_least_squares_" + std::to_string(params.epochs),
-                                        *datasets11[j],
-                                        params).Run();
+            try {
+                CkksNeuralNetworkExperiment(name, *datasets11[j], params).Run();
+            } catch (const OpenFHEException &e) {
+                std::cerr << "[OpenFHEException] " << name << " failed on dataset " << j
+                        << ": " << e.what() << std::endl;
+            }
         }
     }
 }
